@@ -1,0 +1,4 @@
+rootProject.name = 'Mimo'
+include 'common'
+include 'console'
+
