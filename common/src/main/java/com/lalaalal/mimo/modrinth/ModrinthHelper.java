@@ -41,7 +41,7 @@ public class ModrinthHelper {
                 stringBuilder.append(line);
         }
         String body = stringBuilder.toString();
-        return new Response(code, body);
+        return new Response(request.type(), code, body);
     }
 
     public static void download(Content.Version version, Path path) throws IOException {
@@ -52,7 +52,7 @@ public class ModrinthHelper {
         try {
             callback.run(sendRequest(request));
         } catch (IOException exception) {
-            callback.run(new Response(-1, "{\"message\":\"%s\"}".formatted(exception.getMessage())));
+            callback.run(new Response(request.type(), -1, "{\"message\":\"%s\"}".formatted(exception.getMessage())));
         }
     }
 
@@ -75,7 +75,7 @@ public class ModrinthHelper {
                 Response response = sendRequest(request);
                 callback.run(response);
             } catch (IOException e) {
-                callback.run(new Response(-1, e.getMessage()));
+                callback.run(new Response(request.type(), -1, e.getMessage()));
             }
         }
     }

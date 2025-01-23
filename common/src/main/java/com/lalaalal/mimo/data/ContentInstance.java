@@ -13,9 +13,14 @@ import java.util.List;
 import java.util.function.Consumer;
 
 public class ContentInstance {
+    private static final Consumer<ContentInstance> DO_NOTHING = instance -> {
+    };
+
     private final ServerInstance serverInstance;
     private final Content content;
+    private ContentDetail detail;
     private List<Content.Version> availableVersions;
+    private List<Content> dependencies;
     private Content.Version contentVersion;
     private Content.Version updatingVersion;
     private Thread versionLoadingThread;
@@ -23,21 +28,33 @@ public class ContentInstance {
     public ContentInstance(ServerInstance serverInstance, Content content) {
         this.serverInstance = serverInstance;
         this.content = content;
-        loadVersionsInThread(instance -> {
-        });
+        this.dependencies = List.of();
+        loadVersionsInThread(DO_NOTHING);
+        resolveDependencies();
     }
 
     protected void storeLoadedVersions(Response response) {
-        this.availableVersions = ResponseHandler.resolveVersionDataList(response);
+        this.availableVersions = ResponseHandler.parseVersionDataList(response);
+    }
+
+    protected void resolveDependencies() {
+        ModrinthHelper.sendRequest(
+                Request.dependencies(content.id()),
+                response -> {
+                    this.dependencies = ResponseHandler.parseDependencies(response);
+                    for (Content dependency : dependencies)
+                        serverInstance.addContent(dependency);
+                }
+        );
     }
 
     protected void loadVersionsInThread(Consumer<ContentInstance> callback) {
         if (versionLoadingThread != null && versionLoadingThread.isAlive())
             return;
         versionLoadingThread = ModrinthHelper.createRequestThread(
-                Request.versions(content.slug(), serverInstance),
+                Request.versions(content.id(), serverInstance),
                 response -> {
-                    this.availableVersions = ResponseHandler.resolveVersionDataList(response);
+                    this.availableVersions = ResponseHandler.parseVersionDataList(response);
                     callback.accept(this);
                 }
         );
@@ -54,29 +71,37 @@ public class ContentInstance {
             }
         }
         ModrinthHelper.sendRequest(
-                Request.versions(content.slug(), serverInstance),
+                Request.versions(content.id(), serverInstance),
                 this::storeLoadedVersions
         );
     }
 
-    public void loadLatestVersion(Consumer<ContentInstance> callback) {
+    public void loadLatestVersionInThread(Consumer<ContentInstance> callback) {
         ModrinthHelper.createRequestThread(
                 Request.latestVersion(contentVersion, serverInstance),
                 response -> {
-                    updatingVersion = ResponseHandler.resolveVersionData(response);
+                    updatingVersion = ResponseHandler.parseLatestVersionData(response);
                     callback.accept(this);
                 }
         ).start();
+    }
+
+    public void loadLatestVersion() {
+        ModrinthHelper.sendRequest(Request.latestVersion(contentVersion, serverInstance),
+                response -> updatingVersion = ResponseHandler.parseLatestVersionData(response)
+        );
+    }
+
+    public boolean is(Content content) {
+        return this.content.equals(content);
     }
 
     public boolean isUpToDate() {
         if (!isVersionSelected())
             return true;
         if (updatingVersion == null)
-            ModrinthHelper.sendRequest(Request.latestVersion(contentVersion, serverInstance),
-                    response -> updatingVersion = ResponseHandler.resolveVersionData(response)
-            );
-        return contentVersion.id().equals(updatingVersion.id());
+            loadLatestVersion();
+        return contentVersion.versionId().equals(updatingVersion.versionId());
     }
 
     public MinecraftVersion getMinecraftVersion() {
@@ -102,7 +127,7 @@ public class ContentInstance {
         if (availableVersions == null)
             loadVersions();
         if (availableVersions.isEmpty())
-            throw new IllegalStateException("No available version for %s [%s] [%s]".formatted(content.slug(), serverInstance.loader, serverInstance.version));
+            throw new IllegalStateException("No available version for %s [%s] [%s]".formatted(content.id(), serverInstance.loader, serverInstance.version));
         this.contentVersion = availableVersions.get(index);
     }
 

@@ -25,20 +25,20 @@ public record Request(Type type, Map<String, String> params, String body) {
 
     public static Request get(String slug) {
         return new Request(Type.GET_PROJECT,
-                Map.of("${slug}", slug)
+                Map.of("${id}", slug)
         );
     }
 
     public static Request dependencies(String slug) {
         return new Request(Type.PROJECT_DEPENDENCIES,
-                Map.of("${slug}", slug)
+                Map.of("${id}", slug)
         );
     }
 
     public static Request versions(String slug, MinecraftVersion version, Loader.Type loader) {
         return new Request(Type.PROJECT_VERSION,
                 Map.of(
-                        "${slug}", slug,
+                        "${id}", slug,
                         "loaders", "[\"%s\"]".formatted(loader),
                         "game_versions", "[\"%s\"]".formatted(version)
                 )
@@ -55,7 +55,7 @@ public record Request(Type type, Map<String, String> params, String body) {
 
     public static Request latestVersion(Content.Version version, ServerInstance instance) {
         String body = Mimo.GSON.toJson(Map.of(
-                "loaders", new String[]{instance.loader.toString()},
+                "loaders", new String[]{instance.loader.type().toString()},
                 "game_versions", new String[]{instance.version.toString()}
         ));
         return new Request(Type.LATEST_VERSION,
@@ -84,9 +84,9 @@ public record Request(Type type, Map<String, String> params, String body) {
 
     public enum Type {
         SEARCH(QueryMaker.QUERY_PARAM),
-        GET_PROJECT(QueryMaker.PATH_PARAM, "project/${slug}"),
-        PROJECT_DEPENDENCIES(QueryMaker.PATH_PARAM, "project/${slug}/dependencies"),
-        PROJECT_VERSION(QueryMaker.MIXED, "project/${slug}/version"),
+        GET_PROJECT(QueryMaker.PATH_PARAM, "project/${id}"),
+        PROJECT_DEPENDENCIES(QueryMaker.PATH_PARAM, "project/${id}/dependencies"),
+        PROJECT_VERSION(QueryMaker.MIXED, "project/${id}/version"),
         LATEST_VERSION(QueryMaker.PATH_PARAM, "version_file/${hash}/update");
 
         private final QueryMaker queryMaker;
@@ -102,7 +102,7 @@ public record Request(Type type, Map<String, String> params, String body) {
             this.queryFormat = format;
         }
 
-        public String makeQuery(Map<String, String> params) {
+        private String makeQuery(Map<String, String> params) {
             return queryMaker.makeQuery(queryFormat, params);
         }
     }

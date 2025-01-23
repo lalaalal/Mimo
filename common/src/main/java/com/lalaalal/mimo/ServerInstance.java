@@ -32,16 +32,35 @@ public class ServerInstance {
     }
 
     public void addContent(Content content) {
+        if (this.contains(content))
+            return;
         ContentInstance contentInstance = new ContentInstance(this, content);
         contents.add(contentInstance);
         newContents.add(contentInstance);
+    }
+
+    public boolean contains(Content content) {
+        return contents.stream().anyMatch(contentInstance -> contentInstance.is(content));
+    }
+
+    public void removeContent(Content content) {
+        contents.removeIf(contentInstance -> contentInstance.is(content));
     }
 
     public void removeContent(int index) {
         contents.remove(index);
     }
 
-    public void downloadContents() throws IOException {
+    public synchronized void updateContents() throws IOException {
+        for (ContentInstance contentInstance : contents) {
+            if (contentInstance.isUpToDate())
+                continue;
+
+            contentInstance.downloadContent();
+        }
+    }
+
+    public synchronized void downloadContents() throws IOException {
         for (ContentInstance contentInstance : newContents) {
             if (!contentInstance.isVersionSelected())
                 contentInstance.selectContentVersion(0);

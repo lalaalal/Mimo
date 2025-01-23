@@ -10,9 +10,9 @@ import java.util.List;
 class ResponseHandlerTest {
 
     @Test
-    void testResolveSearchData() {
+    void testParseSearchData() {
         ModrinthHelper.sendRequest(Request.search("terra", ContentFilter.of(MimoTest.TEST_INSTANCE)), response -> {
-            List<Content> contents = ResponseHandler.resolveSearchData(response);
+            List<Content> contents = ResponseHandler.parseSearchData(response);
             System.out.println(contents);
         });
     }

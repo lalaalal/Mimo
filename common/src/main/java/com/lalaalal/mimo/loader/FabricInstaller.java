@@ -10,7 +10,6 @@ import com.lalaalal.mimo.data.MinecraftVersion;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
@@ -72,9 +71,8 @@ public class FabricInstaller extends LoaderInstaller {
         if (!isValidVersion(minecraftVersion, loaderVersion))
             throw new IllegalArgumentException("Given version is not valid (%s, %s)".formatted(minecraftVersion, loaderVersion));
         String url = LAUNCHER_DOWNLOAD_URL.formatted(minecraftVersion, loaderVersion, FABRIC_INSTALLER_VERSION);
-        Path instanceDirectory = INSTANCES_PATH.resolve(name);
+        Path instanceDirectory = createInstanceDirectory(name);
         Path file = instanceDirectory.resolve(FILE_NAME);
-        Files.createDirectories(instanceDirectory);
 
         Mimo.download(url, file);
 

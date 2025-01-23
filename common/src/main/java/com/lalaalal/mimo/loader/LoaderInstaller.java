@@ -5,6 +5,7 @@ import com.lalaalal.mimo.ServerInstance;
 import com.lalaalal.mimo.data.MinecraftVersion;
 
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.List;
@@ -42,6 +43,13 @@ public abstract class LoaderInstaller {
     public abstract List<String> getAvailableVersions(MinecraftVersion minecraftVersion);
 
     public abstract boolean isValidVersion(MinecraftVersion minecraftVersion, String loaderVersion);
+
+    protected Path createInstanceDirectory(String name) throws IOException {
+        Path instanceDirectory = INSTANCES_PATH.resolve(name);
+        if (Files.exists(instanceDirectory))
+            throw new IllegalStateException("Instance %s already exists".formatted(name));
+        return Files.createDirectories(instanceDirectory);
+    }
 
     public abstract ServerInstance install(String name, MinecraftVersion minecraftVersion, String loaderVersion) throws IOException;
 }

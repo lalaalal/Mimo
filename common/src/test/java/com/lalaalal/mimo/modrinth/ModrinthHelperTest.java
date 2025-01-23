@@ -16,8 +16,13 @@ class ModrinthHelperTest {
     }
 
     @Test
+    void testGet() {
+        sendAndPrintResult(Request.get("betterend"));
+    }
+
+    @Test
     void testVersions() {
-        sendAndPrintResult(Request.versions(MimoTest.CONTENT_SLUG, MimoTest.TEST_MINECRAFT_VERSION, Loader.Type.FABRIC));
+        sendAndPrintResult(Request.versions("fabric-api", MimoTest.TEST_MINECRAFT_VERSION, Loader.Type.FABRIC));
     }
 
     @Test
@@ -28,5 +33,10 @@ class ModrinthHelperTest {
     @Test
     void testLatestVersion() {
         sendAndPrintResult(Request.latestVersion(MimoTest.TEST_CONTENT_VERSION, MimoTest.TEST_INSTANCE));
+    }
+
+    @Test
+    void testDependencies() {
+        sendAndPrintResult(Request.dependencies("betterend"));
     }
 }
