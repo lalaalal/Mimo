@@ -9,6 +9,8 @@ import com.lalaalal.mimo.loader.Loader;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -23,20 +25,50 @@ public record Request(Type type, Map<String, String> params, String body) {
         );
     }
 
-    public static Request get(String slug) {
+    public static Request project(String id) {
         return new Request(Type.GET_PROJECT,
-                Map.of("${id}", slug)
+                Map.of("${id}", id)
         );
+    }
+
+    public static Request projects(Collection<String> ids) {
+        return new Request(Type.GET_PROJECT_LIST,
+                Map.of("ids", Mimo.GSON.toJson(ids))
+        );
+    }
+
+    public static Request projects(String... ids) {
+        return projects(List.of(ids));
+    }
+
+    public static Request version(String hash) {
+        return new Request(Type.GET_VERSION_FILE,
+                Map.of("${hash}", hash)
+        );
+    }
+
+    public static Request versions(Collection<String> hashes) {
+        String body = Mimo.GSON.toJson(
+                Map.of(
+                        "hashes", hashes,
+                        "algorithm", "sha1"
+                )
+        );
+        return new Request(Type.GET_VERSION_FILE_LIST, Map.of(), body);
+    }
+
+    public static Request versions(String... hashes) {
+        return versions(List.of(hashes));
     }
 
     public static Request dependencies(String slug) {
-        return new Request(Type.PROJECT_DEPENDENCIES,
+        return new Request(Type.GET_PROJECT_DEPENDENCY_LIST,
                 Map.of("${id}", slug)
         );
     }
 
-    public static Request versions(String slug, MinecraftVersion version, Loader.Type loader) {
-        return new Request(Type.PROJECT_VERSION,
+    public static Request projectVersions(String slug, MinecraftVersion version, Loader.Type loader) {
+        return new Request(Type.GET_PROJECT_VERSION_LIST,
                 Map.of(
                         "${id}", slug,
                         "loaders", "[\"%s\"]".formatted(loader),
@@ -45,12 +77,12 @@ public record Request(Type type, Map<String, String> params, String body) {
         );
     }
 
-    public static Request versions(String slug, MinecraftVersion version, Loader loader) {
-        return versions(slug, version, loader.type());
+    public static Request projectVersions(String slug, MinecraftVersion version, Loader loader) {
+        return projectVersions(slug, version, loader.type());
     }
 
-    public static Request versions(String slug, ServerInstance instance) {
-        return versions(slug, instance.version, instance.loader);
+    public static Request projectVersions(String slug, ServerInstance instance) {
+        return projectVersions(slug, instance.version, instance.loader);
     }
 
     public static Request latestVersion(Content.Version version, ServerInstance instance) {
@@ -83,19 +115,17 @@ public record Request(Type type, Map<String, String> params, String body) {
     }
 
     public enum Type {
-        SEARCH(QueryMaker.QUERY_PARAM),
+        SEARCH(QueryMaker.QUERY_PARAM, "search"),
         GET_PROJECT(QueryMaker.PATH_PARAM, "project/${id}"),
-        PROJECT_DEPENDENCIES(QueryMaker.PATH_PARAM, "project/${id}/dependencies"),
-        PROJECT_VERSION(QueryMaker.MIXED, "project/${id}/version"),
+        GET_PROJECT_LIST(QueryMaker.QUERY_PARAM, "projects"),
+        GET_PROJECT_DEPENDENCY_LIST(QueryMaker.PATH_PARAM, "project/${id}/dependencies"),
+        GET_PROJECT_VERSION_LIST(QueryMaker.MIXED, "project/${id}/version"),
+        GET_VERSION_FILE(QueryMaker.PATH_PARAM, "version_file/${hash}"),
+        GET_VERSION_FILE_LIST(QueryMaker.EXACT, "version_files"),
         LATEST_VERSION(QueryMaker.PATH_PARAM, "version_file/${hash}/update");
 
         private final QueryMaker queryMaker;
         private final String queryFormat;
-
-        Type(QueryMaker queryMaker) {
-            this.queryMaker = queryMaker;
-            this.queryFormat = name().toLowerCase();
-        }
 
         Type(QueryMaker queryMaker, String format) {
             this.queryMaker = queryMaker;
@@ -108,6 +138,7 @@ public record Request(Type type, Map<String, String> params, String body) {
     }
 
     protected interface QueryMaker {
+        QueryMaker EXACT = (format, params) -> format;
         QueryMaker PATH_PARAM = (format, params) -> {
             Pattern pattern = Pattern.compile("\\$\\{[a-z]+}");
             Matcher matcher = pattern.matcher(format);

@@ -12,7 +12,7 @@ import java.nio.charset.StandardCharsets;
 class RequestTest {
     @Test
     void testPathParamMaker() {
-        Request request = Request.get("fabric-api");
+        Request request = Request.project("fabric-api");
         Assertions.assertEquals("project/fabric-api", request.createQuery());
     }
 
@@ -32,7 +32,7 @@ class RequestTest {
 
     @Test
     void testVersionParamMaker() {
-        Request request = Request.versions("fabric-api", MimoTest.TEST_MINECRAFT_VERSION, Loader.Type.FABRIC);
+        Request request = Request.projectVersions("fabric-api", MimoTest.TEST_MINECRAFT_VERSION, Loader.Type.FABRIC);
         System.out.println(request.createQuery());
     }
 }

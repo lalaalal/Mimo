@@ -1,10 +1,11 @@
-package com.lalaalal.mimo.data;
+package com.lalaalal.mimo;
 
-import com.lalaalal.mimo.ServerInstance;
+import com.lalaalal.mimo.data.Content;
+import com.lalaalal.mimo.data.ContentDetail;
+import com.lalaalal.mimo.data.MinecraftVersion;
 import com.lalaalal.mimo.modrinth.ModrinthHelper;
 import com.lalaalal.mimo.modrinth.Request;
-import com.lalaalal.mimo.modrinth.Response;
-import com.lalaalal.mimo.modrinth.ResponseHandler;
+import com.lalaalal.mimo.modrinth.ResponseParser;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -13,11 +14,8 @@ import java.util.List;
 import java.util.function.Consumer;
 
 public class ContentInstance {
-    private static final Consumer<ContentInstance> DO_NOTHING = instance -> {
-    };
-
     private final ServerInstance serverInstance;
-    private final Content content;
+    public final Content content;
     private ContentDetail detail;
     private List<Content.Version> availableVersions;
     private List<Content> dependencies;
@@ -29,34 +27,30 @@ public class ContentInstance {
         this.serverInstance = serverInstance;
         this.content = content;
         this.dependencies = List.of();
-        loadVersionsInThread(DO_NOTHING);
+
+        loadVersionsInThread();
         resolveDependencies();
     }
 
-    protected void storeLoadedVersions(Response response) {
-        this.availableVersions = ResponseHandler.parseVersionDataList(response);
+    protected ContentInstance(ServerInstance serverInstance, Content content, Content.Version version) {
+        this.serverInstance = serverInstance;
+        this.content = content;
+        this.dependencies = List.of();
+        this.contentVersion = version;
     }
 
     protected void resolveDependencies() {
-        ModrinthHelper.sendRequest(
-                Request.dependencies(content.id()),
-                response -> {
-                    this.dependencies = ResponseHandler.parseDependencies(response);
-                    for (Content dependency : dependencies)
-                        serverInstance.addContent(dependency);
-                }
-        );
+        this.dependencies = ModrinthHelper.get(Request.dependencies(content.id()), ResponseParser::parseDependencies);
+        for (Content dependency : dependencies)
+            serverInstance.addContent(dependency);
     }
 
-    protected void loadVersionsInThread(Consumer<ContentInstance> callback) {
+    protected void loadVersionsInThread() {
         if (versionLoadingThread != null && versionLoadingThread.isAlive())
             return;
         versionLoadingThread = ModrinthHelper.createRequestThread(
-                Request.versions(content.id(), serverInstance),
-                response -> {
-                    this.availableVersions = ResponseHandler.parseVersionDataList(response);
-                    callback.accept(this);
-                }
+                Request.projectVersions(content.id(), serverInstance),
+                response -> this.availableVersions = ResponseParser.parseProjectVersionList(response)
         );
         versionLoadingThread.start();
     }
@@ -70,9 +64,9 @@ public class ContentInstance {
 
             }
         }
-        ModrinthHelper.sendRequest(
-                Request.versions(content.id(), serverInstance),
-                this::storeLoadedVersions
+        this.availableVersions = ModrinthHelper.get(
+                Request.projectVersions(content.id(), serverInstance),
+                ResponseParser::parseProjectVersionList
         );
     }
 
@@ -80,15 +74,16 @@ public class ContentInstance {
         ModrinthHelper.createRequestThread(
                 Request.latestVersion(contentVersion, serverInstance),
                 response -> {
-                    updatingVersion = ResponseHandler.parseLatestVersionData(response);
+                    updatingVersion = ResponseParser.parseVersion(response);
                     callback.accept(this);
                 }
         ).start();
     }
 
     public void loadLatestVersion() {
-        ModrinthHelper.sendRequest(Request.latestVersion(contentVersion, serverInstance),
-                response -> updatingVersion = ResponseHandler.parseLatestVersionData(response)
+        updatingVersion = ModrinthHelper.get(
+                Request.latestVersion(contentVersion, serverInstance),
+                ResponseParser::parseVersion
         );
     }
 
@@ -121,6 +116,10 @@ public class ContentInstance {
             loadVersions();
 
         return availableVersions;
+    }
+
+    public void setContentVersion(Content.Version version) {
+        this.contentVersion = version;
     }
 
     public void selectContentVersion(int index) {

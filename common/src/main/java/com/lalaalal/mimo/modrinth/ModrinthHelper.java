@@ -8,6 +8,7 @@ import java.io.*;
 import java.net.URI;
 import java.net.URL;
 import java.nio.file.Path;
+import java.util.function.Function;
 
 public class ModrinthHelper {
     public static final String API_URL = "https://api.modrinth.com/v2/";
@@ -48,12 +49,17 @@ public class ModrinthHelper {
         Mimo.download(version.url(), path);
     }
 
-    public static void sendRequest(Request request, Callback callback) {
+    public static Response send(Request request) {
         try {
-            callback.run(sendRequest(request));
+            return sendRequest(request);
         } catch (IOException exception) {
-            callback.run(new Response(request.type(), -1, "{\"message\":\"%s\"}".formatted(exception.getMessage())));
+            return new Response(request.type(), -1, "{\"message\":\"%s\"}".formatted(exception.getMessage()));
         }
+    }
+
+    public static <T> T get(Request request, Function<Response, T> parser) {
+        Response response = send(request);
+        return parser.apply(response);
     }
 
     public static Thread createRequestThread(Request request, Callback callback) {

@@ -1,7 +1,6 @@
 package com.lalaalal.mimo;
 
 import com.lalaalal.mimo.data.Content;
-import com.lalaalal.mimo.data.ContentInstance;
 import com.lalaalal.mimo.data.ProjectType;
 import org.junit.jupiter.api.Test;
 

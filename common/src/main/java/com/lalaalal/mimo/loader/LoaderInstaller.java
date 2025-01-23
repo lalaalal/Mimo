@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 
 public abstract class LoaderInstaller {
+    private static final String FILE_NAME_FORMAT = "%s-server-%s+%s.jar";
     private static final Map<Loader.Type, LoaderInstaller> INSTALLERS = new HashMap<>();
     protected static final Path INSTANCES_PATH = Mimo.getInstanceContainerDirectory();
 
@@ -38,6 +39,10 @@ public abstract class LoaderInstaller {
 
     protected LoaderInstaller(Loader.Type loaderType) {
         this.loaderType = loaderType;
+    }
+
+    public String getFileName(MinecraftVersion minecraftVersion, String loaderVersion) {
+        return FILE_NAME_FORMAT.formatted(loaderType, loaderVersion, minecraftVersion);
     }
 
     public abstract List<String> getAvailableVersions(MinecraftVersion minecraftVersion);

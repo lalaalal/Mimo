@@ -19,7 +19,6 @@ public class FabricInstaller extends LoaderInstaller {
     public static final String FABRIC_VERSIONS_URL = "https://meta.fabricmc.net/v2/versions/loader";
     public static final String LAUNCHER_DOWNLOAD_URL = "https://meta.fabricmc.net/v2/versions/loader/%s/%s/%s/server/jar";
     public static final String FABRIC_INSTALLER_VERSION = "1.0.1";
-    private static final String FILE_NAME = "fabric-server.jar";
 
     private final List<MinecraftVersion> minecraftVersions;
     private final List<String> fabricVersions;
@@ -71,12 +70,14 @@ public class FabricInstaller extends LoaderInstaller {
         if (!isValidVersion(minecraftVersion, loaderVersion))
             throw new IllegalArgumentException("Given version is not valid (%s, %s)".formatted(minecraftVersion, loaderVersion));
         String url = LAUNCHER_DOWNLOAD_URL.formatted(minecraftVersion, loaderVersion, FABRIC_INSTALLER_VERSION);
+        String fileName = getFileName(minecraftVersion, loaderVersion);
         Path instanceDirectory = createInstanceDirectory(name);
-        Path file = instanceDirectory.resolve(FILE_NAME);
+        Path file = instanceDirectory.resolve(fileName);
 
         Mimo.download(url, file);
 
-        ProcessBuilder processBuilder = new ProcessBuilder("java", "-jar", FILE_NAME, "nogui");
+        ProcessBuilder processBuilder = new ProcessBuilder("java", "-jar", fileName, "nogui");
+        
         processBuilder.directory(instanceDirectory.toFile());
         Process process = processBuilder.start();
         String line;
