@@ -1,8 +1,13 @@
 package com.lalaalal.mimo;
 
+import com.google.gson.annotations.SerializedName;
 import com.lalaalal.mimo.data.Content;
 import com.lalaalal.mimo.data.ContentDetail;
 import com.lalaalal.mimo.data.MinecraftVersion;
+import com.lalaalal.mimo.json.FieldStrategy;
+import com.lalaalal.mimo.json.GsonExcludeStrategy;
+import com.lalaalal.mimo.json.GsonField;
+import com.lalaalal.mimo.json.TypeStrategy;
 import com.lalaalal.mimo.modrinth.ModrinthHelper;
 import com.lalaalal.mimo.modrinth.Request;
 import com.lalaalal.mimo.modrinth.ResponseParser;
@@ -13,12 +18,18 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.function.Consumer;
 
+@GsonExcludeStrategy(TypeStrategy.INCLUDE_MARKED)
 public class ContentInstance {
     private final ServerInstance serverInstance;
-    public final Content content;
+
+    @GsonField(FieldStrategy.INCLUDE)
+    private final Content content;
     private ContentDetail detail;
     private List<Content.Version> availableVersions;
     private List<Content> dependencies;
+
+    @GsonField(FieldStrategy.INCLUDE)
+    @SerializedName("version")
     private Content.Version contentVersion;
     private Content.Version updatingVersion;
     private Thread versionLoadingThread;

@@ -1,6 +1,9 @@
 package com.lalaalal.mimo;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.lalaalal.mimo.json.MimoExcludeStrategy;
+import com.lalaalal.mimo.json.ServerInstanceAdaptor;
 import com.lalaalal.mimo.loader.LoaderInstaller;
 
 import javax.net.ssl.HttpsURLConnection;
@@ -11,7 +14,11 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 public final class Mimo {
-    public static final Gson GSON = new Gson();
+    public static final Gson GSON = new GsonBuilder()
+            .addSerializationExclusionStrategy(new MimoExcludeStrategy())
+            .addDeserializationExclusionStrategy(new MimoExcludeStrategy())
+            .registerTypeAdapter(ServerInstanceAdaptor.class, new ServerInstanceAdaptor())
+            .create();
 
     public static void initialize() throws IOException {
         Files.createDirectories(Platform.get().defaultMimoDirectory);

@@ -16,6 +16,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class InstanceLoader {
+    public static final String INSTANCE_DATA_FILE_NAME = "instance.json";
     private static final Pattern JAR_NAME_PATTERN = Pattern.compile("^([a-z]+)-server-([^+]+)\\+(.+)\\.jar$");
 
     private static ServerInstance createServer(String serverName, String serverFileName, Path directory) throws IOException {
