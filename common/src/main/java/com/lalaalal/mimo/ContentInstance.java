@@ -2,7 +2,6 @@ package com.lalaalal.mimo;
 
 import com.google.gson.annotations.SerializedName;
 import com.lalaalal.mimo.data.Content;
-import com.lalaalal.mimo.data.ContentDetail;
 import com.lalaalal.mimo.data.MinecraftVersion;
 import com.lalaalal.mimo.json.FieldStrategy;
 import com.lalaalal.mimo.json.GsonExcludeStrategy;
@@ -16,7 +15,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
-import java.util.function.Consumer;
 
 @GsonExcludeStrategy(TypeStrategy.INCLUDE_MARKED)
 public class ContentInstance {
@@ -24,71 +22,42 @@ public class ContentInstance {
 
     @GsonField(FieldStrategy.INCLUDE)
     private final Content content;
-    private ContentDetail detail;
     private List<Content.Version> availableVersions;
-    private List<Content> dependencies;
 
-    @GsonField(FieldStrategy.INCLUDE)
-    @SerializedName("version")
+    @SerializedName("version") @GsonField(FieldStrategy.INCLUDE)
     private Content.Version contentVersion;
     private Content.Version updatingVersion;
-    private Thread versionLoadingThread;
 
     public ContentInstance(ServerInstance serverInstance, Content content) {
         this.serverInstance = serverInstance;
         this.content = content;
-        this.dependencies = List.of();
 
-        loadVersionsInThread();
-        resolveDependencies();
+        loadVersions();
     }
 
     protected ContentInstance(ServerInstance serverInstance, Content content, Content.Version version) {
         this.serverInstance = serverInstance;
         this.content = content;
-        this.dependencies = List.of();
         this.contentVersion = version;
+
+        loadVersions();
     }
 
-    protected void resolveDependencies() {
-        this.dependencies = ModrinthHelper.get(Request.dependencies(content.id()), ResponseParser::parseDependencies);
-        for (Content dependency : dependencies)
-            serverInstance.addContent(dependency);
-    }
-
-    protected void loadVersionsInThread() {
-        if (versionLoadingThread != null && versionLoadingThread.isAlive())
-            return;
-        versionLoadingThread = ModrinthHelper.createRequestThread(
-                Request.projectVersions(content.id(), serverInstance),
-                response -> this.availableVersions = ResponseParser.parseProjectVersionList(response)
-        );
-        versionLoadingThread.start();
+    protected void resolveDependencies(Content.Version version) {
+        for (Content.Dependency dependency : version.dependencies()) {
+            if (dependency.required()) {
+                Content content = ModrinthHelper.get(Request.project(dependency.id()), ResponseParser::parseContent);
+                serverInstance.addContent(content);
+            }
+        }
     }
 
     protected void loadVersions() {
-        if (versionLoadingThread != null && versionLoadingThread.isAlive()) {
-            try {
-                versionLoadingThread.join();
-                return;
-            } catch (InterruptedException ignored) {
-
-            }
-        }
         this.availableVersions = ModrinthHelper.get(
                 Request.projectVersions(content.id(), serverInstance),
                 ResponseParser::parseProjectVersionList
         );
-    }
-
-    public void loadLatestVersionInThread(Consumer<ContentInstance> callback) {
-        ModrinthHelper.createRequestThread(
-                Request.latestVersion(contentVersion, serverInstance),
-                response -> {
-                    updatingVersion = ResponseParser.parseVersion(response);
-                    callback.accept(this);
-                }
-        ).start();
+        selectContentVersion(0);
     }
 
     public void loadLatestVersion() {
@@ -102,11 +71,14 @@ public class ContentInstance {
         return this.content.equals(content);
     }
 
+    public Content content() {
+        return content;
+    }
+
     public boolean isUpToDate() {
         if (!isVersionSelected())
-            return true;
-        if (updatingVersion == null)
-            loadLatestVersion();
+            return false;
+        loadLatestVersion();
         return contentVersion.versionId().equals(updatingVersion.versionId());
     }
 
@@ -137,8 +109,9 @@ public class ContentInstance {
         if (availableVersions == null)
             loadVersions();
         if (availableVersions.isEmpty())
-            throw new IllegalStateException("No available version for %s [%s] [%s]".formatted(content.id(), serverInstance.loader, serverInstance.version));
+            throw new IllegalStateException("No available version for %s [%s] [%s]".formatted(content.slug(), serverInstance.loader, serverInstance.version));
         this.contentVersion = availableVersions.get(index);
+        resolveDependencies(contentVersion);
     }
 
     public boolean isVersionSelected() {
@@ -166,9 +139,21 @@ public class ContentInstance {
     }
 
     public void downloadContent() throws IOException {
+        removeContent();
         Content.Version version = getDownloadingVersion();
         Path contentPath = createContentPath(version);
         ModrinthHelper.download(version, contentPath);
         handlePostDownloadUpdatingVersion();
+    }
+
+    public void removeContent() throws IOException {
+        Content.Version version = getContentVersion();
+        Path contentPath = createContentPath(version);
+        Files.deleteIfExists(contentPath);
+    }
+
+    @Override
+    public String toString() {
+        return contentVersion.fileName();
     }
 }

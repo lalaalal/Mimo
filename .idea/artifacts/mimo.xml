@@ -1,0 +1,14 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="mimo">
+    <output-path>$PROJECT_DIR$/out/artifacts/mimo</output-path>
+    <root id="archive" name="mimo.jar">
+      <element id="directory" name="META-INF">
+        <element id="file-copy" path="$PROJECT_DIR$/console/src/main/resources/META-INF/MANIFEST.MF" />
+      </element>
+      <element id="module-output" name="Mimo.console.main" />
+      <element id="module-output" name="Mimo.common.main" />
+      <element id="extracted-dir" path="$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.google.code.gson/gson/2.11.0/527175ca6d81050b53bdd4c457a6d6e017626b0e/gson-2.11.0.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.google.errorprone/error_prone_annotations/2.27.0/91b2c29d8a6148b5e2e4930f070d4840e2e48e34/error_prone_annotations-2.27.0.jar" path-in-jar="/" />
+    </root>
+  </artifact>
+</component>

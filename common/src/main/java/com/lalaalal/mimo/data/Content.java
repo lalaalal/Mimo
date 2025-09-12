@@ -1,5 +1,6 @@
 package com.lalaalal.mimo.data;
 
+import java.util.List;
 import java.util.Objects;
 
 public record Content(ProjectType type, String id, String slug) {
@@ -18,6 +19,10 @@ public record Content(ProjectType type, String id, String slug) {
         return Objects.hash(type, id);
     }
 
-    public record Version(String versionId, String hash, String url, String fileName) {
+    public record Version(String versionId, String hash, String url, String fileName, List<Dependency> dependencies) {
+    }
+
+    public record Dependency(String id, boolean required) {
+
     }
 }

@@ -88,8 +88,16 @@ public class ResponseParser {
         String hash = hashes.get("sha1").getAsString();
         String url = file.get("url").getAsString();
         String fileName = file.get("filename").getAsString();
+        JsonArray dependencies = versionData.get("dependencies").getAsJsonArray();
+        List<Content.Dependency> versionDependencies = new ArrayList<>();
+        for (JsonElement dependency : dependencies) {
+            JsonObject dependencyData = dependency.getAsJsonObject();
+            String dependencyId = dependencyData.get("project_id").getAsString();
+            boolean required = dependencyData.get("dependency_type").getAsString().equals("required");
+            versionDependencies.add(new Content.Dependency(dependencyId, required));
+        }
 
-        return new Content.Version(versionId, hash, url, fileName);
+        return new Content.Version(versionId, hash, url, fileName, versionDependencies);
     }
 
     public static List<Content> parseDependencies(Response response) {

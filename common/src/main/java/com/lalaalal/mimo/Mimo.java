@@ -2,9 +2,15 @@ package com.lalaalal.mimo;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.lalaalal.mimo.data.Content;
+import com.lalaalal.mimo.data.MinecraftVersion;
 import com.lalaalal.mimo.json.MimoExcludeStrategy;
 import com.lalaalal.mimo.json.ServerInstanceAdaptor;
+import com.lalaalal.mimo.loader.Loader;
 import com.lalaalal.mimo.loader.LoaderInstaller;
+import com.lalaalal.mimo.modrinth.ModrinthHelper;
+import com.lalaalal.mimo.modrinth.Request;
+import com.lalaalal.mimo.modrinth.ResponseParser;
 
 import javax.net.ssl.HttpsURLConnection;
 import java.io.*;
@@ -12,8 +18,11 @@ import java.net.URI;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Optional;
 
 public final class Mimo {
+    private static ServerInstance currentServerInstance = null;
+
     public static final Gson GSON = new GsonBuilder()
             .addSerializationExclusionStrategy(new MimoExcludeStrategy())
             .addDeserializationExclusionStrategy(new MimoExcludeStrategy())
@@ -61,5 +70,43 @@ public final class Mimo {
             while ((read = inputStream.read(buffer)) != -1)
                 outputStream.write(buffer, 0, read);
         }
+    }
+
+    public static void load(String name) throws IOException {
+        currentServerInstance = ServerInstance.from(getInstanceContainerDirectory().resolve(name));
+    }
+
+    public static void install(Loader.Type type, String name, MinecraftVersion minecraftVersion, String loaderVersion) throws IOException {
+        currentServerInstance = LoaderInstaller.get(type).install(name, minecraftVersion, loaderVersion);
+    }
+
+    public static Optional<ServerInstance> currentInstance() {
+        return Optional.ofNullable(currentServerInstance);
+    }
+
+    public static void addMod(String slug) {
+        currentInstance().ifPresent(serverInstance -> {
+            Content content = ModrinthHelper.get(Request.project(slug), ResponseParser::parseContent);
+            serverInstance.addContent(content);
+        });
+    }
+
+    public static void removeMod(String slug) throws IOException {
+        Optional<ServerInstance> optionalServerInstance = currentInstance();
+        if (optionalServerInstance.isPresent()) {
+            ServerInstance serverInstance = optionalServerInstance.get();
+            Content content = serverInstance.getContents().stream()
+                    .map(ContentInstance::content)
+                    .filter(_content -> _content.slug().equals(slug) || _content.id().equals(slug))
+                    .findAny()
+                    .orElseGet(() -> ModrinthHelper.get(Request.project(slug), ResponseParser::parseContent));
+            serverInstance.removeContent(content);
+        }
+    }
+
+    public static void updateMods() throws IOException {
+        Optional<ServerInstance> optional = currentInstance();
+        if (optional.isPresent())
+            optional.get().updateContents();
     }
 }

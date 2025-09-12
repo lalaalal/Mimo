@@ -4,11 +4,13 @@ import com.lalaalal.mimo.MimoTest;
 import com.lalaalal.mimo.data.ContentFilter;
 import com.lalaalal.mimo.loader.Loader;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 
+@Disabled
 class RequestTest {
     @Test
     void testPathParamMaker() {

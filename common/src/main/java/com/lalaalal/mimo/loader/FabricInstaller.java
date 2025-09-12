@@ -7,9 +7,8 @@ import com.lalaalal.mimo.Mimo;
 import com.lalaalal.mimo.ServerInstance;
 import com.lalaalal.mimo.data.MinecraftVersion;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
@@ -75,16 +74,8 @@ public class FabricInstaller extends LoaderInstaller {
         Path file = instanceDirectory.resolve(fileName);
 
         Mimo.download(url, file);
-
-        ProcessBuilder processBuilder = new ProcessBuilder("java", "-jar", fileName, "nogui");
-        
-        processBuilder.directory(instanceDirectory.toFile());
-        Process process = processBuilder.start();
-        String line;
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
-            while ((line = reader.readLine()) != null)
-                System.out.println(line);
-        }
+        Path eula = instanceDirectory.resolve("eula.txt");
+        Files.writeString(eula, "eula=true");
 
         return new ServerInstance(name, new Loader(loaderType, loaderVersion), minecraftVersion);
     }

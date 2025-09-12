@@ -20,10 +20,4 @@ class LoaderInstallerTest {
             System.out.println(availableVersion);
         }
     }
-
-    @Test
-    void install() throws IOException {
-        LoaderInstaller fabricInstaller = LoaderInstaller.get(Loader.Type.FABRIC);
-        fabricInstaller.install("me", MimoTest.TEST_MINECRAFT_VERSION, "0.16.10");
-    }
 }

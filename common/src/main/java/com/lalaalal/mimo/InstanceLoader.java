@@ -35,7 +35,7 @@ public class InstanceLoader {
         File[] files = directory.toFile().listFiles((dir, name) -> name.matches(JAR_NAME_PATTERN.pattern()));
 
         if (files == null || files.length != 1)
-            throw new IllegalStateException();
+            throw new IllegalStateException("Server " + serverName + " not found");
         File jarFile = files[0];
         return createServer(serverName, jarFile.getName(), directory);
     }

@@ -36,7 +36,7 @@ public class ServerInstanceAdaptor implements JsonSerializer<ServerInstance>, Js
         for (JsonElement element : contents) {
             JsonObject contentObject = element.getAsJsonObject();
             Content content = context.deserialize(contentObject.get("content"), Content.class);
-            Content.Version contentVersion = context.deserialize(contentObject.get("versions"), Content.Version.class);
+            Content.Version contentVersion = context.deserialize(contentObject.get("version"), Content.Version.class);
             contentVersions.put(content, contentVersion);
         }
         try {

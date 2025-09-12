@@ -3,7 +3,8 @@ package com.lalaalal.mimo;
 import java.nio.file.Path;
 
 public enum Platform {
-    MAC_OS(".local/share/mimo");
+    MAC_OS(".local/share/mimo"),
+    LINUX(".local/share/mimo");
 
     private static Platform INSTANCE;
 
@@ -13,6 +14,8 @@ public enum Platform {
         String osName = System.getProperty("os.name").toLowerCase();
         if (osName.contains("mac"))
             return INSTANCE = MAC_OS;
+        if (osName.contains("linux"))
+            return INSTANCE = LINUX;
         throw new IllegalStateException("Unsupported operating system");
     }
 

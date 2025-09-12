@@ -4,8 +4,9 @@ import com.google.gson.annotations.JsonAdapter;
 import com.google.gson.stream.JsonWriter;
 import com.lalaalal.mimo.data.Content;
 import com.lalaalal.mimo.data.MinecraftVersion;
-import com.lalaalal.mimo.json.*;
+import com.lalaalal.mimo.json.ServerInstanceAdaptor;
 import com.lalaalal.mimo.loader.Loader;
+import com.lalaalal.mimo.loader.LoaderInstaller;
 import com.lalaalal.mimo.modrinth.ModrinthHelper;
 import com.lalaalal.mimo.modrinth.Request;
 import com.lalaalal.mimo.modrinth.ResponseParser;
@@ -14,18 +15,16 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 
 @JsonAdapter(ServerInstanceAdaptor.class)
-@GsonExcludeStrategy(TypeStrategy.EXCLUDE_MARKED)
 public class ServerInstance {
     public final String name;
     public final Loader loader;
     public final MinecraftVersion version;
     public final Path path;
 
-    @GsonField(FieldStrategy.EXCLUDE)
     private final Map<Content, ContentInstance> contents = new HashMap<>();
-    @GsonField(FieldStrategy.EXCLUDE)
     private final List<ContentInstance> newContents = new ArrayList<>();
 
     public static ServerInstance from(Path directory) throws IOException {
@@ -38,6 +37,7 @@ public class ServerInstance {
         List<Content> contents = ModrinthHelper.get(Request.projects(versions.keySet()), ResponseParser::parseContentList);
         for (Content content : contents)
             serverInstance.contents.put(content, new ContentInstance(serverInstance, content, versions.get(content.id())));
+        serverInstance.save();
         return serverInstance;
     }
 
@@ -59,6 +59,37 @@ public class ServerInstance {
         this(name, loader, version, Mimo.getInstanceContainerDirectory().resolve(name));
     }
 
+    public void launch(OutputStream outputStream, InputStream inputStream) throws IOException {
+        String fileName = LoaderInstaller.get(loader.type())
+                .getFileName(version, loader.version());
+        ProcessBuilder processBuilder = new ProcessBuilder("java", "-jar", fileName, "nogui");
+        processBuilder.directory(path.toFile());
+        Process process = processBuilder.start();
+
+        CompletableFuture<Void> future = CompletableFuture.runAsync(() -> redirectInputStream(process, inputStream));
+
+        String line;
+        PrintStream writer = new PrintStream(outputStream);
+        try (BufferedReader reader = process.inputReader()) {
+            while ((line = reader.readLine()) != null)
+                writer.println(line);
+        }
+        future.cancel(true);
+    }
+
+    private void redirectInputStream(Process process, InputStream inputStream) {
+        String line;
+        BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
+        try (BufferedWriter writer = process.outputWriter()) {
+            while ((line = reader.readLine()) != null) {
+                writer.write(line + "\n");
+                writer.flush();
+            }
+        } catch (IOException ignored) {
+
+        }
+    }
+
     public void setContents(Map<Content, Content.Version> contentVersions) {
         for (Content content : contentVersions.keySet())
             this.contents.put(content, new ContentInstance(this, content, contentVersions.get(content)));
@@ -76,17 +107,24 @@ public class ServerInstance {
         return contents.containsKey(content);
     }
 
-    public void removeContent(Content content) {
-        contents.remove(content);
+    public void removeContent(Content content) throws IOException {
+        if (contents.containsKey(content)) {
+            ContentInstance contentInstance = contents.get(content);
+            contentInstance.removeContent();
+            contents.remove(content);
+        }
+        save();
     }
 
     public synchronized void updateContents() throws IOException {
+        downloadContents();
         for (ContentInstance contentInstance : contents.values()) {
             if (contentInstance.isUpToDate())
                 continue;
 
             contentInstance.downloadContent();
         }
+        save();
     }
 
     public synchronized void downloadContents() throws IOException {
@@ -96,6 +134,7 @@ public class ServerInstance {
             contentInstance.downloadContent();
         }
         newContents.clear();
+        save();
     }
 
     public Collection<ContentInstance> getContents() {

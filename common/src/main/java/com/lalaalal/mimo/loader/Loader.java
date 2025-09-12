@@ -13,6 +13,10 @@ public record Loader(Type type, String version) {
     public enum Type {
         FABRIC, NEOFORGE;
 
+        public static Type byName(String name) {
+            return valueOf(name.toUpperCase());
+        }
+
         @Override
         public String toString() {
             return name().toLowerCase();
