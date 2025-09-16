@@ -1,9 +1,11 @@
 package com.lalaalal.mimo.console;
 
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 
-public class Registry<T> {
+public class Registry<T> implements Iterable<T> {
     private static final Registry<Registry<?>> ROOT = new Registry<>();
 
     private final Map<String, T> registry = new HashMap<>();
@@ -35,5 +37,14 @@ public class Registry<T> {
 
     public T get(String name) {
         return registry.get(name);
+    }
+
+    public Set<String> keySet() {
+        return registry.keySet();
+    }
+
+    @Override
+    public Iterator<T> iterator() {
+        return registry.values().iterator();
     }
 }

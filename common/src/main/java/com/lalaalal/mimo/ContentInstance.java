@@ -39,8 +39,6 @@ public class ContentInstance {
         this.serverInstance = serverInstance;
         this.content = content;
         this.contentVersion = version;
-
-        loadVersions();
     }
 
     protected void resolveDependencies(Content.Version version) {
@@ -56,6 +54,7 @@ public class ContentInstance {
     }
 
     protected void loadVersions() {
+        Mimo.LOGGER.debug("Loading versions for \"%s\"".formatted(content.slug()));
         this.availableVersions = ModrinthHelper.get(
                 Request.projectVersions(content, serverInstance),
                 ResponseParser::parseProjectVersionList
@@ -65,10 +64,12 @@ public class ContentInstance {
     }
 
     public void loadLatestVersion() {
+        Mimo.LOGGER.debug("Loading latest version for \"%s\"".formatted(content.slug()));
         updatingVersion = ModrinthHelper.get(
                 Request.latestVersion(content, contentVersion, serverInstance),
                 ResponseParser::parseVersion
         );
+        Mimo.LOGGER.debug("Latest version for \"%s\" is \"%s\"".formatted(content.slug(), updatingVersion.fileName()));
     }
 
     public boolean is(Content content) {
@@ -138,7 +139,10 @@ public class ContentInstance {
     private Path createContentPath(Content.Version version) throws IOException {
         Path contentPath = Path.of(serverInstance.path.toString(), content.type().path, version.fileName());
         Path directory = contentPath.getParent();
-        Files.createDirectories(directory);
+        if (!Files.exists(directory)) {
+            Mimo.LOGGER.debug("Creating directory \"%s\"".formatted(directory));
+            Files.createDirectories(directory);
+        }
         return contentPath;
     }
 
@@ -147,6 +151,7 @@ public class ContentInstance {
         Content.Version version = getDownloadingVersion();
         Path contentPath = createContentPath(version);
         Files.createDirectories(contentPath.getParent());
+        Mimo.LOGGER.info("Downloading \"%s\"".formatted(contentPath));
         ModrinthHelper.download(version, contentPath);
         handlePostDownloadUpdatingVersion();
     }
@@ -154,11 +159,14 @@ public class ContentInstance {
     public void removeContent() throws IOException {
         Content.Version version = getContentVersion();
         Path contentPath = createContentPath(version);
+        Mimo.LOGGER.info("Deleting \"%s\"".formatted(contentPath));
         Files.deleteIfExists(contentPath);
     }
 
     @Override
     public String toString() {
-        return contentVersion.fileName();
+        if (contentVersion == null)
+            return content.slug();
+        return content.slug() + " (" + contentVersion.fileName() + ")";
     }
 }

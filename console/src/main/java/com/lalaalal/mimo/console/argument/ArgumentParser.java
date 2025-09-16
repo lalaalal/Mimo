@@ -1,4 +1,4 @@
-package com.lalaalal.mimo.console;
+package com.lalaalal.mimo.console.argument;
 
 import java.util.function.Function;
 

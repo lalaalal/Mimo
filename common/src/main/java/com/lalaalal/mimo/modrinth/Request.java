@@ -15,7 +15,13 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public record Request(Type type, Map<String, String> params, String body) {
+public record Request(int id, Type type, Map<String, String> params, String body) {
+    private static int counter = 0;
+
+    private static int nextId() {
+        return counter++;
+    }
+
     public static Request search(String name, ContentFilter filter) {
         return new Request(Type.SEARCH,
                 Map.of(
@@ -92,6 +98,10 @@ public record Request(Type type, Map<String, String> params, String body) {
         );
     }
 
+    public Request(Type type, Map<String, String> params, String body) {
+        this(nextId(), type, params, body);
+    }
+
     public Request(Type type, Map<String, String> params) {
         this(type, params, "");
     }
@@ -108,6 +118,11 @@ public record Request(Type type, Map<String, String> params, String body) {
 
     public String createQuery() {
         return type.makeQuery(params);
+    }
+
+    @Override
+    public String toString() {
+        return "[" + id + ", " + type + "]";
     }
 
     public enum Type {

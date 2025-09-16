@@ -13,13 +13,10 @@ import com.lalaalal.mimo.modrinth.ModrinthHelper;
 import com.lalaalal.mimo.modrinth.Request;
 import com.lalaalal.mimo.modrinth.ResponseParser;
 
-import javax.net.ssl.HttpsURLConnection;
-import java.io.*;
-import java.net.URI;
-import java.net.URL;
+import java.io.File;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Optional;
 
 public final class Mimo {
     private static ServerInstance currentServerInstance = null;
@@ -42,40 +39,6 @@ public final class Mimo {
         return Platform.get().defaultMimoDirectory.resolve("servers");
     }
 
-    public static String sendSimpleHttpRequest(String stringURL) throws IOException {
-        URL url = URL.of(URI.create(stringURL), null);
-        HttpsURLConnection connection = (HttpsURLConnection) url.openConnection();
-        connection.setConnectTimeout(2000);
-        connection.setUseCaches(false);
-        connection.connect();
-
-        InputStream inputStream = connection.getInputStream();
-        StringBuilder stringBuilder = new StringBuilder();
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
-            String line;
-
-            while ((line = reader.readLine()) != null)
-                stringBuilder.append(line);
-        }
-        return stringBuilder.toString();
-    }
-
-    public static void download(String stringURL, Path path) throws IOException {
-        URL url = URL.of(URI.create(stringURL), null);
-        HttpsURLConnection connection = (HttpsURLConnection) url.openConnection();
-        connection.setConnectTimeout(2000);
-        connection.setUseCaches(false);
-        connection.connect();
-
-        try (InputStream inputStream = connection.getInputStream();
-             FileOutputStream outputStream = new FileOutputStream(path.toFile())) {
-            int read;
-            byte[] buffer = new byte[4096];
-            while ((read = inputStream.read(buffer)) != -1)
-                outputStream.write(buffer, 0, read);
-        }
-    }
-
     public static ServerInstance load(String name) throws IOException {
         return currentServerInstance = ServerInstance.from(getInstanceContainerDirectory().resolve(name));
     }
@@ -84,33 +47,35 @@ public final class Mimo {
         currentServerInstance = LoaderInstaller.get(type).install(name, minecraftVersion, loaderVersion);
     }
 
-    public static Optional<ServerInstance> currentInstance() {
-        return Optional.ofNullable(currentServerInstance);
+    public static String[] getServers() {
+        File directory = getInstanceContainerDirectory().toFile();
+        return directory.list();
+    }
+
+    public static ServerInstance currentInstanceOrThrow() {
+        if (currentServerInstance == null)
+            throw new IllegalStateException("No instance loaded");
+        return currentServerInstance;
     }
 
     public static void add(String slug) {
-        currentInstance().ifPresent(serverInstance -> {
-            Content content = ModrinthHelper.get(Request.project(slug), ResponseParser.contentParser(serverInstance));
-            serverInstance.addContent(content);
-        });
+        ServerInstance serverInstance = currentInstanceOrThrow();
+        Content content = ModrinthHelper.get(Request.project(slug), ResponseParser.contentParser(serverInstance));
+        serverInstance.addContent(content);
     }
 
-    public static void removeMod(String slug) throws IOException {
-        Optional<ServerInstance> optionalServerInstance = currentInstance();
-        if (optionalServerInstance.isPresent()) {
-            ServerInstance serverInstance = optionalServerInstance.get();
-            Content content = serverInstance.getContents().stream()
-                    .map(ContentInstance::content)
-                    .filter(_content -> _content.slug().equals(slug) || _content.id().equals(slug))
-                    .findAny()
-                    .orElseGet(() -> ModrinthHelper.get(Request.project(slug), ResponseParser.contentParser(serverInstance)));
-            serverInstance.removeContent(content);
-        }
+    public static void remove(String slug) throws IOException {
+        ServerInstance serverInstance = currentInstanceOrThrow();
+        Content content = serverInstance.getContents().stream()
+                .map(ContentInstance::content)
+                .filter(_content -> _content.slug().equals(slug) || _content.id().equals(slug))
+                .findAny()
+                .orElseGet(() -> ModrinthHelper.get(Request.project(slug), ResponseParser.contentParser(serverInstance)));
+        serverInstance.removeContent(content);
     }
 
     public static void update() throws IOException {
-        Optional<ServerInstance> optional = currentInstance();
-        if (optional.isPresent())
-            optional.get().updateContents();
+        ServerInstance serverInstance = currentInstanceOrThrow();
+        serverInstance.updateContents();
     }
 }

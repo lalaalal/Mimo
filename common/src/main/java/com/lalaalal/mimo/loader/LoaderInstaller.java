@@ -52,6 +52,7 @@ public abstract class LoaderInstaller {
 
     protected Path createInstanceDirectory(String name) throws IOException {
         Path instanceDirectory = INSTANCES_PATH.resolve(name);
+        Mimo.LOGGER.info("Creating server directory at \"%s\"".formatted(instanceDirectory));
         return Files.createDirectories(instanceDirectory);
     }
 

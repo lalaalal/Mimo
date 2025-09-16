@@ -4,6 +4,7 @@ import com.google.gson.annotations.JsonAdapter;
 import com.google.gson.stream.JsonWriter;
 import com.lalaalal.mimo.data.Content;
 import com.lalaalal.mimo.data.MinecraftVersion;
+import com.lalaalal.mimo.data.ProjectType;
 import com.lalaalal.mimo.json.ServerInstanceAdaptor;
 import com.lalaalal.mimo.loader.Loader;
 import com.lalaalal.mimo.loader.LoaderInstaller;
@@ -31,16 +32,30 @@ public class ServerInstance {
         if (instanceDataFile.exists())
             return ServerInstance.load(instanceDataFile);
 
+        Mimo.LOGGER.info("Loading instance from directory \"%s\"".formatted(directory));
         ServerInstance serverInstance = InstanceLoader.loadServerFromDirectory(directory);
-        Map<String, Content.Version> versions = InstanceLoader.getContentVersions(directory.resolve("mods"));
-        List<Content> contents = ModrinthHelper.get(Request.projects(versions.keySet()), ResponseParser.contentListParser(serverInstance));
-        for (Content content : contents)
-            serverInstance.contents.put(content, new ContentInstance(serverInstance, content, versions.get(content.id())));
+        Map<Content, Content.Version> versions = getContentVersions(directory);
+        serverInstance.setContents(versions);
         serverInstance.save();
         return serverInstance;
     }
 
+    private static Map<Content, Content.Version> getContentVersions(Path directory) throws IOException {
+        ServerInstance serverInstance = InstanceLoader.loadServerFromDirectory(directory);
+        Map<String, Content.Version> versions = new HashMap<>();
+        versions.putAll(InstanceLoader.getContentVersions(directory.resolve(ProjectType.MOD.path)));
+        versions.putAll(InstanceLoader.getContentVersions(directory.resolve(ProjectType.DATAPACK.path)));
+        List<Content> contents = ModrinthHelper.get(
+                Request.projects(versions.keySet()),
+                ResponseParser.contentListParser(serverInstance)
+        );
+        Map<Content, Content.Version> result = new HashMap<>();
+        contents.forEach(content -> result.put(content, versions.get(content.id())));
+        return result;
+    }
+
     public static ServerInstance load(File instanceDataFilePath) throws IOException {
+        Mimo.LOGGER.info("Loading instance from instance file \"%s\"".formatted(instanceDataFilePath));
         try (BufferedReader reader = new BufferedReader(new FileReader(instanceDataFilePath))) {
             return Mimo.GSON.fromJson(reader, ServerInstance.class);
         }
@@ -59,6 +74,7 @@ public class ServerInstance {
     }
 
     public void launch(OutputStream outputStream, InputStream inputStream) throws IOException, InterruptedException {
+        Mimo.LOGGER.info("Launching server \"%s\"".formatted(name));
         String fileName = LoaderInstaller.get(loader.type())
                 .getFileName(version, loader.version());
         ProcessBuilder processBuilder = new ProcessBuilder("java", "-jar", fileName, "nogui");
@@ -75,8 +91,8 @@ public class ServerInstance {
                 writer.println(line);
         }
         thread.interrupt();
-        writer.print("Press Enter to continue");
         thread.join();
+        process.waitFor();
     }
 
     private void redirectInputStream(Process process, InputStream inputStream) {
@@ -93,8 +109,10 @@ public class ServerInstance {
     }
 
     public void setContents(Map<Content, Content.Version> contentVersions) {
-        for (Content content : contentVersions.keySet())
+        for (Content content : contentVersions.keySet()) {
+            Mimo.LOGGER.info("Adding \"%s\" to \"%s\" instance".formatted(content.slug(), name));
             this.contents.put(content, new ContentInstance(this, content, contentVersions.get(content)));
+        }
     }
 
     public void addContent(Content content) {
@@ -120,6 +138,7 @@ public class ServerInstance {
 
     public synchronized void updateContents() throws IOException {
         downloadContents();
+        Mimo.LOGGER.info("Updating contents for \"%s\"".formatted(name));
         for (ContentInstance contentInstance : contents.values()) {
             if (contentInstance.isUpToDate())
                 continue;
@@ -130,6 +149,7 @@ public class ServerInstance {
     }
 
     public synchronized void downloadContents() throws IOException {
+        Mimo.LOGGER.info("Downloading contents for \"%s\"".formatted(name));
         for (ContentInstance contentInstance : newContents) {
             if (!contentInstance.isVersionSelected())
                 contentInstance.selectContentVersion(0);
@@ -152,6 +172,7 @@ public class ServerInstance {
     }
 
     public void save(Path path) throws IOException {
+        Mimo.LOGGER.debug("Saving instance \"%s\"".formatted(name));
         try (JsonWriter jsonWriter = new JsonWriter(new FileWriter(path.toFile()))) {
             Mimo.GSON.toJson(this, ServerInstance.class, jsonWriter);
         }

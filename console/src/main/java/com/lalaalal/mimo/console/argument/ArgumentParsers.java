@@ -1,5 +1,6 @@
-package com.lalaalal.mimo.console;
+package com.lalaalal.mimo.console.argument;
 
+import com.lalaalal.mimo.console.Registries;
 import com.lalaalal.mimo.data.MinecraftVersion;
 import com.lalaalal.mimo.data.ProjectType;
 import com.lalaalal.mimo.loader.Loader;

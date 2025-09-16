@@ -32,7 +32,7 @@ public class Logger {
         return currentThread.getName() + "/" + element.getClassName().substring(element.getClassName().lastIndexOf('.') + 1);
     }
 
-    protected void log(Level level, String message) {
+    public void log(Level level, String message) {
         if (this.level.shouldLog(level)) {
             Component line = Component.complex(
                     getTimestamp(), Component.SPACE,
@@ -50,6 +50,10 @@ public class Logger {
 
     public void setLevel(Level level) {
         this.level = level;
+    }
+
+    public void verbose(String message) {
+        log(Level.VERBOSE, message);
     }
 
     public void debug(String message) {

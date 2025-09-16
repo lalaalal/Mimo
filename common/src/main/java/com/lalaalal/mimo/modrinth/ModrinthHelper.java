@@ -2,6 +2,7 @@ package com.lalaalal.mimo.modrinth;
 
 import com.lalaalal.mimo.Mimo;
 import com.lalaalal.mimo.data.Content;
+import com.lalaalal.mimo.util.HttpHelper;
 
 import javax.net.ssl.HttpsURLConnection;
 import java.io.*;
@@ -16,6 +17,7 @@ public class ModrinthHelper {
     private static void setupPostRequest(HttpsURLConnection connection, Request request) throws IOException {
         if (!request.isPost())
             return;
+        Mimo.LOGGER.debug("Preparing POST request");
         connection.setDoOutput(true);
         connection.setRequestProperty("Content-Type", "application/json");
         try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(connection.getOutputStream()))) {
@@ -24,7 +26,9 @@ public class ModrinthHelper {
     }
 
     protected static Response sendRequest(Request request) throws IOException {
+        Mimo.LOGGER.debug("Sending request \"%s\"".formatted(request));
         URL url = URL.of(URI.create(API_URL + request.createQuery()), null);
+        Mimo.LOGGER.debug("Connecting to \"%s\"".formatted(url));
         HttpsURLConnection connection = (HttpsURLConnection) url.openConnection();
         connection.setRequestMethod(request.method());
         connection.setConnectTimeout(2000);
@@ -33,6 +37,8 @@ public class ModrinthHelper {
         connection.connect();
 
         int code = connection.getResponseCode();
+        Mimo.LOGGER.debug("Response code is %d".formatted(code));
+        Mimo.LOGGER.debug("Reading response");
         InputStream inputStream = connection.getInputStream();
         StringBuilder stringBuilder = new StringBuilder();
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
@@ -42,47 +48,24 @@ public class ModrinthHelper {
                 stringBuilder.append(line);
         }
         String body = stringBuilder.toString();
-        return new Response(request.type(), code, body);
+        Mimo.LOGGER.debug("Response body is \"%s\"".formatted(body));
+        return new Response(request, code, body);
     }
 
     public static void download(Content.Version version, Path path) throws IOException {
-        Mimo.download(version.url(), path);
+        HttpHelper.download(version.url(), path);
     }
 
     public static Response send(Request request) {
         try {
             return sendRequest(request);
         } catch (IOException exception) {
-            return new Response(request.type(), -1, "{\"message\":\"%s\"}".formatted(exception.getMessage()));
+            return new Response(request, -1, "{\"message\":\"%s\"}".formatted(exception.getMessage()));
         }
     }
 
     public static <T> T get(Request request, Function<Response, T> parser) {
         Response response = send(request);
         return parser.apply(response);
-    }
-
-    public static Thread createRequestThread(Request request, Callback callback) {
-        return new RequestSender(request, callback);
-    }
-
-    private static class RequestSender extends Thread {
-        private final Request request;
-        private final Callback callback;
-
-        private RequestSender(Request request, Callback callback) {
-            this.request = request;
-            this.callback = callback;
-        }
-
-        @Override
-        public void run() {
-            try {
-                Response response = sendRequest(request);
-                callback.run(response);
-            } catch (IOException e) {
-                callback.run(new Response(request.type(), -1, e.getMessage()));
-            }
-        }
     }
 }
