@@ -15,7 +15,10 @@ import com.lalaalal.mimo.modrinth.ResponseParser;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @JsonAdapter(ServerInstanceAdaptor.class)
 public class ServerInstance {
@@ -25,7 +28,6 @@ public class ServerInstance {
     public final Path path;
 
     private final Map<Content, ContentInstance> contents = new HashMap<>();
-    private final List<ContentInstance> newContents = new ArrayList<>();
 
     public static ServerInstance from(Path directory) throws IOException {
         File instanceDataFile = directory.resolve(InstanceLoader.INSTANCE_DATA_FILE_NAME).toFile();
@@ -73,7 +75,22 @@ public class ServerInstance {
         this(name, loader, version, Mimo.getInstanceContainerDirectory().resolve(name));
     }
 
-    public void launch(OutputStream outputStream, InputStream inputStream) throws IOException, InterruptedException {
+    public void checkUpdate() {
+        int outOfDateContents = 0;
+        int notDownloadedContents = 0;
+        for (ContentInstance contentInstance : contents.values()) {
+            if (!contentInstance.isDownloaded())
+                notDownloadedContents += 1;
+            if (!contentInstance.isUpToDate())
+                outOfDateContents += 1;
+        }
+        if (outOfDateContents > 0)
+            Mimo.LOGGER.warning("There are %d out dated content(s)".formatted(outOfDateContents));
+        if (notDownloadedContents > 0)
+            Mimo.LOGGER.warning("There are %d content(s) not downloaded".formatted(notDownloadedContents));
+    }
+
+    public void launch(OutputStream outputStream, InputStream inputStream) throws IOException {
         Mimo.LOGGER.info("Launching server \"%s\"".formatted(name));
         String fileName = LoaderInstaller.get(loader.type())
                 .getFileName(version, loader.version());
@@ -91,8 +108,6 @@ public class ServerInstance {
                 writer.println(line);
         }
         thread.interrupt();
-        thread.join();
-        process.waitFor();
     }
 
     private void redirectInputStream(Process process, InputStream inputStream) {
@@ -113,14 +128,15 @@ public class ServerInstance {
             Mimo.LOGGER.info("Adding \"%s\" to \"%s\" instance".formatted(content.slug(), name));
             this.contents.put(content, new ContentInstance(this, content, contentVersions.get(content)));
         }
+        checkUpdate();
     }
 
     public void addContent(Content content) {
         if (this.contains(content))
             return;
+        Mimo.LOGGER.info("Adding content \"%s\"".formatted(content.slug()));
         ContentInstance contentInstance = new ContentInstance(this, content);
         contents.put(content, contentInstance);
-        newContents.add(contentInstance);
     }
 
     public boolean contains(Content content) {
@@ -150,12 +166,13 @@ public class ServerInstance {
 
     public synchronized void downloadContents() throws IOException {
         Mimo.LOGGER.info("Downloading contents for \"%s\"".formatted(name));
-        for (ContentInstance contentInstance : newContents) {
+        for (ContentInstance contentInstance : contents.values()) {
+            if (contentInstance.isDownloaded())
+                continue;
             if (!contentInstance.isVersionSelected())
                 contentInstance.selectContentVersion(0);
             contentInstance.downloadContent();
         }
-        newContents.clear();
         save();
     }
 

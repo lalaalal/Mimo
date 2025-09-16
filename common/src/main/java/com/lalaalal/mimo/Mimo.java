@@ -31,7 +31,7 @@ public final class Mimo {
     public static final Logger LOGGER = Logger.stdout();
 
     public static void initialize() throws IOException {
-        Files.createDirectories(Platform.get().defaultMimoDirectory);
+        Files.createDirectories(getInstanceContainerDirectory());
         LoaderInstaller.initialize();
     }
 
@@ -49,7 +49,10 @@ public final class Mimo {
 
     public static String[] getServers() {
         File directory = getInstanceContainerDirectory().toFile();
-        return directory.list();
+        String[] result = directory.list();
+        if (result == null)
+            return new String[0];
+        return result;
     }
 
     public static ServerInstance currentInstanceOrThrow() {
@@ -58,10 +61,17 @@ public final class Mimo {
         return currentServerInstance;
     }
 
-    public static void add(String slug) {
+    public static void add(String slug) throws IOException {
+        add(slug, false);
+    }
+
+    public static void add(String slug, boolean immediateUpdate) throws IOException {
         ServerInstance serverInstance = currentInstanceOrThrow();
         Content content = ModrinthHelper.get(Request.project(slug), ResponseParser.contentParser(serverInstance));
         serverInstance.addContent(content);
+        if (immediateUpdate)
+            serverInstance.downloadContents();
+        serverInstance.checkUpdate();
     }
 
     public static void remove(String slug) throws IOException {

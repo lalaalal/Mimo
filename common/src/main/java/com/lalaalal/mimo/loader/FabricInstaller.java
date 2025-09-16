@@ -69,6 +69,8 @@ public class FabricInstaller extends LoaderInstaller {
     @Override
     public ServerInstance install(String name, MinecraftVersion minecraftVersion, String loaderVersion) throws IOException {
         Mimo.LOGGER.info("Installing fabric server [%s] (%s)".formatted(minecraftVersion, name));
+        if (minecraftVersion.type() != MinecraftVersion.Type.STABLE)
+            Mimo.LOGGER.warning("Selected minecraft version [%s] is not a stable version".formatted(minecraftVersion));
         if (!isValidVersion(minecraftVersion, loaderVersion))
             throw new IllegalArgumentException("Given version is not valid (%s, %s)".formatted(minecraftVersion, loaderVersion));
 
@@ -83,6 +85,7 @@ public class FabricInstaller extends LoaderInstaller {
         Path eula = instanceDirectory.resolve("eula.txt");
         Mimo.LOGGER.info("Creating eula.txt file at \"%s\"".formatted(eula));
         Files.writeString(eula, "eula=true\n");
+        Mimo.LOGGER.info("Installed server \"%s\" (fabric %s) [%s]".formatted(name, loaderVersion, minecraftVersion));
 
         return new ServerInstance(name, new Loader(loaderType, loaderVersion), minecraftVersion);
     }

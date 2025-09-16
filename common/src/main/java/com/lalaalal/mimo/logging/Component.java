@@ -8,8 +8,8 @@ public abstract class Component {
     private final List<Style> styles = new ArrayList<>();
     private boolean useStyle;
 
-    public static final Component SPACE = of(" ");
-    public static final Component NEW_LINE = of("\n");
+    public static final Component SPACE = of(" ", false);
+    public static final Component NEW_LINE = of("\n", false);
 
     public static Component of(String text) {
         return new TextComponent(text);
@@ -23,7 +23,7 @@ public abstract class Component {
         return of(text).with(Style.DEFAULT);
     }
 
-    public static Component complex(Component... components) {
+    public static ComplexComponent complex(Component... components) {
         return new ComplexComponent(List.of(components));
     }
 

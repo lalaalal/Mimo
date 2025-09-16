@@ -28,7 +28,8 @@ public class Registry<T> implements Iterable<T> {
 
     public T register(String key, T value) {
         byElement.put(value, key);
-        return registry.put(key, value);
+        registry.put(key, value);
+        return value;
     }
 
     public String findKey(T value) {

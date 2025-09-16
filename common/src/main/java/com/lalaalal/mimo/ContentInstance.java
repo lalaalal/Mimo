@@ -7,6 +7,9 @@ import com.lalaalal.mimo.json.FieldStrategy;
 import com.lalaalal.mimo.json.GsonExcludeStrategy;
 import com.lalaalal.mimo.json.GsonField;
 import com.lalaalal.mimo.json.TypeStrategy;
+import com.lalaalal.mimo.logging.ComplexComponent;
+import com.lalaalal.mimo.logging.Component;
+import com.lalaalal.mimo.logging.ConsoleColor;
 import com.lalaalal.mimo.modrinth.ModrinthHelper;
 import com.lalaalal.mimo.modrinth.Request;
 import com.lalaalal.mimo.modrinth.ResponseParser;
@@ -113,9 +116,13 @@ public class ContentInstance {
     public void selectContentVersion(int index) {
         if (availableVersions == null)
             loadVersions();
-        if (availableVersions.isEmpty())
-            throw new IllegalStateException("No available version for %s [%s] [%s]".formatted(content.slug(), serverInstance.loader, serverInstance.version));
+        if (availableVersions.isEmpty()) {
+            Mimo.LOGGER.warning("No available version for \"%s\" (%s) [%s]".formatted(content.slug(), serverInstance.loader, serverInstance.version));
+            Mimo.LOGGER.warning("Cancel adding content \"%s\"".formatted(content.slug()));
+            throw new IllegalStateException("Aborted");
+        }
         this.contentVersion = availableVersions.get(index);
+        Mimo.LOGGER.info("Selecting version \"%s\" for \"%s\"".formatted(contentVersion.fileName(), content.slug()));
         resolveDependencies(contentVersion);
     }
 
@@ -136,8 +143,12 @@ public class ContentInstance {
             contentVersion = updatingVersion;
     }
 
+    private Path getContentPath(Content.Version version) {
+        return Path.of(serverInstance.path.toString(), content.type().path, version.fileName());
+    }
+
     private Path createContentPath(Content.Version version) throws IOException {
-        Path contentPath = Path.of(serverInstance.path.toString(), content.type().path, version.fileName());
+        Path contentPath = getContentPath(version);
         Path directory = contentPath.getParent();
         if (!Files.exists(directory)) {
             Mimo.LOGGER.debug("Creating directory \"%s\"".formatted(directory));
@@ -158,9 +169,16 @@ public class ContentInstance {
 
     public void removeContent() throws IOException {
         Content.Version version = getContentVersion();
-        Path contentPath = createContentPath(version);
-        Mimo.LOGGER.info("Deleting \"%s\"".formatted(contentPath));
-        Files.deleteIfExists(contentPath);
+        Path contentPath = getContentPath(version);
+        if (Files.exists(contentPath)) {
+            Mimo.LOGGER.info("Deleting \"%s\"".formatted(contentPath));
+            Files.delete(contentPath);
+        }
+    }
+
+    public boolean isDownloaded() {
+        Path contentPath = getContentPath(getContentVersion());
+        return Files.exists(contentPath);
     }
 
     @Override
@@ -168,5 +186,14 @@ public class ContentInstance {
         if (contentVersion == null)
             return content.slug();
         return content.slug() + " (" + contentVersion.fileName() + ")";
+    }
+
+    public Component getStyledText() {
+        ComplexComponent component = Component.complex(Component.of(toString()));
+        if (!isDownloaded())
+            component.add(Component.of(" NOT DOWNLOADED").with(ConsoleColor.RED.foreground()));
+        if (!isUpToDate())
+            component.add(Component.of(" OUT OF DATE").with(ConsoleColor.YELLOW.foreground()));
+        return component;
     }
 }

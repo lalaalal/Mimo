@@ -32,7 +32,7 @@ public class Logger {
         return currentThread.getName() + "/" + element.getClassName().substring(element.getClassName().lastIndexOf('.') + 1);
     }
 
-    public void log(Level level, String message) {
+    public void log(Level level, Component message) {
         if (this.level.shouldLog(level)) {
             Component line = Component.complex(
                     getTimestamp(), Component.SPACE,
@@ -40,12 +40,17 @@ public class Logger {
                             .with(ConsoleColor.CYAN.foreground()), Component.SPACE,
                     Component.of("[" + level.name() + "]", useStyle)
                             .with(level.style),
-                    Component.of(": " + message, useStyle)
+                    Component.of(": ", useStyle)
                             .with(Style.DEFAULT),
+                    message,
                     Component.NEW_LINE
             );
             line.print(printStream);
         }
+    }
+
+    public void log(Level level, String message) {
+        log(level, Component.withDefault(message));
     }
 
     public void setLevel(Level level) {
@@ -69,6 +74,26 @@ public class Logger {
     }
 
     public void error(String message) {
+        log(Level.ERROR, message);
+    }
+
+    public void verbose(Component message) {
+        log(Level.VERBOSE, message);
+    }
+
+    public void debug(Component message) {
+        log(Level.DEBUG, message);
+    }
+
+    public void info(Component message) {
+        log(Level.INFO, message);
+    }
+
+    public void warning(Component message) {
+        log(Level.WARNING, message);
+    }
+
+    public void error(Component message) {
         log(Level.ERROR, message);
     }
 }
