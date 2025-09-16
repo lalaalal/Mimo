@@ -1,7 +1,5 @@
 package com.lalaalal.mimo;
 
-import com.lalaalal.mimo.data.Content;
-import com.lalaalal.mimo.data.ProjectType;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -10,11 +8,16 @@ class ServerInstanceTest {
 
     @Test
     void addContent() throws IOException {
-        MimoTest.TEST_INSTANCE.addContent(new Content(ProjectType.MOD, "fabric-api"));
-        for (ContentInstance content : MimoTest.TEST_INSTANCE.getContents()) {
-            System.out.println(content);
-        }
+        MimoTest.TEST_INSTANCE.addContent(MimoTest.TEST_CONTENT);
+        MimoTest.TEST_INSTANCE.get(MimoTest.TEST_CONTENT)
+                .setContentVersion(MimoTest.TEST_CONTENT_VERSION);
         MimoTest.TEST_INSTANCE.downloadContents();
+    }
+
+    @Test
+    void updateContents() throws IOException {
+        ServerInstance instance = Mimo.load("test");
+        instance.updateContents();
     }
 
     @Test

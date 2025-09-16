@@ -77,17 +77,13 @@ public record Request(Type type, Map<String, String> params, String body) {
         );
     }
 
-    public static Request projectVersions(String slug, MinecraftVersion version, Loader loader) {
-        return projectVersions(slug, version, loader.type());
+    public static Request projectVersions(Content content, ServerInstance instance) {
+        return projectVersions(content.slug(), instance.version, content.loader());
     }
 
-    public static Request projectVersions(String slug, ServerInstance instance) {
-        return projectVersions(slug, instance.version, instance.loader);
-    }
-
-    public static Request latestVersion(Content.Version version, ServerInstance instance) {
+    public static Request latestVersion(Content content, Content.Version version, ServerInstance instance) {
         String body = Mimo.GSON.toJson(Map.of(
-                "loaders", new String[]{instance.loader.type().toString()},
+                "loaders", new String[]{content.loader().toString()},
                 "game_versions", new String[]{instance.version.toString()}
         ));
         return new Request(Type.LATEST_VERSION,

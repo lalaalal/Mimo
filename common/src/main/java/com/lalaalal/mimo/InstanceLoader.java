@@ -44,7 +44,7 @@ public class InstanceLoader {
         File modsDirectory = modsPath.toFile();
         File[] modFiles = modsDirectory.listFiles((dir, name) -> name.endsWith(".jar"));
         if (modFiles == null)
-            throw new IllegalStateException();
+            return Map.of();
         String[] hashes = new String[modFiles.length];
         for (int index = 0; index < modFiles.length; index++)
             hashes[index] = HashUtils.hashFile(modFiles[index].toPath());

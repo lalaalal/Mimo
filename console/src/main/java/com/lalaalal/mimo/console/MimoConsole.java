@@ -15,7 +15,7 @@ public class MimoConsole {
         );
     }
 
-    public static void launchServer() throws IOException {
+    public static void launchServer() throws IOException, InterruptedException {
         Optional<ServerInstance> optional = Mimo.currentInstance();
         if (optional.isPresent())
             optional.get().launch(System.out, System.in);

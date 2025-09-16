@@ -15,7 +15,6 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
 
 @JsonAdapter(ServerInstanceAdaptor.class)
 public class ServerInstance {
@@ -34,7 +33,7 @@ public class ServerInstance {
 
         ServerInstance serverInstance = InstanceLoader.loadServerFromDirectory(directory);
         Map<String, Content.Version> versions = InstanceLoader.getContentVersions(directory.resolve("mods"));
-        List<Content> contents = ModrinthHelper.get(Request.projects(versions.keySet()), ResponseParser::parseContentList);
+        List<Content> contents = ModrinthHelper.get(Request.projects(versions.keySet()), ResponseParser.contentListParser(serverInstance));
         for (Content content : contents)
             serverInstance.contents.put(content, new ContentInstance(serverInstance, content, versions.get(content.id())));
         serverInstance.save();
@@ -59,14 +58,15 @@ public class ServerInstance {
         this(name, loader, version, Mimo.getInstanceContainerDirectory().resolve(name));
     }
 
-    public void launch(OutputStream outputStream, InputStream inputStream) throws IOException {
+    public void launch(OutputStream outputStream, InputStream inputStream) throws IOException, InterruptedException {
         String fileName = LoaderInstaller.get(loader.type())
                 .getFileName(version, loader.version());
         ProcessBuilder processBuilder = new ProcessBuilder("java", "-jar", fileName, "nogui");
         processBuilder.directory(path.toFile());
         Process process = processBuilder.start();
 
-        CompletableFuture<Void> future = CompletableFuture.runAsync(() -> redirectInputStream(process, inputStream));
+        Thread thread = new Thread(() -> redirectInputStream(process, inputStream));
+        thread.start();
 
         String line;
         PrintStream writer = new PrintStream(outputStream);
@@ -74,7 +74,9 @@ public class ServerInstance {
             while ((line = reader.readLine()) != null)
                 writer.println(line);
         }
-        future.cancel(true);
+        thread.interrupt();
+        writer.print("Press Enter to continue");
+        thread.join();
     }
 
     private void redirectInputStream(Process process, InputStream inputStream) {

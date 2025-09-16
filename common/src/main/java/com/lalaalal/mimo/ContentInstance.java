@@ -46,7 +46,10 @@ public class ContentInstance {
     protected void resolveDependencies(Content.Version version) {
         for (Content.Dependency dependency : version.dependencies()) {
             if (dependency.required()) {
-                Content content = ModrinthHelper.get(Request.project(dependency.id()), ResponseParser::parseContent);
+                Content content = ModrinthHelper.get(
+                        Request.project(dependency.id()),
+                        ResponseParser.contentParser(serverInstance)
+                );
                 serverInstance.addContent(content);
             }
         }
@@ -54,15 +57,16 @@ public class ContentInstance {
 
     protected void loadVersions() {
         this.availableVersions = ModrinthHelper.get(
-                Request.projectVersions(content.id(), serverInstance),
+                Request.projectVersions(content, serverInstance),
                 ResponseParser::parseProjectVersionList
         );
-        selectContentVersion(0);
+        if (contentVersion == null)
+            selectContentVersion(0);
     }
 
     public void loadLatestVersion() {
         updatingVersion = ModrinthHelper.get(
-                Request.latestVersion(contentVersion, serverInstance),
+                Request.latestVersion(content, contentVersion, serverInstance),
                 ResponseParser::parseVersion
         );
     }
@@ -142,6 +146,7 @@ public class ContentInstance {
         removeContent();
         Content.Version version = getDownloadingVersion();
         Path contentPath = createContentPath(version);
+        Files.createDirectories(contentPath.getParent());
         ModrinthHelper.download(version, contentPath);
         handlePostDownloadUpdatingVersion();
     }

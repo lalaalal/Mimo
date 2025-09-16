@@ -18,8 +18,8 @@ public abstract class LoaderInstaller {
 
     public final Loader.Type loaderType;
 
-    public static void initialize() {
-        INSTALLERS.put(Loader.Type.FABRIC, create(Loader.Type.FABRIC));
+    public static void initialize() throws IOException {
+        INSTALLERS.put(Loader.Type.FABRIC, new FabricInstaller());
     }
 
     public static LoaderInstaller get(Loader.Type loader) {
@@ -31,6 +31,7 @@ public abstract class LoaderInstaller {
             return switch (loader) {
                 case FABRIC -> new FabricInstaller();
                 case NEOFORGE -> throw new UnsupportedOperationException("Not implemented");
+                default -> throw new IllegalArgumentException("Unsupported loader type");
             };
         } catch (IOException exception) {
             throw new RuntimeException(exception);
@@ -51,10 +52,8 @@ public abstract class LoaderInstaller {
 
     protected Path createInstanceDirectory(String name) throws IOException {
         Path instanceDirectory = INSTANCES_PATH.resolve(name);
-        if (Files.exists(instanceDirectory))
-            throw new IllegalStateException("Instance %s already exists".formatted(name));
         return Files.createDirectories(instanceDirectory);
     }
 
-    public abstract ServerInstance install(String name, MinecraftVersion minecraftVersion, String loaderVersion) throws IOException;
+    public abstract ServerInstance install(String name, MinecraftVersion minecraftVersion, String loaderVersion) throws IOException, InterruptedException;
 }

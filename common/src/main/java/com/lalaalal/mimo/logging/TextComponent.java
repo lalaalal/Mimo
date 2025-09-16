@@ -1,4 +1,6 @@
-package com.lalaalal.mimo.console.view;
+package com.lalaalal.mimo.logging;
+
+import java.io.PrintStream;
 
 public class TextComponent extends Component {
     private final String text;
@@ -8,8 +10,8 @@ public class TextComponent extends Component {
     }
 
     @Override
-    public void print() {
+    public void print(PrintStream printStream) {
         applyStyle();
-        System.out.print(text);
+        printStream.print(text);
     }
 }

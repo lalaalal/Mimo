@@ -1,5 +1,9 @@
 package com.lalaalal.mimo.console.view;
 
+import com.lalaalal.mimo.logging.ComplexComponent;
+import com.lalaalal.mimo.logging.Component;
+import com.lalaalal.mimo.logging.ConsoleColor;
+import com.lalaalal.mimo.logging.TextType;
 import org.junit.jupiter.api.Test;
 
 class ComponentTest {
@@ -9,7 +13,7 @@ class ComponentTest {
                 .with(ConsoleColor.RED.foreground())
                 .with(ConsoleColor.GREEN.background())
                 .with(TextType.UNDERLINE)
-                .print();
+                .print(System.out);
     }
 
     @Test
@@ -24,6 +28,6 @@ class ComponentTest {
         new ComplexComponent()
                 .add(a)
                 .add(b)
-                .print();
+                .print(System.out);
     }
 }

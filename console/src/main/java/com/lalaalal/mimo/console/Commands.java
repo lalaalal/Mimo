@@ -20,15 +20,15 @@ public class Commands {
                     .build()
     );
 
-    public static final Command LOAD_INSTANCE = register("load",
+    public static final Command LOAD = register("load",
             Command.simple(ArgumentParsers.STRING)
                     .action(Mimo::load)
                     .build()
     );
 
-    public static final Command ADD_MOD = register("add_mod",
+    public static final Command ADD = register("add",
             Command.simple(ArgumentParsers.STRING)
-                    .action(Mimo::addMod)
+                    .action(Mimo::add)
                     .build()
     );
 
@@ -40,7 +40,7 @@ public class Commands {
 
     public static final Command UPDATE = register("update",
             Command.simple()
-                    .action(Mimo::updateMods)
+                    .action(Mimo::update)
                     .build()
     );
 

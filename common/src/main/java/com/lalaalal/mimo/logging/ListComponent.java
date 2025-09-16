@@ -1,5 +1,6 @@
-package com.lalaalal.mimo.console.view;
+package com.lalaalal.mimo.logging;
 
+import java.io.PrintStream;
 import java.util.Arrays;
 import java.util.List;
 
@@ -31,10 +32,10 @@ public class ListComponent extends Component {
     }
 
     @Override
-    public void print() {
+    public void print(PrintStream printStream) {
         applyStyle();
         for (int index = 0; index < texts.size(); index++)
-            System.out.println(getHead(index) + texts.get(index));
+            printStream.println(getHead(index) + texts.get(index));
     }
 
     protected String getHead(int index) {

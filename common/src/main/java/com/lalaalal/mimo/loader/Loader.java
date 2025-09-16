@@ -11,10 +11,14 @@ public record Loader(Type type, String version) {
     }
 
     public enum Type {
-        FABRIC, NEOFORGE;
+        DATAPACK, FABRIC, NEOFORGE;
 
-        public static Type byName(String name) {
-            return valueOf(name.toUpperCase());
+        public static Type get(String name) {
+            for (Type value : values()) {
+                if (value.name().equalsIgnoreCase(name))
+                    return value;
+            }
+            return null;
         }
 
         @Override

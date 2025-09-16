@@ -1,6 +1,7 @@
 package com.lalaalal.mimo.console;
 
 import com.lalaalal.mimo.data.MinecraftVersion;
+import com.lalaalal.mimo.data.ProjectType;
 import com.lalaalal.mimo.loader.Loader;
 
 import java.util.function.Function;
@@ -31,7 +32,11 @@ public class ArgumentParsers {
     );
 
     public static final ArgumentParser<Loader.Type> LOADER_TYPE = register(
-            "loader_type", ArgumentParser.of(Loader.Type.class, Loader.Type::byName)
+            "loader_type", ArgumentParser.of(Loader.Type.class, Loader.Type::get)
+    );
+
+    public static final ArgumentParser<ProjectType> PROJECT_TYPE = register(
+            "project_type", ArgumentParser.of(ProjectType.class, ProjectType::get)
     );
 
     public static <T> ArgumentParser<T> register(String name, ArgumentParser<T> parser) {

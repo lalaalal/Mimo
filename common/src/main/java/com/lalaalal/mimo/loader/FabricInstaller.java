@@ -65,7 +65,7 @@ public class FabricInstaller extends LoaderInstaller {
     }
 
     @Override
-    public ServerInstance install(String name, MinecraftVersion minecraftVersion, String loaderVersion) throws IOException {
+    public ServerInstance install(String name, MinecraftVersion minecraftVersion, String loaderVersion) throws IOException, InterruptedException {
         if (!isValidVersion(minecraftVersion, loaderVersion))
             throw new IllegalArgumentException("Given version is not valid (%s, %s)".formatted(minecraftVersion, loaderVersion));
         String url = LAUNCHER_DOWNLOAD_URL.formatted(minecraftVersion, loaderVersion, FABRIC_INSTALLER_VERSION);
@@ -74,9 +74,12 @@ public class FabricInstaller extends LoaderInstaller {
         Path file = instanceDirectory.resolve(fileName);
 
         Mimo.download(url, file);
-        Path eula = instanceDirectory.resolve("eula.txt");
-        Files.writeString(eula, "eula=true");
 
-        return new ServerInstance(name, new Loader(loaderType, loaderVersion), minecraftVersion);
+        Path eula = instanceDirectory.resolve("eula.txt");
+        Files.writeString(eula, "eula=true\n");
+
+        ServerInstance serverInstance = new ServerInstance(name, new Loader(loaderType, loaderVersion), minecraftVersion);
+//        serverInstance.launch(System.out, System.in);
+        return serverInstance;
     }
 }

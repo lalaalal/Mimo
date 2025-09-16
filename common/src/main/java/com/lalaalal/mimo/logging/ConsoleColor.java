@@ -1,4 +1,4 @@
-package com.lalaalal.mimo.console.view;
+package com.lalaalal.mimo.logging;
 
 public enum ConsoleColor {
     BLACK(0),

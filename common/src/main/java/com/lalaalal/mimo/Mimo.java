@@ -8,6 +8,7 @@ import com.lalaalal.mimo.json.MimoExcludeStrategy;
 import com.lalaalal.mimo.json.ServerInstanceAdaptor;
 import com.lalaalal.mimo.loader.Loader;
 import com.lalaalal.mimo.loader.LoaderInstaller;
+import com.lalaalal.mimo.logging.Logger;
 import com.lalaalal.mimo.modrinth.ModrinthHelper;
 import com.lalaalal.mimo.modrinth.Request;
 import com.lalaalal.mimo.modrinth.ResponseParser;
@@ -27,7 +28,10 @@ public final class Mimo {
             .addSerializationExclusionStrategy(new MimoExcludeStrategy())
             .addDeserializationExclusionStrategy(new MimoExcludeStrategy())
             .registerTypeAdapter(ServerInstanceAdaptor.class, new ServerInstanceAdaptor())
+            .setPrettyPrinting()
             .create();
+
+    public static final Logger LOGGER = Logger.stdout();
 
     public static void initialize() throws IOException {
         Files.createDirectories(Platform.get().defaultMimoDirectory);
@@ -72,11 +76,11 @@ public final class Mimo {
         }
     }
 
-    public static void load(String name) throws IOException {
-        currentServerInstance = ServerInstance.from(getInstanceContainerDirectory().resolve(name));
+    public static ServerInstance load(String name) throws IOException {
+        return currentServerInstance = ServerInstance.from(getInstanceContainerDirectory().resolve(name));
     }
 
-    public static void install(Loader.Type type, String name, MinecraftVersion minecraftVersion, String loaderVersion) throws IOException {
+    public static void install(Loader.Type type, String name, MinecraftVersion minecraftVersion, String loaderVersion) throws IOException, InterruptedException {
         currentServerInstance = LoaderInstaller.get(type).install(name, minecraftVersion, loaderVersion);
     }
 
@@ -84,9 +88,9 @@ public final class Mimo {
         return Optional.ofNullable(currentServerInstance);
     }
 
-    public static void addMod(String slug) {
+    public static void add(String slug) {
         currentInstance().ifPresent(serverInstance -> {
-            Content content = ModrinthHelper.get(Request.project(slug), ResponseParser::parseContent);
+            Content content = ModrinthHelper.get(Request.project(slug), ResponseParser.contentParser(serverInstance));
             serverInstance.addContent(content);
         });
     }
@@ -99,12 +103,12 @@ public final class Mimo {
                     .map(ContentInstance::content)
                     .filter(_content -> _content.slug().equals(slug) || _content.id().equals(slug))
                     .findAny()
-                    .orElseGet(() -> ModrinthHelper.get(Request.project(slug), ResponseParser::parseContent));
+                    .orElseGet(() -> ModrinthHelper.get(Request.project(slug), ResponseParser.contentParser(serverInstance)));
             serverInstance.removeContent(content);
         }
     }
 
-    public static void updateMods() throws IOException {
+    public static void update() throws IOException {
         Optional<ServerInstance> optional = currentInstance();
         if (optional.isPresent())
             optional.get().updateContents();

@@ -20,7 +20,7 @@ class ModrinthHelperTest {
 
     @Test
     void project() {
-        sendAndPrintResult(Request.project("betterend"));
+        sendAndPrintResult(Request.project("fabric-api"));
     }
 
     @Test
@@ -50,7 +50,7 @@ class ModrinthHelperTest {
 
     @Test
     void latestVersion() {
-        sendAndPrintResult(Request.latestVersion(MimoTest.TEST_CONTENT_VERSION, MimoTest.TEST_INSTANCE));
+        sendAndPrintResult(Request.latestVersion(MimoTest.TEST_CONTENT, MimoTest.TEST_CONTENT_VERSION, MimoTest.TEST_INSTANCE));
     }
 
     @Test

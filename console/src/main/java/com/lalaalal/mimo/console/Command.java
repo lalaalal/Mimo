@@ -31,6 +31,7 @@ public interface Command {
                 caster.executeAction(arguments, action);
                 return Result.success(messageGenerator.apply(arguments));
             } catch (Throwable throwable) {
+                throwable.printStackTrace();
                 return Result.fail(throwable.getMessage());
             }
         }
@@ -129,7 +130,7 @@ public interface Command {
             this.messageGenerator = arguments -> {
                 String result = message;
                 for (int index : replaceIndexList)
-                    result = message.replaceFirst("\\{}", arguments.get(index));
+                    result = result.replaceFirst("\\{}", arguments.get(index));
                 return result;
             };
             return this;
