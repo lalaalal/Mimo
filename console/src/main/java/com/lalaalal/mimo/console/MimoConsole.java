@@ -79,7 +79,7 @@ public class MimoConsole {
             for (String message : result.messages())
                 Mimo.LOGGER.log(getLogLevel(result), message);
         } else {
-            Mimo.LOGGER.error("Command %s not found".formatted(commandString));
+            Mimo.LOGGER.error("Command \"%s\" not found".formatted(commandString));
         }
     }
 

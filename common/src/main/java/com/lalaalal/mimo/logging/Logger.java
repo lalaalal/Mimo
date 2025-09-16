@@ -26,10 +26,16 @@ public class Logger {
     private String getCaller() {
         Thread currentThread = Thread.currentThread();
         StackTraceElement[] elements = currentThread.getStackTrace();
-        if (elements.length < 5)
-            return currentThread.getName();
-        StackTraceElement element = elements[4];
-        return currentThread.getName() + "/" + element.getClassName().substring(element.getClassName().lastIndexOf('.') + 1);
+        boolean firstMatch = true;
+        for (StackTraceElement element : elements) {
+            if (!element.getClassName().equals(Logger.class.getName())) {
+                if (!firstMatch)
+                    return currentThread.getName() + "/" + element.getClassName().substring(element.getClassName().lastIndexOf('.') + 1);
+            } else {
+                firstMatch = false;
+            }
+        }
+        return currentThread.getName();
     }
 
     public void log(Level level, Component message) {

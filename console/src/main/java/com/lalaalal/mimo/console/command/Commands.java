@@ -34,6 +34,7 @@ public class Commands {
 
     public static final Command LOAD = register(
             Command.simple("load", ArgumentParsers.STRING)
+                    .argumentHelp("server_name")
                     .action(Mimo::load)
                     .build()
     );
@@ -56,6 +57,7 @@ public class Commands {
 
     public static final Command REMOVE = register(
             Command.simple("remove", ArgumentParsers.STRING)
+                    .argumentHelp("name")
                     .action(Mimo::remove)
                     .build()
     );
@@ -102,6 +104,7 @@ public class Commands {
                             .build())
                     .overload(1, Command.simple("help_single", ArgumentParsers.STRING)
                             .action(Commands::help)
+                            .argumentHelp("command")
                             .build())
                     .build()
     );
