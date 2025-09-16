@@ -1,5 +1,6 @@
 package com.lalaalal.mimo;
 
+import com.google.gson.FormattingStyle;
 import com.google.gson.annotations.JsonAdapter;
 import com.google.gson.stream.JsonWriter;
 import com.lalaalal.mimo.data.Content;
@@ -191,6 +192,7 @@ public class ServerInstance {
     public void save(Path path) throws IOException {
         Mimo.LOGGER.debug("Saving instance \"%s\"".formatted(name));
         try (JsonWriter jsonWriter = new JsonWriter(new FileWriter(path.toFile()))) {
+            jsonWriter.setFormattingStyle(FormattingStyle.PRETTY);
             Mimo.GSON.toJson(this, ServerInstance.class, jsonWriter);
         }
     }

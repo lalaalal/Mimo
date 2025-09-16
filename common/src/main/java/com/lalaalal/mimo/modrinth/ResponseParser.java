@@ -105,6 +105,8 @@ public class ResponseParser {
         String id = data.get(projectIdKey).getAsString();
         String slug = data.get("slug").getAsString();
         ProjectType projectType = parseProjectType(data);
+        if (data.has("server_side") && data.get("server_side").getAsString().equals("unsupported"))
+            Mimo.LOGGER.warning("Content \"%s\" is client only!!".formatted(slug));
 
         return parsed("content", new Content(projectType, loader, id, slug));
     }

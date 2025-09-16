@@ -25,7 +25,6 @@ public final class Mimo {
             .addSerializationExclusionStrategy(new MimoExcludeStrategy())
             .addDeserializationExclusionStrategy(new MimoExcludeStrategy())
             .registerTypeAdapter(ServerInstanceAdaptor.class, new ServerInstanceAdaptor())
-            .setPrettyPrinting()
             .create();
 
     public static final Logger LOGGER = Logger.stdout();
