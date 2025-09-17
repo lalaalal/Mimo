@@ -5,22 +5,22 @@ import java.util.ArrayList;
 import java.util.List;
 
 public abstract class Component {
-    private final List<Style> styles = new ArrayList<>();
-    private boolean useStyle;
+    protected final List<Style> styles = new ArrayList<>();
+    protected boolean useStyle;
 
-    public static final Component SPACE = of(" ", false);
-    public static final Component NEW_LINE = of("\n", false);
+    public static final Component SPACE = text(" ", false);
+    public static final Component NEW_LINE = text("\n", false);
 
-    public static Component of(String text) {
+    public static Component text(String text) {
         return new TextComponent(text);
     }
 
-    public static Component of(String text, boolean useStyle) {
+    public static Component text(String text, boolean useStyle) {
         return new TextComponent(text).useStyle(useStyle);
     }
 
     public static Component withDefault(String text) {
-        return of(text).with(Style.DEFAULT);
+        return text(text).with(Style.DEFAULT);
     }
 
     public static ComplexComponent complex(Component... components) {
@@ -37,6 +37,8 @@ public abstract class Component {
 
     public abstract void print(PrintStream printStream);
 
+    public abstract List<Component> lines();
+
     protected void applyStyle() {
         if (useStyle)
             styles.forEach(Style::apply);
@@ -44,6 +46,11 @@ public abstract class Component {
 
     public Component with(Style style) {
         this.styles.add(style);
+        return this;
+    }
+
+    public Component with(List<Style> styles) {
+        this.styles.addAll(styles);
         return this;
     }
 

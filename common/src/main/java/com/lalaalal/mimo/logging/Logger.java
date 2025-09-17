@@ -19,7 +19,7 @@ public class Logger {
 
     private Component getTimestamp() {
         LocalDateTime now = LocalDateTime.now();
-        return Component.of(String.format("[%02d:%02d:%02d]", now.getHour(), now.getMinute(), now.getSecond()), useStyle)
+        return Component.text(String.format("[%02d:%02d:%02d]", now.getHour(), now.getMinute(), now.getSecond()), useStyle)
                 .with(ConsoleColor.BLUE.foreground());
     }
 
@@ -39,19 +39,23 @@ public class Logger {
     }
 
     public void log(Level level, Component message) {
+        message.lines().forEach(line -> internalLog(level, line));
+    }
+
+    private void internalLog(Level level, Component line) {
         if (this.level.shouldLog(level)) {
-            Component line = Component.complex(
+            Component complex = Component.complex(
                     getTimestamp(), Component.SPACE,
-                    Component.of("[" + getCaller() + "]", useStyle)
+                    Component.text("[" + getCaller() + "]", useStyle)
                             .with(ConsoleColor.CYAN.foreground()), Component.SPACE,
-                    Component.of("[" + level.name() + "]", useStyle)
+                    Component.text("[" + level.name() + "]", useStyle)
                             .with(level.style),
-                    Component.of(": ", useStyle)
+                    Component.text(": ", useStyle)
                             .with(Style.DEFAULT),
-                    message,
+                    line,
                     Component.NEW_LINE
             );
-            line.print(printStream);
+            complex.print(printStream);
         }
     }
 

@@ -20,7 +20,18 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 
+/**
+ * Instance of the server.
+ * Contains information about the server and its contents.
+ * Provides methods for managing the server.
+ *
+ * @see #from(Path)
+ * @see #addContent(Content)
+ * @see #removeContent(Content)
+ * @see #updateContents()
+ */
 @JsonAdapter(ServerInstanceAdaptor.class)
 public class ServerInstance {
     public final String name;
@@ -30,21 +41,28 @@ public class ServerInstance {
 
     private final Map<Content, ContentInstance> contents = new HashMap<>();
 
+    /**
+     * Load {@linkplain ServerInstance} from directory.
+     * If the instance.json file exists in the directory, it will be loaded.
+     *
+     * @param directory Directory of the instance
+     * @return Instance of the server
+     * @throws IOException If an I/O error occurs
+     */
     public static ServerInstance from(Path directory) throws IOException {
         File instanceDataFile = directory.resolve(InstanceLoader.INSTANCE_DATA_FILE_NAME).toFile();
         if (instanceDataFile.exists())
-            return ServerInstance.load(instanceDataFile);
+            return InstanceLoader.loadServerFromFile(instanceDataFile);
 
         Mimo.LOGGER.info("Loading instance from directory \"%s\"".formatted(directory));
         ServerInstance serverInstance = InstanceLoader.loadServerFromDirectory(directory);
-        Map<Content, Content.Version> versions = getContentVersions(directory);
+        Map<Content, Content.Version> versions = getContentVersions(serverInstance, directory);
         serverInstance.setContents(versions);
         serverInstance.save();
         return serverInstance;
     }
 
-    private static Map<Content, Content.Version> getContentVersions(Path directory) throws IOException {
-        ServerInstance serverInstance = InstanceLoader.loadServerFromDirectory(directory);
+    private static Map<Content, Content.Version> getContentVersions(ServerInstance serverInstance, Path directory) throws IOException {
         Map<String, Content.Version> versions = new HashMap<>();
         versions.putAll(InstanceLoader.getContentVersions(directory.resolve(ProjectType.MOD.path)));
         versions.putAll(InstanceLoader.getContentVersions(directory.resolve(ProjectType.DATAPACK.path)));
@@ -55,13 +73,6 @@ public class ServerInstance {
         Map<Content, Content.Version> result = new HashMap<>();
         contents.forEach(content -> result.put(content, versions.get(content.id())));
         return result;
-    }
-
-    public static ServerInstance load(File instanceDataFilePath) throws IOException {
-        Mimo.LOGGER.info("Loading instance from instance file \"%s\"".formatted(instanceDataFilePath));
-        try (BufferedReader reader = new BufferedReader(new FileReader(instanceDataFilePath))) {
-            return Mimo.GSON.fromJson(reader, ServerInstance.class);
-        }
     }
 
     public ServerInstance(String name, Loader loader, MinecraftVersion version, Path path) throws IOException {
@@ -132,6 +143,12 @@ public class ServerInstance {
         checkUpdate();
     }
 
+    /**
+     * Add content to the instance.
+     *
+     * @param content Content to add
+     * @see ModrinthHelper#get(Request, Function)
+     */
     public void addContent(Content content) {
         if (this.contains(content))
             return;
@@ -144,6 +161,13 @@ public class ServerInstance {
         return contents.containsKey(content);
     }
 
+    /**
+     * Remove content from the instance.
+     * Save the instance after this update.
+     *
+     * @param content Content to remove
+     * @throws IOException If an I/O error occurs
+     */
     public void removeContent(Content content) throws IOException {
         if (contents.containsKey(content)) {
             ContentInstance contentInstance = contents.get(content);
@@ -153,6 +177,12 @@ public class ServerInstance {
         save();
     }
 
+    /**
+     * {@link #downloadContents()} and update contents.
+     * Save the instance after this update.
+     *
+     * @throws IOException If an I/O error occurs
+     */
     public synchronized void updateContents() throws IOException {
         downloadContents();
         Mimo.LOGGER.info("Updating contents for \"%s\"".formatted(name));

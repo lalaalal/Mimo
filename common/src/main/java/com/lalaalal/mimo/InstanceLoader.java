@@ -8,7 +8,9 @@ import com.lalaalal.mimo.modrinth.Request;
 import com.lalaalal.mimo.modrinth.ResponseParser;
 import com.lalaalal.mimo.util.HashUtils;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Map;
@@ -22,7 +24,7 @@ public class InstanceLoader {
     private static ServerInstance createServer(String serverName, String serverFileName, Path directory) throws IOException {
         Matcher matcher = JAR_NAME_PATTERN.matcher(serverFileName);
         if (!matcher.matches())
-            throw new IllegalStateException();
+            throw new IllegalStateException("\"%s\" is not a valid server jar file name".formatted(serverFileName));
         String loaderType = matcher.group(1);
         String loaderVersion = matcher.group(2);
         String minecraftVersion = matcher.group(3);
@@ -38,6 +40,20 @@ public class InstanceLoader {
             throw new IllegalStateException("Server " + serverName + " not found");
         File jarFile = files[0];
         return createServer(serverName, jarFile.getName(), directory);
+    }
+
+    /**
+     * Load {@linkplain ServerInstance} from the instance.json file.
+     *
+     * @param instanceDataFilePath Path to the instance.json file
+     * @return Instance of the server
+     * @throws IOException If an I/O error occurs
+     */
+    protected static ServerInstance loadServerFromFile(File instanceDataFilePath) throws IOException {
+        Mimo.LOGGER.info("Loading instance from instance file \"%s\"".formatted(instanceDataFilePath));
+        try (BufferedReader reader = new BufferedReader(new FileReader(instanceDataFilePath))) {
+            return Mimo.GSON.fromJson(reader, ServerInstance.class);
+        }
     }
 
     protected static Map<String, Content.Version> getContentVersions(Path modsPath) throws IOException {

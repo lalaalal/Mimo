@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Test;
 class ComponentTest {
     @Test
     void text() {
-        Component.of("Red underline\n")
+        Component.text("Red underline\n")
                 .with(ConsoleColor.RED.foreground())
                 .with(ConsoleColor.GREEN.background())
                 .with(TextType.UNDERLINE)

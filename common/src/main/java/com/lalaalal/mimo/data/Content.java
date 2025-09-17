@@ -1,10 +1,30 @@
 package com.lalaalal.mimo.data;
 
 import com.lalaalal.mimo.loader.Loader;
+import com.lalaalal.mimo.modrinth.ModrinthHelper;
+import com.lalaalal.mimo.modrinth.Request;
+import com.lalaalal.mimo.modrinth.Response;
+import com.lalaalal.mimo.modrinth.ResponseParser;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Function;
 
+/**
+ * Represents a content that can be loaded by a loader.
+ * Content can be created by calling:
+ * <pre>{@code
+ * Content content = ModrinthHelper.get(Request.project(id_or_slug), ResponseParser::parseProject);
+ * }</pre>
+ *
+ * @param type    {@link ProjectType} of the content
+ * @param loaders List of {@link Loader.Type} that can load this content
+ * @param id      Content identifier
+ * @param slug    Content slug
+ * @see ModrinthHelper#get(Request, Function)
+ * @see Request#project(String)
+ * @see ResponseParser#parseContent(Loader.Type, Response)
+ */
 public record Content(ProjectType type, List<Loader.Type> loaders, String id, String slug) {
     private static List<Loader.Type> determineLoader(ProjectType type, Loader.Type loader) {
         if (type == ProjectType.DATAPACK)

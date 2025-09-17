@@ -30,4 +30,24 @@ public class ComplexComponent extends Component {
         applyStyle();
         components.forEach(component -> component.print(printStream));
     }
+
+    @Override
+    public List<Component> lines() {
+        List<Component> result = new ArrayList<>();
+        ComplexComponent current = new ComplexComponent();
+        current.with(this.styles).useStyle(this.useStyle);
+        result.add(current);
+        for (Component component : components) {
+            List<Component> childLines = component.lines();
+            for (int index = 0; index < childLines.size(); index++) {
+                if (index > 0) {
+                    current = new ComplexComponent();
+                    current.with(this.styles).useStyle(this.useStyle);
+                    result.add(current);
+                }
+                current.add(childLines.get(index));
+            }
+        }
+        return result;
+    }
 }

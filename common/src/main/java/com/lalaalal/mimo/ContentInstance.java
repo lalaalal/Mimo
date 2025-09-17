@@ -19,6 +19,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 
+/**
+ * Instance of a content.
+ * Manages the content and its versions with dependencies.
+ */
 @GsonExcludeStrategy(TypeStrategy.INCLUDE_MARKED)
 public class ContentInstance {
     private final ServerInstance serverInstance;
@@ -189,11 +193,11 @@ public class ContentInstance {
     }
 
     public Component getStyledText() {
-        ComplexComponent component = Component.complex(Component.of(toString()));
+        ComplexComponent component = Component.complex(Component.text(toString()));
         if (!isDownloaded())
-            component.add(Component.of(" NOT DOWNLOADED").with(ConsoleColor.RED.foreground()));
+            component.add(Component.text(" NOT DOWNLOADED").with(ConsoleColor.RED.foreground()));
         if (!isUpToDate())
-            component.add(Component.of(" OUT OF DATE").with(ConsoleColor.YELLOW.foreground()));
+            component.add(Component.text(" OUT OF DATE").with(ConsoleColor.YELLOW.foreground()));
         return component;
     }
 }

@@ -15,6 +15,14 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * Request for Modrinth API.
+ *
+ * @param id     Request id
+ * @param type   {@link Type} of the request
+ * @param params Parameters for the request
+ * @param body   Body of the http request
+ */
 public record Request(int id, Type type, Map<String, String> params, String body) {
     private static int counter = 0;
 
@@ -98,14 +106,32 @@ public record Request(int id, Type type, Map<String, String> params, String body
         );
     }
 
+    /**
+     * Create a request with auto-incremented id.
+     *
+     * @param type   {@link Type} of the request
+     * @param params Parameters for the request
+     * @param body   Body of the http request
+     */
     public Request(Type type, Map<String, String> params, String body) {
         this(nextId(), type, params, body);
     }
 
+    /**
+     * Create a request with an empty body and auto-incremented id.
+     *
+     * @param type   {@link Type} of the request
+     * @param params Parameters for the request
+     */
     public Request(Type type, Map<String, String> params) {
         this(type, params, "");
     }
 
+    /**
+     * Http method for the request.
+     *
+     * @return "GET" or "POST"
+     */
     public String method() {
         if (body.isEmpty())
             return "GET";
@@ -148,8 +174,15 @@ public record Request(int id, Type type, Map<String, String> params, String body
         }
     }
 
-    protected interface QueryMaker {
+    @FunctionalInterface
+    public interface QueryMaker {
         QueryMaker EXACT = (format, params) -> format;
+
+        /**
+         * Create a query with path parameters.
+         * <b>${name}</b> in the format string will be replaced with the value of the name parameter.
+         * Key of params should also be the same.
+         */
         QueryMaker PATH_PARAM = (format, params) -> {
             Pattern pattern = Pattern.compile("\\$\\{[a-z]+}");
             Matcher matcher = pattern.matcher(format);
@@ -160,6 +193,12 @@ public record Request(int id, Type type, Map<String, String> params, String body
 
             return format;
         };
+
+        /**
+         * Create a query with query parameters.
+         * Parameters will be added to the end of the query string.
+         * Key of params should only contain characters.
+         */
         QueryMaker QUERY_PARAM = (format, params) -> {
             StringBuilder builder = new StringBuilder(format + '?');
             for (String key : params.keySet()) {
@@ -172,6 +211,10 @@ public record Request(int id, Type type, Map<String, String> params, String body
             builder.deleteCharAt(builder.length() - 1);
             return builder.toString();
         };
+
+        /**
+         * Create a query with both path and query parameters.
+         */
         QueryMaker MIXED = (format, params) -> {
             String path = PATH_PARAM.makeQuery(format, params);
             return QUERY_PARAM.makeQuery(path, params);

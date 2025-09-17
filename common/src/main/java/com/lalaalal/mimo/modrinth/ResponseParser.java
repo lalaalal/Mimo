@@ -15,6 +15,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
+/**
+ * Provides methods for parsing {@link Response} from Modrinth API.
+ */
 public class ResponseParser {
     protected static void verifyRequestType(Response response, Request.Type... requiredTypes) {
         verifyRequestType(response, List.of(requiredTypes));
@@ -88,7 +91,7 @@ public class ResponseParser {
         return result(response, parseProjectId(response.data()));
     }
 
-    protected static ProjectType parseProjectType(JsonObject data) {
+    private static ProjectType parseProjectType(JsonObject data) {
         if (!data.has("loaders"))
             return parsed("project type", ProjectType.get(data.get("project_type").getAsString()));
         List<String> loaders = data.get("loaders").getAsJsonArray().asList()
@@ -100,7 +103,7 @@ public class ResponseParser {
         return parsed("project type", ProjectType.MOD);
     }
 
-    protected static Content parseContent(Loader.Type loader, JsonObject data) {
+    private static Content parseContent(Loader.Type loader, JsonObject data) {
         String projectIdKey = data.has("project_id") ? "project_id" : "id";
         String id = data.get(projectIdKey).getAsString();
         String slug = data.get("slug").getAsString();
@@ -111,7 +114,7 @@ public class ResponseParser {
         return parsed("content", new Content(projectType, loader, id, slug));
     }
 
-    protected static List<Content> parseContentListFromJsonArray(Loader.Type loader, JsonArray list) {
+    private static List<Content> parseContentListFromJsonArray(Loader.Type loader, JsonArray list) {
         List<Content> contents = new ArrayList<>();
         for (JsonElement element : list) {
             JsonObject currentContent = element.getAsJsonObject();
@@ -121,7 +124,7 @@ public class ResponseParser {
         return parsed("content list", contents);
     }
 
-    protected static List<String> parseProjectIdListFromJsonArray(JsonArray list) {
+    private static List<String> parseProjectIdListFromJsonArray(JsonArray list) {
         List<String> contents = new ArrayList<>();
         for (JsonElement element : list) {
             contents.add(parseSlug(element));
@@ -129,7 +132,7 @@ public class ResponseParser {
         return parsed("slug list", contents);
     }
 
-    protected static Content.Version parseVersion(JsonElement element) {
+    private static Content.Version parseVersion(JsonElement element) {
         JsonObject versionData = element.getAsJsonObject();
         String versionId = versionData.get("id").getAsString();
         JsonArray files = versionData.getAsJsonArray("files");
@@ -152,13 +155,13 @@ public class ResponseParser {
         return parsed("version", new Content.Version(versionId, hash, url, fileName, versionDependencies));
     }
 
-    protected static String parseProjectId(JsonElement element) {
+    private static String parseProjectId(JsonElement element) {
         JsonObject data = element.getAsJsonObject();
         String projectIdKey = data.has("project_id") ? "project_id" : "id";
         return parsed("project id", data.get(projectIdKey).getAsString());
     }
 
-    protected static String parseSlug(JsonElement element) {
+    private static String parseSlug(JsonElement element) {
         JsonObject data = element.getAsJsonObject();
         return parsed("slug", data.get("slug").getAsString());
     }

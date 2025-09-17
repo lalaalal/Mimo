@@ -11,6 +11,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Installs a server.
+ *
+ * @see FabricInstaller
+ * @see LoaderInstaller#get(Loader.Type)
+ */
 public abstract class LoaderInstaller {
     private static final String FILE_NAME_FORMAT = "%s-server-%s+%s.jar";
     private static final Map<Loader.Type, LoaderInstaller> INSTALLERS = new HashMap<>();
@@ -23,19 +29,7 @@ public abstract class LoaderInstaller {
     }
 
     public static LoaderInstaller get(Loader.Type loader) {
-        return INSTALLERS.computeIfAbsent(loader, LoaderInstaller::create);
-    }
-
-    private static LoaderInstaller create(Loader.Type loader) {
-        try {
-            return switch (loader) {
-                case FABRIC -> new FabricInstaller();
-                case NEOFORGE -> throw new UnsupportedOperationException("Not implemented");
-                default -> throw new IllegalArgumentException("Unsupported loader type");
-            };
-        } catch (IOException exception) {
-            throw new RuntimeException(exception);
-        }
+        return INSTALLERS.get(loader);
     }
 
     protected LoaderInstaller(Loader.Type loaderType) {
@@ -59,5 +53,5 @@ public abstract class LoaderInstaller {
         return Files.createDirectories(instanceDirectory);
     }
 
-    public abstract ServerInstance install(String name, MinecraftVersion minecraftVersion, String loaderVersion) throws IOException, InterruptedException;
+    public abstract ServerInstance install(String name, MinecraftVersion minecraftVersion, String loaderVersion) throws IOException;
 }

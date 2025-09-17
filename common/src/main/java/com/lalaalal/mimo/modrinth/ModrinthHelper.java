@@ -52,10 +52,25 @@ public class ModrinthHelper {
         return new Response(request, code, body);
     }
 
+    /**
+     * Download the content file from a given version to a given path.
+     *
+     * @param version Version file to download
+     * @param path    Path to save the file to
+     * @throws IOException If an I/O error occurs
+     */
     public static void download(Content.Version version, Path path) throws IOException {
         HttpHelper.download(version.url(), path);
     }
 
+    /**
+     * Send request and return response.
+     *
+     * @param request Request to send
+     * @return Response
+     * @see Request
+     * @see Response
+     */
     public static Response send(Request request) {
         try {
             return sendRequest(request);
@@ -64,6 +79,16 @@ public class ModrinthHelper {
         }
     }
 
+    /**
+     * Send request and parse response with given parser.
+     *
+     * @param request Request to send
+     * @param parser  Parser to parse response with
+     * @return Parsed response
+     * @param <T> Type of the parsed response
+     * @see Request
+     * @see ResponseParser
+     */
     public static <T> T get(Request request, Function<Response, T> parser) {
         Response response = send(request);
         return parser.apply(response);
