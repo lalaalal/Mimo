@@ -26,14 +26,12 @@ public class Logger {
     private String getCaller() {
         Thread currentThread = Thread.currentThread();
         StackTraceElement[] elements = currentThread.getStackTrace();
-        boolean firstMatch = true;
-        for (StackTraceElement element : elements) {
-            if (!element.getClassName().equals(Logger.class.getName())) {
-                if (!firstMatch)
-                    return currentThread.getName() + "/" + element.getClassName().substring(element.getClassName().lastIndexOf('.') + 1);
-            } else {
-                firstMatch = false;
-            }
+        for (int index = elements.length - 2; index >= 0; index--) {
+            StackTraceElement current = elements[index];
+            StackTraceElement next = elements[index + 1];
+
+            if (current.getClassName().equals(Logger.class.getName()))
+                return currentThread.getName() + "/" + next.getClassName().substring(next.getClassName().lastIndexOf('.') + 1);
         }
         return currentThread.getName();
     }

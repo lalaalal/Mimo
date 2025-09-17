@@ -15,6 +15,7 @@ import java.util.Map;
  * Installs a server.
  *
  * @see FabricInstaller
+ * @see NeoForgeInstaller
  * @see LoaderInstaller#get(Loader.Type)
  */
 public abstract class LoaderInstaller {
@@ -26,6 +27,7 @@ public abstract class LoaderInstaller {
 
     public static void initialize() throws IOException {
         INSTALLERS.put(Loader.Type.FABRIC, new FabricInstaller());
+        INSTALLERS.put(Loader.Type.NEOFORGE, new NeoForgeInstaller());
     }
 
     public static LoaderInstaller get(Loader.Type loader) {
@@ -33,6 +35,7 @@ public abstract class LoaderInstaller {
     }
 
     protected LoaderInstaller(Loader.Type loaderType) {
+        Mimo.LOGGER.info("Preparing " + loaderType + " installer");
         this.loaderType = loaderType;
     }
 
@@ -47,11 +50,32 @@ public abstract class LoaderInstaller {
     protected Path createInstanceDirectory(String name) throws IOException {
         Path instanceDirectory = INSTANCES_PATH.resolve(name);
         if (Files.exists(instanceDirectory))
-            throw new IllegalStateException("Server \"%s\" already exists".formatted(name));
+            Mimo.LOGGER.warning("Server \"%s\" already exists".formatted(name));
 
         Mimo.LOGGER.info("Creating server directory at \"%s\"".formatted(instanceDirectory));
         return Files.createDirectories(instanceDirectory);
     }
 
-    public abstract ServerInstance install(String name, MinecraftVersion minecraftVersion, String loaderVersion) throws IOException;
+    protected void createEulaFile(Path instanceDirectory) throws IOException {
+        Path eula = instanceDirectory.resolve("eula.txt");
+        Mimo.LOGGER.info("Creating eula.txt file at \"%s\"".formatted(eula));
+        Files.writeString(eula, "eula=true\n");
+    }
+
+    public ServerInstance install(String name, MinecraftVersion minecraftVersion, String loaderVersion) throws IOException, InterruptedException {
+        Mimo.LOGGER.info("Installing %s server [%s] (%s)".formatted(loaderType, minecraftVersion, name));
+        if (minecraftVersion.type() != MinecraftVersion.Type.STABLE)
+            Mimo.LOGGER.warning("Selected minecraft version [%s] is not a stable version".formatted(minecraftVersion));
+        if (!isValidVersion(minecraftVersion, loaderVersion))
+            throw new IllegalArgumentException("Given version is not valid (%s, %s)".formatted(minecraftVersion, loaderVersion));
+
+        Path instanceDirectory = createInstanceDirectory(name);
+        install(instanceDirectory, minecraftVersion, loaderVersion);
+
+        createEulaFile(instanceDirectory);
+        Mimo.LOGGER.info("Installed server \"%s\" (%s %s) [%s]".formatted(name, loaderType, loaderVersion, minecraftVersion));
+        return new ServerInstance(name, new Loader(loaderType, loaderVersion), minecraftVersion);
+    }
+
+    protected abstract void install(Path instanceDirectory, MinecraftVersion minecraftVersion, String loaderVersion) throws IOException, InterruptedException;
 }

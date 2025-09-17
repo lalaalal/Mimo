@@ -5,20 +5,17 @@ import com.google.gson.annotations.JsonAdapter;
 import com.google.gson.stream.JsonWriter;
 import com.lalaalal.mimo.data.Content;
 import com.lalaalal.mimo.data.MinecraftVersion;
-import com.lalaalal.mimo.data.ProjectType;
 import com.lalaalal.mimo.json.ServerInstanceAdaptor;
 import com.lalaalal.mimo.loader.Loader;
 import com.lalaalal.mimo.loader.LoaderInstaller;
 import com.lalaalal.mimo.modrinth.ModrinthHelper;
 import com.lalaalal.mimo.modrinth.Request;
-import com.lalaalal.mimo.modrinth.ResponseParser;
 
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
@@ -53,26 +50,7 @@ public class ServerInstance {
         File instanceDataFile = directory.resolve(InstanceLoader.INSTANCE_DATA_FILE_NAME).toFile();
         if (instanceDataFile.exists())
             return InstanceLoader.loadServerFromFile(instanceDataFile);
-
-        Mimo.LOGGER.info("Loading instance from directory \"%s\"".formatted(directory));
-        ServerInstance serverInstance = InstanceLoader.loadServerFromDirectory(directory);
-        Map<Content, Content.Version> versions = getContentVersions(serverInstance, directory);
-        serverInstance.setContents(versions);
-        serverInstance.save();
-        return serverInstance;
-    }
-
-    private static Map<Content, Content.Version> getContentVersions(ServerInstance serverInstance, Path directory) throws IOException {
-        Map<String, Content.Version> versions = new HashMap<>();
-        versions.putAll(InstanceLoader.getContentVersions(directory.resolve(ProjectType.MOD.path)));
-        versions.putAll(InstanceLoader.getContentVersions(directory.resolve(ProjectType.DATAPACK.path)));
-        List<Content> contents = ModrinthHelper.get(
-                Request.projects(versions.keySet()),
-                ResponseParser.contentListParser(serverInstance)
-        );
-        Map<Content, Content.Version> result = new HashMap<>();
-        contents.forEach(content -> result.put(content, versions.get(content.id())));
-        return result;
+        return InstanceLoader.loadServerFromDirectory(directory);
     }
 
     public ServerInstance(String name, Loader loader, MinecraftVersion version, Path path) throws IOException {

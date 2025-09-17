@@ -10,6 +10,7 @@ import java.util.List;
 
 public class MimoTest {
     public static final MinecraftVersion TEST_MINECRAFT_VERSION = MinecraftVersion.of(21, 1);
+    public static final String TEST_NEOFORGE_VERSION = "21.1.209";
     public static final ServerInstance TEST_INSTANCE = createServerInstance();
 
     public static final String CONTENT_SLUG = "fabric-api";
