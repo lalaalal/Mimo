@@ -17,6 +17,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 
 public final class Mimo {
     private static ServerInstance currentServerInstance = null;
@@ -42,7 +43,7 @@ public final class Mimo {
         return currentServerInstance = ServerInstance.from(getInstanceContainerDirectory().resolve(name));
     }
 
-    public static void install(Loader.Type type, String name, MinecraftVersion minecraftVersion, String loaderVersion) throws IOException, InterruptedException {
+    public static void install(Loader.Type type, String name, MinecraftVersion minecraftVersion, String loaderVersion) throws IOException {
         currentServerInstance = LoaderInstaller.get(type).install(name, minecraftVersion, loaderVersion);
     }
 
@@ -70,6 +71,13 @@ public final class Mimo {
         serverInstance.addContent(content);
         if (immediateUpdate)
             serverInstance.downloadContents();
+        serverInstance.checkUpdate();
+    }
+
+    public static void add(List<String> slugs) throws IOException {
+        ServerInstance serverInstance = currentInstanceOrThrow();
+        List<Content> contents = ModrinthHelper.get(Request.projects(slugs), ResponseParser.contentListParser(serverInstance));
+        contents.forEach(serverInstance::addContent);
         serverInstance.checkUpdate();
     }
 

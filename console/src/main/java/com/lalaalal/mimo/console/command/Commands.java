@@ -52,6 +52,10 @@ public class Commands {
                             .help(" -    [update]: " + ArgumentParsers.BOOLEAN)
                             .action(Mimo::add)
                             .build())
+                    .subCommand("all", Command.list("add_all", ArgumentParsers.STRING)
+                            .argumentHelp("name...")
+                            .action(Mimo::add)
+                            .build())
                     .build()
     );
 

@@ -52,6 +52,23 @@ public class MimoConsole {
         serverInstance.launch(System.out, System.in);
     }
 
+    private static void runCommand(String commandString, String[] arguments) {
+        Optional<Command> command = Commands.get(commandString);
+        if (command.isPresent()) {
+            Command.Result result = command.get().execute(arguments);
+            for (String message : result.messages())
+                Mimo.LOGGER.log(getLogLevel(result), message);
+        } else {
+            Mimo.LOGGER.error("Command \"%s\" not found".formatted(commandString));
+        }
+    }
+
+    private static Level getLogLevel(Command.Result result) {
+        if (result.succeed())
+            return Level.INFO;
+        return Level.ERROR;
+    }
+
     public static void main(String[] args) throws IOException {
         Mimo.initialize();
         ArgumentParsers.initialize();
@@ -70,22 +87,5 @@ public class MimoConsole {
                 runCommand(tokens[0], arguments);
             }
         }
-    }
-
-    private static void runCommand(String commandString, String[] arguments) {
-        Optional<Command> command = Commands.get(commandString);
-        if (command.isPresent()) {
-            Command.Result result = command.get().execute(arguments);
-            for (String message : result.messages())
-                Mimo.LOGGER.log(getLogLevel(result), message);
-        } else {
-            Mimo.LOGGER.error("Command \"%s\" not found".formatted(commandString));
-        }
-    }
-
-    private static Level getLogLevel(Command.Result result) {
-        if (result.succeed())
-            return Level.INFO;
-        return Level.ERROR;
     }
 }

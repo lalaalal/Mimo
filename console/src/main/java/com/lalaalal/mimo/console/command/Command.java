@@ -5,6 +5,7 @@ import com.lalaalal.mimo.console.Registries;
 import com.lalaalal.mimo.console.argument.ArgumentParser;
 import com.lalaalal.mimo.console.argument.Arguments;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -82,6 +83,18 @@ public interface Command {
             ArgumentParser<?>[] missingParsers = Arrays.copyOfRange(parsers, parsers.length - missingCount, parsers.length);
             throw CommandException.missingArguments(missingParsers);
         }
+    }
+
+    static <T> SimpleCommand.Builder<AC1<List<T>>> list(String name, ArgumentParser<T> parser) {
+        Caster<AC1<List<T>>> caster = (arguments, consumer) -> {
+            List<T> list = new ArrayList<>();
+            for (String argument : arguments) {
+                list.add(parser.parse(argument));
+            }
+            consumer.accept(list);
+        };
+        return new SimpleCommand.Builder<>(name, caster)
+                .argumentHelp("[" + parser.name + "...]");
     }
 
     static SimpleCommand.Builder<AC1<Arguments>> multiple(String name, ArgumentParser<?>... parsers) {
