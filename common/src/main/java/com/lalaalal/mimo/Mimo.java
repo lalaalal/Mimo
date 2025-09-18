@@ -12,6 +12,7 @@ import com.lalaalal.mimo.logging.Logger;
 import com.lalaalal.mimo.modrinth.ModrinthHelper;
 import com.lalaalal.mimo.modrinth.Request;
 import com.lalaalal.mimo.modrinth.ResponseParser;
+import com.lalaalal.mimo.util.DirectoryRemover;
 
 import java.io.File;
 import java.io.IOException;
@@ -81,7 +82,7 @@ public final class Mimo {
         serverInstance.checkUpdate();
     }
 
-    public static void remove(String slug) throws IOException {
+    public static void removeContent(String slug) throws IOException {
         ServerInstance serverInstance = currentInstanceOrThrow();
         Content content = serverInstance.getContents().stream()
                 .map(ContentInstance::content)
@@ -89,6 +90,17 @@ public final class Mimo {
                 .findAny()
                 .orElseGet(() -> ModrinthHelper.get(Request.project(slug), ResponseParser.contentParser(serverInstance)));
         serverInstance.removeContent(content);
+    }
+
+    public static void removeServer(String serverName) throws IOException {
+        InstanceLoader.forget(serverName);
+        Path instanceDirectory = getInstanceContainerDirectory().resolve(serverName);
+        if (Files.exists(instanceDirectory)) {
+            Mimo.LOGGER.info("Deleting server \"%s\"".formatted(instanceDirectory));
+            Files.walkFileTree(instanceDirectory, new DirectoryRemover());
+        } else {
+            Mimo.LOGGER.warning("No such server at \"%s\"".formatted(instanceDirectory));
+        }
     }
 
     public static void update() throws IOException {

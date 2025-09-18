@@ -52,6 +52,11 @@ public class MimoConsole {
         serverInstance.launch(System.out, System.in);
     }
 
+    public static void launchServer(String serverName) throws IOException {
+        ServerInstance serverInstance = Mimo.load(serverName);
+        serverInstance.launch(System.out, System.in);
+    }
+
     private static void runCommand(String commandString, String[] arguments) {
         Optional<Command> command = Commands.get(commandString);
         if (command.isPresent()) {

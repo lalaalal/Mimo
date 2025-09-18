@@ -25,7 +25,7 @@ public class Commands {
                             ArgumentParsers.STRING)
                     .argumentHelp(
                             ArgumentParsers.LOADER_TYPE,
-                            "name",
+                            "server_name",
                             ArgumentParsers.MINECRAFT_VERSION,
                             "loader_version")
                     .action(Mimo::install)
@@ -42,27 +42,33 @@ public class Commands {
     public static final Command ADD = register(
             Command.complex("add")
                     .overload(1, Command.simple("add_only", ArgumentParsers.STRING)
-                            .argumentHelp("name")
+                            .argumentHelp("content_slug")
                             .action(Mimo::add)
                             .build())
                     .overload(2, Command.simple("add",
                                     ArgumentParsers.STRING, ArgumentParsers.BOOLEAN)
-                            .argumentHelp("name", "update")
-                            .help(" -    [name]  : " + ArgumentParsers.STRING)
+                            .argumentHelp("content_slug", "update")
+                            .help(" -    [content_slug]  : " + ArgumentParsers.STRING)
                             .help(" -    [update]: " + ArgumentParsers.BOOLEAN)
                             .action(Mimo::add)
                             .build())
                     .subCommand("all", Command.list("add_all", ArgumentParsers.STRING)
-                            .argumentHelp("name...")
+                            .argumentHelp("content_slug...")
                             .action(Mimo::add)
                             .build())
                     .build()
     );
 
     public static final Command REMOVE = register(
-            Command.simple("remove", ArgumentParsers.STRING)
-                    .argumentHelp("name")
-                    .action(Mimo::remove)
+            Command.complex("remove")
+                    .subCommand("content", Command.simple("remove_content", ArgumentParsers.STRING)
+                            .argumentHelp("content_name")
+                            .action(Mimo::removeContent)
+                            .build())
+                    .subCommand("server", Command.simple("remove_server", ArgumentParsers.STRING)
+                            .argumentHelp("server_name")
+                            .action(Mimo::removeServer)
+                            .build())
                     .build()
     );
 
@@ -96,8 +102,14 @@ public class Commands {
     );
 
     public static final Command LAUNCH = register(
-            Command.simple("launch")
-                    .action(MimoConsole::launchServer)
+            Command.complex("launch")
+                    .overload(0, Command.simple("launch")
+                            .action(MimoConsole::launchServer)
+                            .build())
+                    .overload(1, Command.simple("launch", ArgumentParsers.STRING)
+                            .argumentHelp("server_name")
+                            .action(MimoConsole::launchServer)
+                            .build())
                     .build()
     );
 

@@ -70,12 +70,12 @@ public abstract class LoaderInstaller {
             throw new IllegalArgumentException("Given version is not valid (%s, %s)".formatted(minecraftVersion, loaderVersion));
 
         Path instanceDirectory = createInstanceDirectory(name);
-        install(instanceDirectory, minecraftVersion, loaderVersion);
+        processInstall(instanceDirectory, minecraftVersion, loaderVersion);
 
         createEulaFile(instanceDirectory);
         Mimo.LOGGER.info("Installed server \"%s\" (%s %s) [%s]".formatted(name, loaderType, loaderVersion, minecraftVersion));
         return new ServerInstance(name, new Loader(loaderType, loaderVersion), minecraftVersion);
     }
 
-    protected abstract void install(Path instanceDirectory, MinecraftVersion minecraftVersion, String loaderVersion) throws IOException, InterruptedException;
+    protected abstract void processInstall(Path instanceDirectory, MinecraftVersion minecraftVersion, String loaderVersion) throws IOException, InterruptedException;
 }

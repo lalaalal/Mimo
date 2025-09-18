@@ -55,7 +55,7 @@ public class FabricInstaller extends LoaderInstaller {
     }
 
     @Override
-    protected void install(Path instanceDirectory, MinecraftVersion minecraftVersion, String loaderVersion) throws IOException {
+    protected void processInstall(Path instanceDirectory, MinecraftVersion minecraftVersion, String loaderVersion) throws IOException {
         String fabricInstallerVersion = this.installerVersions.getFirst();
         String url = LAUNCHER_DOWNLOAD_URL.formatted(minecraftVersion, loaderVersion, fabricInstallerVersion);
         String fileName = getFileName(minecraftVersion, loaderVersion);

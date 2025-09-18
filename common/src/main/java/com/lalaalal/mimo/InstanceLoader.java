@@ -27,6 +27,10 @@ public class InstanceLoader {
 
     private static final Map<String, ServerInstance> instances = new HashMap<>();
 
+    public static void forget(String serverName) {
+        instances.remove(serverName);
+    }
+
     private static ServerInstance createServer(String serverName, String serverFileName, Path directory) throws IOException {
         Matcher matcher = JAR_NAME_PATTERN.matcher(serverFileName);
         if (!matcher.matches()) {

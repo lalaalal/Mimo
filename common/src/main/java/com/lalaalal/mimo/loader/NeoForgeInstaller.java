@@ -24,7 +24,6 @@ public class NeoForgeInstaller extends LoaderInstaller {
     public static final String INSTALLER_DOWNLOAD_URL = "https://maven.neoforged.net/releases/net/neoforged/neoforge/%1$s/neoforge-%1$s-installer.jar";
     public static final String INSTALLER_FILE_NAME = "installer.jar";
 
-    private final List<String> neoforgeVersions = new ArrayList<>();
     private final Map<MinecraftVersion, List<String>> versionMapping = new HashMap<>();
 
     protected NeoForgeInstaller() throws IOException {
@@ -38,7 +37,6 @@ public class NeoForgeInstaller extends LoaderInstaller {
         JsonArray versions = object.get("versions").getAsJsonArray();
         for (JsonElement element : versions) {
             String version = element.getAsString();
-            neoforgeVersions.addFirst(version);
 
             Matcher matcher = NEOFORGE_VERSION_PATTERN.matcher(version);
             if (matcher.matches()) {
@@ -64,7 +62,7 @@ public class NeoForgeInstaller extends LoaderInstaller {
     }
 
     @Override
-    protected void install(Path instanceDirectory, MinecraftVersion minecraftVersion, String loaderVersion) throws IOException, InterruptedException {
+    protected void processInstall(Path instanceDirectory, MinecraftVersion minecraftVersion, String loaderVersion) throws IOException, InterruptedException {
         String url = INSTALLER_DOWNLOAD_URL.formatted(loaderVersion);
         Path installer = instanceDirectory.resolve(INSTALLER_FILE_NAME);
         if (Files.exists(installer)) {
