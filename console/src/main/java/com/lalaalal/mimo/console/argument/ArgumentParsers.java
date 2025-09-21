@@ -4,6 +4,7 @@ import com.lalaalal.mimo.console.Registries;
 import com.lalaalal.mimo.data.MinecraftVersion;
 import com.lalaalal.mimo.data.ProjectType;
 import com.lalaalal.mimo.loader.Loader;
+import com.lalaalal.mimo.logging.Level;
 
 import java.util.function.Function;
 
@@ -43,6 +44,10 @@ public class ArgumentParsers {
 
     public static final ArgumentParser<ProjectType> PROJECT_TYPE = register(
             ArgumentParser.of("project_type", ProjectType.class, ProjectType::get)
+    );
+
+    public static final ArgumentParser<Level> LOG_LEVEL = register(
+            ArgumentParser.of("log_level", Level.class, Level::get)
     );
 
     public static <T> ArgumentParser<T> register(ArgumentParser<T> parser) {

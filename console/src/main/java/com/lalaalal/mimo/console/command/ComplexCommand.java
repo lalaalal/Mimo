@@ -1,23 +1,16 @@
 package com.lalaalal.mimo.console.command;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class ComplexCommand implements Command {
     private final String name;
     private final Map<Integer, Command> overloadCommands;
     private final Map<String, Command> subCommands;
     private final List<String> helpComments;
+    private final int minArgumentCount;
+    private final int maxArgumentCount;
 
-    private static String mapSubCommandHelpMessage(String subName, String help) {
-        if (help.startsWith("-"))
-            return help;
-        return subName + " " + help;
-    }
-
-    public ComplexCommand(String name, Map<Integer, Command> overloadCommands, Map<String, Command> subCommands) {
+    private ComplexCommand(String name, Map<Integer, Command> overloadCommands, Map<String, Command> subCommands, int minArgumentCount, int maxArgumentCount) {
         this.name = name;
         this.overloadCommands = Map.copyOf(overloadCommands);
         this.subCommands = Map.copyOf(subCommands);
@@ -25,12 +18,11 @@ public class ComplexCommand implements Command {
         for (Command command : overloadCommands.values())
             helpComments.addAll(command.help());
         subCommands.forEach((subName, command) -> {
-            List<String> help = command.help()
-                    .stream()
-                    .map(value -> mapSubCommandHelpMessage(subName, value))
-                    .toList();
-            helpComments.addAll(help);
+            Commands.help(command, false, helpComments::add);
         });
+
+        this.minArgumentCount = minArgumentCount;
+        this.maxArgumentCount = maxArgumentCount;
     }
 
     @Override
@@ -42,10 +34,29 @@ public class ComplexCommand implements Command {
                 return command.execute(arguments.subList(1, arguments.size()));
             }
         }
-        Command command = overloadCommands.get(arguments.size());
-        if (command == null)
-            return Result.fail("Cannot resolve command %s %s".formatted(name, arguments));
-        return command.execute(arguments);
+        if (overloadCommands.isEmpty()) {
+            List<String> comments = new ArrayList<>();
+            comments.add("No matching command : %s %s".formatted(name(), arguments));
+            Commands.help(this, false, comments::add);
+            return Result.fail(comments);
+        }
+        int argumentCount = select(arguments);
+        return overloadCommands.get(argumentCount)
+                .execute(arguments);
+    }
+
+    private int select(List<String> arguments) {
+        int argumentCount = arguments.size();
+        if (overloadCommands.containsKey(argumentCount))
+            return argumentCount;
+        if (argumentCount < minArgumentCount)
+            return minArgumentCount;
+        return maxArgumentCount;
+    }
+
+    @Override
+    public Optional<Command> resolve(String child) {
+        return Optional.ofNullable(subCommands.get(child));
     }
 
     @Override
@@ -62,6 +73,8 @@ public class ComplexCommand implements Command {
         private final String name;
         private final Map<Integer, Command> overloadCommands = new HashMap<>();
         private final Map<String, Command> subCommands = new HashMap<>();
+        private int minArgumentCount = Integer.MAX_VALUE;
+        private int maxArgumentCount = Integer.MIN_VALUE;
 
         public Builder(String name) {
             this.name = name;
@@ -69,6 +82,8 @@ public class ComplexCommand implements Command {
 
         public Builder overload(int argc, Command command) {
             overloadCommands.put(argc, command);
+            minArgumentCount = Math.min(minArgumentCount, argc);
+            maxArgumentCount = Math.max(maxArgumentCount, argc);
             return this;
         }
 
@@ -78,7 +93,7 @@ public class ComplexCommand implements Command {
         }
 
         public ComplexCommand build() {
-            return new ComplexCommand(name, overloadCommands, subCommands);
+            return new ComplexCommand(name, overloadCommands, subCommands, minArgumentCount, maxArgumentCount);
         }
     }
 }

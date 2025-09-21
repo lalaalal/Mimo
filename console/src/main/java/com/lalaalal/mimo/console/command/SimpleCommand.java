@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class SimpleCommand<T> implements Command {
-    public final String name;
+    private final String name;
     private final Caster<T> caster;
     private final List<String> argumentHelp;
     private final T action;
@@ -24,7 +24,7 @@ public class SimpleCommand<T> implements Command {
         } catch (CommandException exception) {
             List<String> comments = new ArrayList<>(exception.getMessages());
             if (exception.shouldPrintHelp())
-                help().forEach(comment -> comments.add(name() + comment));
+                Commands.help(this, false, comments::add);
             return Result.fail(comments);
         } catch (Throwable throwable) {
             return Result.fail(throwable.getMessage());
@@ -71,7 +71,7 @@ public class SimpleCommand<T> implements Command {
         public Builder<T> argumentHelp(boolean append, Object... argumentNames) {
             if (!append)
                 this.helpComments.clear();
-            StringBuilder builder = new StringBuilder();
+            StringBuilder builder = new StringBuilder(name).append(" ");
             for (Object argumentName : argumentNames)
                 builder.append("[").append(argumentName).append("] ");
             return help(append, builder.toString());

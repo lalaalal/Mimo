@@ -10,6 +10,10 @@ public enum Level {
     private final int priority;
     public final Style style;
 
+    public static Level get(String name) {
+        return valueOf(name.toUpperCase());
+    }
+
     Level(Style style) {
         this.priority = ordinal();
         this.style = style;

@@ -8,6 +8,7 @@ import com.lalaalal.mimo.console.argument.Arguments;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 public interface Command {
     Result execute(List<String> arguments);
@@ -21,6 +22,10 @@ public interface Command {
     default String name() {
         Mimo.LOGGER.warning("Calling default Command#name()");
         return Registries.COMMANDS.findKey(this);
+    }
+
+    default Optional<Command> resolve(String child) {
+        return Optional.empty();
     }
 
     static SimpleCommand.Builder<AC> simple(String name) {
@@ -76,7 +81,7 @@ public interface Command {
     static void verifyArgumentCount(List<String> arguments, ArgumentParser<?>... parsers) {
         int missingCount = parsers.length - arguments.size();
         if (missingCount < 0) {
-            List<String> unused = arguments.subList(missingCount - 1, arguments.size());
+            List<String> unused = arguments.subList(arguments.size() + missingCount, arguments.size());
             Mimo.LOGGER.warning("Ignored arguments %s".formatted(unused));
         }
         if (missingCount > 0) {
