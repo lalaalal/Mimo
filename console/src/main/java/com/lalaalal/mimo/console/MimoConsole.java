@@ -33,6 +33,10 @@ public class MimoConsole {
         }
     }
 
+    public static void listLoaderVersion(Loader.Type type, MinecraftVersion minecraftVersion) {
+        listLoaderVersions(type, minecraftVersion, 1);
+    }
+
     public static void listLoaderVersions(Loader.Type type, MinecraftVersion minecraftVersion, final int limit) {
         List<String> loaderVersions = LoaderInstaller.get(type)
                 .getAvailableVersions(minecraftVersion);

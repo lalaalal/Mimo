@@ -48,6 +48,17 @@ public final class Mimo {
         currentServerInstance = LoaderInstaller.get(type).install(name, minecraftVersion, loaderVersion);
     }
 
+    public static void install(Loader.Type type, String name, MinecraftVersion minecraftVersion) throws IOException, InterruptedException {
+        LoaderInstaller installer = LoaderInstaller.get(type);
+        List<String> versions = installer.getAvailableVersions(minecraftVersion);
+        if (versions.isEmpty()) {
+            Mimo.LOGGER.error("There's no available %s version for minecraft [%s]".formatted(type, minecraftVersion));
+            throw new IllegalStateException("Aborted");
+        }
+        String loaderVersion = versions.getFirst();
+        currentServerInstance = LoaderInstaller.get(type).install(name, minecraftVersion, loaderVersion);
+    }
+
     public static String[] getServers() {
         File directory = getInstanceContainerDirectory().toFile();
         String[] result = directory.list();

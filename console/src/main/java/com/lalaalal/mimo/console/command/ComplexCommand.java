@@ -11,6 +11,12 @@ public class ComplexCommand implements Command {
     private final Map<String, Command> subCommands;
     private final List<String> helpComments;
 
+    private static String mapSubCommandHelpMessage(String subName, String help) {
+        if (help.startsWith("-"))
+            return help;
+        return subName + " " + help;
+    }
+
     public ComplexCommand(String name, Map<Integer, Command> overloadCommands, Map<String, Command> subCommands) {
         this.name = name;
         this.overloadCommands = Map.copyOf(overloadCommands);
@@ -21,7 +27,7 @@ public class ComplexCommand implements Command {
         subCommands.forEach((subName, command) -> {
             List<String> help = command.help()
                     .stream()
-                    .map(value -> " " + subName + value)
+                    .map(value -> mapSubCommandHelpMessage(subName, value))
                     .toList();
             helpComments.addAll(help);
         });

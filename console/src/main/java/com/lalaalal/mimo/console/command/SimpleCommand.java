@@ -73,7 +73,7 @@ public class SimpleCommand<T> implements Command {
                 this.helpComments.clear();
             StringBuilder builder = new StringBuilder();
             for (Object argumentName : argumentNames)
-                builder.append(" [").append(argumentName).append("]");
+                builder.append("[").append(argumentName).append("] ");
             return help(append, builder.toString());
         }
 
