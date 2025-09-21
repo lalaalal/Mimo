@@ -3,6 +3,7 @@ package com.lalaalal.mimo;
 import java.nio.file.Path;
 
 public enum Platform {
+    WINDOWS("AppData/Roaming/mimo"),
     MAC_OS(".local/share/mimo"),
     LINUX(".local/share/mimo");
 
@@ -12,6 +13,8 @@ public enum Platform {
         if (INSTANCE != null)
             return INSTANCE;
         String osName = System.getProperty("os.name").toLowerCase();
+        if (osName.contains("win"))
+            return INSTANCE = WINDOWS;
         if (osName.contains("mac"))
             return INSTANCE = MAC_OS;
         if (osName.contains("linux"))

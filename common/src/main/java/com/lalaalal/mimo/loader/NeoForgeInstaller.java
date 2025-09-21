@@ -80,6 +80,7 @@ public class NeoForgeInstaller extends LoaderInstaller {
 
         ProcessBuilder processBuilder = new ProcessBuilder("java", "-jar", INSTALLER_FILE_NAME, "--install-server", "--server-starter");
         processBuilder.directory(instanceDirectory.toFile());
+        processBuilder.redirectOutput(ProcessBuilder.Redirect.INHERIT);
 
         Mimo.LOGGER.info("Start installing neoforge server...");
         Process process = processBuilder.start();

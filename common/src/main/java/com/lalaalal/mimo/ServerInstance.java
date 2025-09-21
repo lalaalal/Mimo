@@ -11,7 +11,9 @@ import com.lalaalal.mimo.loader.LoaderInstaller;
 import com.lalaalal.mimo.modrinth.ModrinthHelper;
 import com.lalaalal.mimo.modrinth.Request;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collection;
@@ -80,37 +82,16 @@ public class ServerInstance {
             Mimo.LOGGER.warning("There are %d content(s) not downloaded".formatted(notDownloadedContents));
     }
 
-    public void launch(OutputStream outputStream, InputStream inputStream) throws IOException {
+    public void launch() throws IOException, InterruptedException {
         Mimo.LOGGER.info("Launching server \"%s\"".formatted(name));
         String fileName = LoaderInstaller.get(loader.type())
                 .getFileName(version, loader.version());
         ProcessBuilder processBuilder = new ProcessBuilder("java", "-jar", fileName, "nogui");
         processBuilder.directory(path.toFile());
+        processBuilder.redirectInput(ProcessBuilder.Redirect.INHERIT);
+        processBuilder.redirectOutput(ProcessBuilder.Redirect.INHERIT);
         Process process = processBuilder.start();
-
-        Thread thread = new Thread(() -> redirectInputStream(process, inputStream));
-        thread.start();
-
-        String line;
-        PrintStream writer = new PrintStream(outputStream);
-        try (BufferedReader reader = process.inputReader()) {
-            while ((line = reader.readLine()) != null)
-                writer.println(line);
-        }
-        thread.interrupt();
-    }
-
-    private void redirectInputStream(Process process, InputStream inputStream) {
-        String line;
-        BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
-        try (BufferedWriter writer = process.outputWriter()) {
-            while ((line = reader.readLine()) != null) {
-                writer.write(line + "\n");
-                writer.flush();
-            }
-        } catch (IOException ignored) {
-
-        }
+        process.waitFor();
     }
 
     public void setContents(Map<Content, Content.Version> contentVersions) {

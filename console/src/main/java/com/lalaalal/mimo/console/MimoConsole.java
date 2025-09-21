@@ -6,6 +6,8 @@ import com.lalaalal.mimo.ServerInstance;
 import com.lalaalal.mimo.console.argument.ArgumentParsers;
 import com.lalaalal.mimo.console.command.Command;
 import com.lalaalal.mimo.console.command.Commands;
+import com.lalaalal.mimo.console.option.OptionConsumer;
+import com.lalaalal.mimo.console.option.Options;
 import com.lalaalal.mimo.data.MinecraftVersion;
 import com.lalaalal.mimo.data.ProjectType;
 import com.lalaalal.mimo.loader.Loader;
@@ -47,17 +49,21 @@ public class MimoConsole {
         Mimo.LOGGER.info("Total : %d".formatted(servers.length));
     }
 
-    public static void launchServer() throws IOException {
+    public static void launchServer() throws IOException, InterruptedException {
         ServerInstance serverInstance = Mimo.currentInstanceOrThrow();
-        serverInstance.launch(System.out, System.in);
+        serverInstance.launch();
     }
 
-    public static void launchServer(String serverName) throws IOException {
+    public static void launchServer(String serverName) throws IOException, InterruptedException {
         ServerInstance serverInstance = Mimo.load(serverName);
-        serverInstance.launch(System.out, System.in);
+        serverInstance.launch();
     }
 
-    private static void runCommand(String commandString, String[] arguments) {
+    public static void runCommand(String commandString, String... arguments) {
+        runCommand(commandString, List.of(arguments));
+    }
+
+    public static void runCommand(String commandString, List<String> arguments) {
         Optional<Command> command = Commands.get(commandString);
         if (command.isPresent()) {
             Command.Result result = command.get().execute(arguments);
@@ -74,12 +80,27 @@ public class MimoConsole {
         return Level.ERROR;
     }
 
-    public static void main(String[] args) throws IOException {
+    public static void initialize() throws IOException {
         Mimo.initialize();
         ArgumentParsers.initialize();
         Commands.initialize();
-        if (args.length > 0 && args[0].equals("debug"))
-            Mimo.LOGGER.setLevel(Level.DEBUG);
+        Options.initialize();
+    }
+
+    public static void handleOptions(String[] args) {
+        OptionConsumer optionConsumer = new OptionConsumer(args);
+        while (optionConsumer.hasOption()) {
+            String optionString = optionConsumer.consume();
+            List<String> arguments = optionConsumer.consumeOptionArguments();
+            Options.get(optionString).ifPresent(option -> {
+                option.execute(arguments);
+            });
+        }
+    }
+
+    public static void main(String[] args) throws IOException {
+        initialize();
+        handleOptions(args);
 
         try (Scanner scanner = new Scanner(System.in)) {
             while (true) {
