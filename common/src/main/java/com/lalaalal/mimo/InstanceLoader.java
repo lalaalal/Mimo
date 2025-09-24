@@ -93,7 +93,7 @@ public class InstanceLoader {
     private static Map<String, Content.Version> getContentVersions(Path modsPath) throws IOException {
         File modsDirectory = modsPath.toFile();
         File[] modFiles = modsDirectory.listFiles((dir, name) -> name.endsWith(".jar") || name.endsWith(".zip"));
-        if (modFiles == null)
+        if (modFiles == null || modFiles.length == 0)
             return Map.of();
         String[] hashes = new String[modFiles.length];
         for (int index = 0; index < modFiles.length; index++)

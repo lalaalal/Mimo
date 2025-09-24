@@ -57,6 +57,13 @@ public class Commands {
                     .build()
     );
 
+    public static final Command RELOAD = register(
+            Command.simple("reload", ArgumentParsers.STRING)
+                    .argumentHelp("server_name")
+                    .action(Mimo::reload)
+                    .build()
+    );
+
     public static final Command ADD = register(
             Command.complex("add")
                     .overload(1, Command.simple("add", ArgumentParsers.STRING)
