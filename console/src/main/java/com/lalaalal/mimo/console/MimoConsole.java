@@ -71,8 +71,7 @@ public class MimoConsole {
         Optional<Command> command = Commands.get(commandString);
         if (command.isPresent()) {
             Command.Result result = command.get().execute(arguments);
-            for (String message : result.messages())
-                Mimo.LOGGER.log(getLogLevel(result), message);
+            Mimo.LOGGER.log(getLogLevel(result), result.message());
         } else {
             Mimo.LOGGER.error("Command \"%s\" not found".formatted(commandString));
         }

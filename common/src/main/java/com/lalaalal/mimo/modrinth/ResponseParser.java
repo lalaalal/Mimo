@@ -54,7 +54,7 @@ public class ResponseParser {
         verifyRequestType(response, Request.Type.SEARCH);
         Mimo.LOGGER.debug("Parsing search data for %s".formatted(response));
         JsonArray hits = response.data().getAsJsonObject().getAsJsonArray("hits");
-        return result(response, parseProjectIdListFromJsonArray(hits));
+        return result(response, parseProjectSlugListFromJsonArray(hits));
     }
 
     public static List<Content.Version> parseProjectVersionList(Response response) {
@@ -124,7 +124,7 @@ public class ResponseParser {
         return parsed("content list", contents);
     }
 
-    private static List<String> parseProjectIdListFromJsonArray(JsonArray list) {
+    private static List<String> parseProjectSlugListFromJsonArray(JsonArray list) {
         List<String> contents = new ArrayList<>();
         for (JsonElement element : list) {
             contents.add(parseSlug(element));

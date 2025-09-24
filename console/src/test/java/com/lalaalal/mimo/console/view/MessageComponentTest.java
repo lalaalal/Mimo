@@ -1,15 +1,15 @@
 package com.lalaalal.mimo.console.view;
 
-import com.lalaalal.mimo.logging.ComplexComponent;
-import com.lalaalal.mimo.logging.Component;
+import com.lalaalal.mimo.logging.ComplexMessageComponent;
 import com.lalaalal.mimo.logging.ConsoleColor;
+import com.lalaalal.mimo.logging.MessageComponent;
 import com.lalaalal.mimo.logging.TextType;
 import org.junit.jupiter.api.Test;
 
-class ComponentTest {
+class MessageComponentTest {
     @Test
     void text() {
-        Component.text("Red underline\n")
+        MessageComponent.text("Red underline\n")
                 .with(ConsoleColor.RED.foreground())
                 .with(ConsoleColor.GREEN.background())
                 .with(TextType.UNDERLINE)
@@ -18,14 +18,14 @@ class ComponentTest {
 
     @Test
     void complex() {
-        Component a = Component.withDefault("Red underline")
+        MessageComponent a = MessageComponent.withDefault("Red underline")
                 .with(ConsoleColor.RED.foreground())
                 .with(ConsoleColor.GREEN.background())
                 .with(TextType.UNDERLINE);
-        Component b = Component.withDefault("Blue italic")
+        MessageComponent b = MessageComponent.withDefault("Blue italic")
                 .with(ConsoleColor.BLUE.foreground())
                 .with(TextType.ITALIC);
-        new ComplexComponent()
+        new ComplexMessageComponent()
                 .add(a)
                 .add(b)
                 .print(System.out);

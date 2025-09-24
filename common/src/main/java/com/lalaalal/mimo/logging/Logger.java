@@ -17,9 +17,9 @@ public class Logger {
         this.useStyle = useStyle;
     }
 
-    private Component getTimestamp() {
+    private MessageComponent getTimestamp() {
         LocalDateTime now = LocalDateTime.now();
-        return Component.text(String.format("[%02d:%02d:%02d]", now.getHour(), now.getMinute(), now.getSecond()), useStyle)
+        return MessageComponent.text(String.format("[%02d:%02d:%02d]", now.getHour(), now.getMinute(), now.getSecond()), useStyle)
                 .with(ConsoleColor.BLUE.foreground());
     }
 
@@ -36,29 +36,29 @@ public class Logger {
         return currentThread.getName();
     }
 
-    public void log(Level level, Component message) {
+    public void log(Level level, MessageComponent message) {
         message.lines().forEach(line -> internalLog(level, line));
     }
 
-    private void internalLog(Level level, Component line) {
+    private void internalLog(Level level, MessageComponent line) {
         if (this.level.shouldLog(level)) {
-            Component complex = Component.complex(
-                    getTimestamp(), Component.SPACE,
-                    Component.text("[" + getCaller() + "]", useStyle)
-                            .with(ConsoleColor.CYAN.foreground()), Component.SPACE,
-                    Component.text("[" + level.name() + "]", useStyle)
+            MessageComponent complex = MessageComponent.complex(
+                    getTimestamp(), MessageComponent.SPACE,
+                    MessageComponent.text("[" + getCaller() + "]", useStyle)
+                            .with(ConsoleColor.CYAN.foreground()), MessageComponent.SPACE,
+                    MessageComponent.text("[" + level.name() + "]", useStyle)
                             .with(level.style),
-                    Component.text(": ", useStyle)
+                    MessageComponent.text(": ", useStyle)
                             .with(Style.DEFAULT),
                     line,
-                    Component.NEW_LINE
+                    MessageComponent.NEW_LINE
             );
             complex.print(printStream);
         }
     }
 
     public void log(Level level, String message) {
-        log(level, Component.withDefault(message));
+        log(level, MessageComponent.withDefault(message));
     }
 
     public void setLevel(Level level) {
@@ -85,23 +85,23 @@ public class Logger {
         log(Level.ERROR, message);
     }
 
-    public void verbose(Component message) {
+    public void verbose(MessageComponent message) {
         log(Level.VERBOSE, message);
     }
 
-    public void debug(Component message) {
+    public void debug(MessageComponent message) {
         log(Level.DEBUG, message);
     }
 
-    public void info(Component message) {
+    public void info(MessageComponent message) {
         log(Level.INFO, message);
     }
 
-    public void warning(Component message) {
+    public void warning(MessageComponent message) {
         log(Level.WARNING, message);
     }
 
-    public void error(Component message) {
+    public void error(MessageComponent message) {
         log(Level.ERROR, message);
     }
 }

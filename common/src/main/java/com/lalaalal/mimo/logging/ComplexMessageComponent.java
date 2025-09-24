@@ -1,0 +1,74 @@
+package com.lalaalal.mimo.logging;
+
+import java.io.PrintStream;
+import java.util.ArrayList;
+import java.util.List;
+
+public class ComplexMessageComponent extends MessageComponent {
+    private final List<MessageComponent> components = new ArrayList<>();
+
+    public ComplexMessageComponent() {
+
+    }
+
+    public ComplexMessageComponent(List<MessageComponent> components) {
+        this.components.addAll(components);
+    }
+
+    public ComplexMessageComponent add(MessageComponent component) {
+        this.components.add(component);
+        return this;
+    }
+
+    public ComplexMessageComponent add(List<MessageComponent> components) {
+        this.components.addAll(components);
+        return this;
+    }
+
+    public ComplexMessageComponent add(String text) {
+        return add(MessageComponent.text(text, useStyle).with(styles));
+    }
+
+    public ComplexMessageComponent addLine(MessageComponent component) {
+        return add(component).add(MessageComponent.NEW_LINE);
+    }
+
+    public ComplexMessageComponent addLine(String text) {
+        return add(text).add(MessageComponent.NEW_LINE);
+    }
+
+    @Override
+    public void print(PrintStream printStream) {
+        applyStyle();
+        components.forEach(component -> component.print(printStream));
+    }
+
+    @Override
+    public String plainText() {
+        StringBuilder builder = new StringBuilder();
+        components.stream()
+                .map(MessageComponent::plainText)
+                .forEach(builder::append);
+        return builder.toString();
+    }
+
+    @Override
+    public List<MessageComponent> lines() {
+        List<MessageComponent> result = new ArrayList<>();
+        ComplexMessageComponent current = new ComplexMessageComponent();
+        current.with(this.styles).useStyle(this.useStyle);
+        result.add(current);
+        for (MessageComponent component : components) {
+            List<MessageComponent> childLines = component.lines();
+            for (int index = 0; index < childLines.size(); index++) {
+                if (index > 0) {
+                    current = new ComplexMessageComponent();
+                    current.with(this.styles).useStyle(this.useStyle);
+                    result.add(current);
+                }
+                current.add(childLines.get(index));
+            }
+        }
+        return result;
+    }
+}

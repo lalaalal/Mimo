@@ -1,43 +1,28 @@
 package com.lalaalal.mimo.console.command;
 
+import com.lalaalal.mimo.MessageComponentException;
 import com.lalaalal.mimo.console.argument.ArgumentParser;
+import com.lalaalal.mimo.logging.MessageComponent;
 
-import java.util.List;
-
-public class CommandException extends RuntimeException {
-    private final List<String> messages;
+public class CommandException extends MessageComponentException {
     private final boolean shouldPrintHelp;
-
-    private static String pickFirstMessage(List<String> messages) {
-        if (messages.isEmpty())
-            return "";
-        return messages.getFirst();
-    }
 
     public static CommandException missingArguments(ArgumentParser<?>... parsers) {
         StringBuilder builder = new StringBuilder();
         builder.append("Missing ").append(parsers.length).append(" argument(s):");
         for (ArgumentParser<?> parser : parsers)
             builder.append(" [").append(parser).append("]");
-        return new CommandException(true, builder.toString());
+        return new CommandException(builder.toString(), true);
     }
 
-    public static CommandException executionFailed(String... messages) {
-        return new CommandException(false, messages);
-    }
-
-    protected CommandException(boolean shouldPrintHelp, List<String> messages) {
-        super(pickFirstMessage(messages));
+    public CommandException(MessageComponent component, boolean shouldPrintHelp) {
+        super(component);
         this.shouldPrintHelp = shouldPrintHelp;
-        this.messages = messages;
     }
 
-    protected CommandException(boolean shouldPrintHelp, String... messages) {
-        this(shouldPrintHelp, List.of(messages));
-    }
-
-    public List<String> getMessages() {
-        return messages;
+    public CommandException(String message, boolean shouldPrintHelp) {
+        super(message);
+        this.shouldPrintHelp = shouldPrintHelp;
     }
 
     public boolean shouldPrintHelp() {

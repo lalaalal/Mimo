@@ -7,9 +7,9 @@ import com.lalaalal.mimo.json.FieldStrategy;
 import com.lalaalal.mimo.json.GsonExcludeStrategy;
 import com.lalaalal.mimo.json.GsonField;
 import com.lalaalal.mimo.json.TypeStrategy;
-import com.lalaalal.mimo.logging.ComplexComponent;
-import com.lalaalal.mimo.logging.Component;
+import com.lalaalal.mimo.logging.ComplexMessageComponent;
 import com.lalaalal.mimo.logging.ConsoleColor;
+import com.lalaalal.mimo.logging.MessageComponent;
 import com.lalaalal.mimo.modrinth.ModrinthHelper;
 import com.lalaalal.mimo.modrinth.Request;
 import com.lalaalal.mimo.modrinth.ResponseParser;
@@ -192,12 +192,12 @@ public class ContentInstance {
         return content.slug() + " (" + contentVersion.fileName() + ")";
     }
 
-    public Component getStyledText() {
-        ComplexComponent component = Component.complex(Component.text(toString()));
+    public MessageComponent getStyledText() {
+        ComplexMessageComponent component = MessageComponent.complex(MessageComponent.text(toString()));
         if (!isDownloaded())
-            component.add(Component.text(" NOT DOWNLOADED").with(ConsoleColor.RED.foreground()));
+            component.add(MessageComponent.text(" NOT DOWNLOADED").with(ConsoleColor.RED.foreground()));
         if (!isUpToDate())
-            component.add(Component.text(" OUT OF DATE").with(ConsoleColor.YELLOW.foreground()));
+            component.add(MessageComponent.text(" OUT OF DATE").with(ConsoleColor.YELLOW.foreground()));
         return component;
     }
 }

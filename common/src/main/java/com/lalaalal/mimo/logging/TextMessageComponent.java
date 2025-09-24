@@ -4,10 +4,10 @@ import java.io.PrintStream;
 import java.util.Arrays;
 import java.util.List;
 
-public class TextComponent extends Component {
+public class TextMessageComponent extends MessageComponent {
     private final String text;
 
-    public TextComponent(String text) {
+    public TextMessageComponent(String text) {
         this.text = text;
     }
 
@@ -18,9 +18,14 @@ public class TextComponent extends Component {
     }
 
     @Override
-    public List<Component> lines() {
+    public String plainText() {
+        return text;
+    }
+
+    @Override
+    public List<MessageComponent> lines() {
         return Arrays.stream(text.split("\n"))
-                .map(line -> Component.text(line, this.useStyle)
+                .map(line -> MessageComponent.text(line, this.useStyle)
                         .with(this.styles))
                 .toList();
     }

@@ -3,10 +3,10 @@ package com.lalaalal.mimo.logging;
 import com.lalaalal.mimo.Mimo;
 import org.junit.jupiter.api.Test;
 
-class ListComponentTest {
+class ListMessageComponentTest {
     @Test
     void testListComponent() {
-        Component component = ListComponent.unordered("ABC", "DE\nF", "GHI");
+        MessageComponent component = ListMessageComponent.unordered("ABC", "DE\nF", "GHI");
         Mimo.LOGGER.info(component);
     }
 

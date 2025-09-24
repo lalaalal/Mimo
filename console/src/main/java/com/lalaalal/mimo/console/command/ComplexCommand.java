@@ -1,5 +1,7 @@
 package com.lalaalal.mimo.console.command;
 
+import com.lalaalal.mimo.logging.ComplexMessageComponent;
+
 import java.util.*;
 
 public class ComplexCommand implements Command {
@@ -35,10 +37,10 @@ public class ComplexCommand implements Command {
             }
         }
         if (overloadCommands.isEmpty()) {
-            List<String> comments = new ArrayList<>();
-            comments.add("No matching command : %s %s".formatted(name(), arguments));
-            Commands.help(this, false, comments::add);
-            return Result.fail(comments);
+            ComplexMessageComponent component = new ComplexMessageComponent()
+                    .addLine("No matching command : %s %s".formatted(name(), arguments));
+            Commands.help(this, false, component::addLine);
+            return Result.fail(component);
         }
         int argumentCount = select(arguments);
         return overloadCommands.get(argumentCount)

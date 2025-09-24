@@ -4,6 +4,7 @@ import com.lalaalal.mimo.Mimo;
 import com.lalaalal.mimo.console.Registries;
 import com.lalaalal.mimo.console.argument.ArgumentParser;
 import com.lalaalal.mimo.console.argument.Arguments;
+import com.lalaalal.mimo.logging.MessageComponent;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -137,21 +138,21 @@ public interface Command {
         void accept(A1 a1, A2 a2, A3 a3, A4 a4) throws Throwable;
     }
 
-    record Result(boolean succeed, List<String> messages) {
-        public static Result success(String... messages) {
-            return success(List.of(messages));
+    record Result(boolean succeed, MessageComponent message) {
+        public static Result success(String message) {
+            return success(MessageComponent.withDefault(message));
         }
 
-        public static Result success(List<String> messages) {
-            return new Result(true, messages);
+        public static Result success(MessageComponent message) {
+            return new Result(true, message);
         }
 
-        public static Result fail(String... messages) {
-            return fail(List.of(messages));
+        public static Result fail(String message) {
+            return fail(MessageComponent.withDefault(message));
         }
 
-        public static Result fail(List<String> messages) {
-            return new Result(false, messages);
+        public static Result fail(MessageComponent message) {
+            return new Result(false, message);
         }
     }
 }
