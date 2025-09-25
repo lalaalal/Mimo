@@ -96,7 +96,7 @@ public class ServerInstance {
 
     public void setContents(Map<Content, Content.Version> contentVersions) {
         for (Content content : contentVersions.keySet()) {
-            Mimo.LOGGER.info("Adding \"%s\" to \"%s\" instance".formatted(content.slug(), name));
+            Mimo.LOGGER.info("Loading \"%s\" to \"%s\" instance".formatted(content.slug(), name));
             this.contents.put(content, new ContentInstance(this, content, contentVersions.get(content)));
         }
         checkUpdate();
@@ -111,7 +111,7 @@ public class ServerInstance {
     public void addContent(Content content) {
         if (this.contains(content))
             return;
-        Mimo.LOGGER.info("Adding content \"%s\"".formatted(content.slug()));
+        Mimo.LOGGER.info("[%s] Adding content \"%s\"".formatted(this, content.slug()));
         ContentInstance contentInstance = new ContentInstance(this, content);
         contents.put(content, contentInstance);
     }
@@ -129,6 +129,7 @@ public class ServerInstance {
      */
     public void removeContent(Content content) throws IOException {
         if (contents.containsKey(content)) {
+            Mimo.LOGGER.info("[%s] Removing content \"%s\"".formatted(this, content.slug()));
             ContentInstance contentInstance = contents.get(content);
             contentInstance.removeContent();
             contents.remove(content);
@@ -144,8 +145,9 @@ public class ServerInstance {
      */
     public synchronized void updateContents() throws IOException {
         downloadContents();
-        Mimo.LOGGER.info("Updating contents for \"%s\"".formatted(name));
+        Mimo.LOGGER.info("[%s] Updating contents".formatted(this));
         for (ContentInstance contentInstance : contents.values()) {
+            contentInstance.loadLatestVersion();
             if (contentInstance.isUpToDate())
                 continue;
 
@@ -155,7 +157,7 @@ public class ServerInstance {
     }
 
     public synchronized void downloadContents() throws IOException {
-        Mimo.LOGGER.info("Downloading contents for \"%s\"".formatted(name));
+        Mimo.LOGGER.info("[%s] Downloading contents".formatted(this));
         for (ContentInstance contentInstance : contents.values()) {
             if (contentInstance.isDownloaded())
                 continue;
@@ -179,10 +181,15 @@ public class ServerInstance {
     }
 
     public void save(Path path) throws IOException {
-        Mimo.LOGGER.debug("Saving instance \"%s\"".formatted(name));
+        Mimo.LOGGER.debug("[%s] Saving instance".formatted(this));
         try (JsonWriter jsonWriter = new JsonWriter(new FileWriter(path.toFile()))) {
             jsonWriter.setFormattingStyle(FormattingStyle.PRETTY);
             Mimo.GSON.toJson(this, ServerInstance.class, jsonWriter);
         }
+    }
+
+    @Override
+    public String toString() {
+        return name;
     }
 }

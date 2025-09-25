@@ -37,24 +37,23 @@ public class Logger {
     }
 
     public void log(Level level, MessageComponent message) {
-        message.lines().forEach(line -> internalLog(level, line));
+        if (this.level.shouldLog(level))
+            message.lines().forEach(line -> internalLog(level, line));
     }
 
     private void internalLog(Level level, MessageComponent line) {
-        if (this.level.shouldLog(level)) {
-            MessageComponent complex = MessageComponent.complex(
-                    getTimestamp(), MessageComponent.SPACE,
-                    MessageComponent.text("[" + getCaller() + "]", useStyle)
-                            .with(ConsoleColor.CYAN.foreground()), MessageComponent.SPACE,
-                    MessageComponent.text("[" + level.name() + "]", useStyle)
-                            .with(level.style),
-                    MessageComponent.text(": ", useStyle)
-                            .with(Style.DEFAULT),
-                    line,
-                    MessageComponent.NEW_LINE
-            );
-            complex.print(printStream);
-        }
+        MessageComponent complex = MessageComponent.complex(
+                getTimestamp(), MessageComponent.SPACE,
+                MessageComponent.text("[" + getCaller() + "]", useStyle)
+                        .with(ConsoleColor.CYAN.foreground()), MessageComponent.SPACE,
+                MessageComponent.text("[" + level.name() + "]", useStyle)
+                        .with(level.style),
+                MessageComponent.text(": ", useStyle)
+                        .with(Style.DEFAULT),
+                line,
+                MessageComponent.NEW_LINE
+        );
+        complex.print(printStream);
     }
 
     public void log(Level level, String message) {

@@ -1,7 +1,7 @@
 package com.lalaalal.mimo.console.command;
 
-import com.lalaalal.mimo.MessageComponentException;
 import com.lalaalal.mimo.console.argument.ArgumentParser;
+import com.lalaalal.mimo.exception.MessageComponentException;
 import com.lalaalal.mimo.logging.MessageComponent;
 
 public class CommandException extends MessageComponentException {

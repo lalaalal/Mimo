@@ -7,6 +7,7 @@ import com.lalaalal.mimo.Mimo;
 import com.lalaalal.mimo.ServerInstance;
 import com.lalaalal.mimo.data.Content;
 import com.lalaalal.mimo.data.ProjectType;
+import com.lalaalal.mimo.json.JsonHelper;
 import com.lalaalal.mimo.loader.Loader;
 
 import java.util.ArrayList;
@@ -24,9 +25,9 @@ public class ResponseParser {
     }
 
     protected static void verifyRequestType(Response response, List<Request.Type> requiredTypes) {
-        Mimo.LOGGER.debug("Verifying request type for %s".formatted(response));
+        Mimo.LOGGER.debug("[REQ %03d] Verifying request type for %s".formatted(response.id(), response));
         if (!requiredTypes.contains(response.requestType()))
-            throw new IllegalArgumentException("Required request type is [%s] but %s".formatted(requiredTypes, response.requestType()));
+            throw new IllegalArgumentException("[REQ %03d] Required request type is [%s] but %s".formatted(response.id(), requiredTypes, response.requestType()));
     }
 
     public static Function<Response, Content> contentParser(ServerInstance serverInstance) {
@@ -39,29 +40,31 @@ public class ResponseParser {
 
     public static List<Content> parseContentList(Loader.Type loader, Response response) {
         verifyRequestType(response, Request.Type.GET_PROJECT_LIST);
-        Mimo.LOGGER.debug("Parsing content list for %s".formatted(response));
-        JsonArray list = response.data().getAsJsonArray();
+        logStartParsing("content list", response);
+        JsonArray list = JsonHelper.toJsonArray(response.data());
         return result(response, parseContentListFromJsonArray(loader, list));
     }
 
     public static Content parseContent(Loader.Type loader, Response response) {
         verifyRequestType(response, Request.Type.GET_PROJECT);
-        Mimo.LOGGER.debug("Parsing content for %s".formatted(response));
-        return result(response, parseContent(loader, response.data().getAsJsonObject()));
+        logStartParsing("content", response);
+        return result(response, parseContent(loader, JsonHelper.toJsonObject(response.data())));
     }
 
     public static List<String> parseSearchData(Response response) {
         verifyRequestType(response, Request.Type.SEARCH);
-        Mimo.LOGGER.debug("Parsing search data for %s".formatted(response));
-        JsonArray hits = response.data().getAsJsonObject().getAsJsonArray("hits");
+        logStartParsing("search data", response);
+        JsonObject data = JsonHelper.toJsonObject(response.data());
+        JsonHelper.testKeys(data, "hits");
+        JsonArray hits = JsonHelper.toJsonArray(data.get("hits"));
         return result(response, parseProjectSlugListFromJsonArray(hits));
     }
 
     public static List<Content.Version> parseProjectVersionList(Response response) {
         verifyRequestType(response, Request.Type.GET_PROJECT_VERSION_LIST);
-        Mimo.LOGGER.debug("Parsing content version for %s".formatted(response));
+        logStartParsing("version list", response);
         List<Content.Version> versions = new ArrayList<>();
-        for (JsonElement element : response.data().getAsJsonArray())
+        for (JsonElement element : JsonHelper.toJsonArray(response.data()))
             versions.add(parseVersion(element));
 
         return result(response, versions);
@@ -69,17 +72,17 @@ public class ResponseParser {
 
     public static Content.Version parseVersion(Response response) {
         verifyRequestType(response, Request.Type.LATEST_VERSION, Request.Type.GET_VERSION_FILE);
-        Mimo.LOGGER.debug("Parsing version for %s".formatted(response));
+        logStartParsing("version", response);
         return result(response, parseVersion(response.data()));
     }
 
     public static Map<String, Content.Version> parseVersionListWithProjectId(Response response) {
         verifyRequestType(response, Request.Type.GET_VERSION_FILE_LIST);
-        Mimo.LOGGER.debug("Parsing version list from multiple projects for %s".formatted(response));
-        JsonObject data = response.data().getAsJsonObject();
+        logStartParsing("version mapping", response);
+        JsonObject data = JsonHelper.toJsonObject(response.data());
         Map<String, Content.Version> versions = new HashMap<>();
         for (String key : data.keySet()) {
-            JsonObject element = data.getAsJsonObject(key);
+            JsonObject element = JsonHelper.toJsonObject(data.get(key));
             versions.put(parseProjectId(element), parseVersion(element));
         }
         return result(response, versions);
@@ -87,16 +90,17 @@ public class ResponseParser {
 
     public static String parseProjectId(Response response) {
         verifyRequestType(response, Request.Type.LATEST_VERSION, Request.Type.GET_PROJECT, Request.Type.GET_VERSION_FILE);
-        Mimo.LOGGER.debug("Parsing project id for %s".formatted(response));
+        logStartParsing("project id", response);
         return result(response, parseProjectId(response.data()));
     }
 
     private static ProjectType parseProjectType(JsonObject data) {
         if (!data.has("loaders"))
-            return parsed("project type", ProjectType.get(data.get("project_type").getAsString()));
-        List<String> loaders = data.get("loaders").getAsJsonArray().asList()
+            return parsed("project type", ProjectType.get(JsonHelper.toString(data.get("project_type"))));
+        List<String> loaders = JsonHelper.toJsonArray(data.get("loaders"))
+                .asList()
                 .stream()
-                .map(JsonElement::getAsString)
+                .map(JsonHelper::toString)
                 .toList();
         if (loaders.contains("datapack") && loaders.size() == 1)
             return parsed("project type", ProjectType.DATAPACK);
@@ -105,10 +109,12 @@ public class ResponseParser {
 
     private static Content parseContent(Loader.Type loader, JsonObject data) {
         String projectIdKey = data.has("project_id") ? "project_id" : "id";
-        String id = data.get(projectIdKey).getAsString();
-        String slug = data.get("slug").getAsString();
+        JsonHelper.testKeys(data, projectIdKey, "slug", "project_type");
+
+        String id = JsonHelper.toString(data.get(projectIdKey));
+        String slug = JsonHelper.toString(data.get("slug"));
         ProjectType projectType = parseProjectType(data);
-        if (data.has("server_side") && data.get("server_side").getAsString().equals("unsupported"))
+        if (data.has("server_side") && JsonHelper.toString(data.get("server_side")).equals("unsupported"))
             Mimo.LOGGER.warning("Content \"%s\" is client only!!".formatted(slug));
 
         return parsed("content", new Content(projectType, loader, id, slug));
@@ -117,7 +123,7 @@ public class ResponseParser {
     private static List<Content> parseContentListFromJsonArray(Loader.Type loader, JsonArray list) {
         List<Content> contents = new ArrayList<>();
         for (JsonElement element : list) {
-            JsonObject currentContent = element.getAsJsonObject();
+            JsonObject currentContent = JsonHelper.toJsonObject(element);
             Content content = parseContent(loader, currentContent);
             contents.add(content);
         }
@@ -133,37 +139,48 @@ public class ResponseParser {
     }
 
     private static Content.Version parseVersion(JsonElement element) {
-        JsonObject versionData = element.getAsJsonObject();
-        String versionId = versionData.get("id").getAsString();
-        JsonArray files = versionData.getAsJsonArray("files");
+        JsonObject versionData = JsonHelper.toJsonObject(element);
+        JsonHelper.testKeys(versionData, "id", "files", "dependencies");
+        String versionId = JsonHelper.toString(versionData.get("id"));
+        JsonArray files = JsonHelper.toJsonArray(versionData.get("files"));
         if (files.isEmpty())
             throw new IllegalStateException("No available version for " + versionId);
-        JsonObject file = files.get(0).getAsJsonObject();
-        JsonObject hashes = file.getAsJsonObject("hashes");
-        String hash = hashes.get("sha1").getAsString();
-        String url = file.get("url").getAsString();
-        String fileName = file.get("filename").getAsString();
-        JsonArray dependencies = versionData.get("dependencies").getAsJsonArray();
+
+        JsonObject file = JsonHelper.toJsonObject(files.get(0));
+        JsonHelper.testKeys(file, "hashes", "url", "filename");
+        JsonObject hashes = JsonHelper.toJsonObject(file.get("hashes"));
+        String hash = JsonHelper.toString(hashes.get("sha1"));
+        String url = JsonHelper.toString(file.get("url"));
+        String fileName = JsonHelper.toString(file.get("filename"));
+
+        JsonArray dependencies = JsonHelper.toJsonArray(versionData.get("dependencies"));
         List<Content.Dependency> versionDependencies = new ArrayList<>();
         for (JsonElement dependency : dependencies) {
-            JsonObject dependencyData = dependency.getAsJsonObject();
-            String dependencyId = dependencyData.get("project_id").getAsString();
-            boolean required = dependencyData.get("dependency_type").getAsString().equals("required");
-            versionDependencies.add(new Content.Dependency(dependencyId, required));
+            JsonObject dependencyData = JsonHelper.toJsonObject(dependency);
+            JsonHelper.testKeys(dependencyData, "project_id", "dependency_type");
+            String dependencyId = JsonHelper.toString(dependencyData.get("project_id"));
+            String dependencyType = JsonHelper.toString(dependencyData.get("dependency_type"));
+            versionDependencies.add(new Content.Dependency(dependencyId, dependencyType.equals("required")));
         }
 
         return parsed("version", new Content.Version(versionId, hash, url, fileName, versionDependencies));
     }
 
     private static String parseProjectId(JsonElement element) {
-        JsonObject data = element.getAsJsonObject();
+        JsonObject data = JsonHelper.toJsonObject(element);
         String projectIdKey = data.has("project_id") ? "project_id" : "id";
-        return parsed("project id", data.get(projectIdKey).getAsString());
+        JsonHelper.testKeys(data, projectIdKey);
+        return parsed("project id", JsonHelper.toString(data.get(projectIdKey)));
     }
 
     private static String parseSlug(JsonElement element) {
-        JsonObject data = element.getAsJsonObject();
-        return parsed("slug", data.get("slug").getAsString());
+        JsonObject data = JsonHelper.toJsonObject(element);
+        JsonHelper.testKeys(data, "slug");
+        return parsed("slug", JsonHelper.toString(data.get("slug")));
+    }
+
+    private static void logStartParsing(String target, Response response) {
+        Mimo.LOGGER.debug("[REQ %03d] Starting parsing %s for %s".formatted(response.id(), target, response.requestType()));
     }
 
     private static <T> T parsed(String name, T value) {
@@ -172,7 +189,7 @@ public class ResponseParser {
     }
 
     private static <T> T result(Response response, T value) {
-        Mimo.LOGGER.debug("Parse Result for %s is \"%s\"".formatted(response, value));
+        Mimo.LOGGER.debug("[REQ %03d] Parse result for %s is \"%s\"".formatted(response.id(), response.requestType(), value));
         return value;
     }
 }

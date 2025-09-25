@@ -49,6 +49,7 @@ public class ContentInstance {
     }
 
     protected void resolveDependencies(Content.Version version) {
+        Mimo.LOGGER.info("[%s] (%s) Resolving dependencies for \"%s\"".formatted(serverInstance, this, version.fileName()));
         for (Content.Dependency dependency : version.dependencies()) {
             if (dependency.required()) {
                 Content content = ModrinthHelper.get(
@@ -56,12 +57,14 @@ public class ContentInstance {
                         ResponseParser.contentParser(serverInstance)
                 );
                 serverInstance.addContent(content);
+            } else {
+                Mimo.LOGGER.debug("[%s] (%s) Skipping optional dependency \"%s\"".formatted(serverInstance, this, dependency.id()));
             }
         }
     }
 
     protected void loadVersions() {
-        Mimo.LOGGER.debug("Loading versions for \"%s\"".formatted(content.slug()));
+        Mimo.LOGGER.debug("[%s] (%s) Loading versions for \"%s\"".formatted(serverInstance, this, content.slug()));
         this.availableVersions = ModrinthHelper.get(
                 Request.projectVersions(content, serverInstance),
                 ResponseParser::parseProjectVersionList
@@ -70,13 +73,18 @@ public class ContentInstance {
             selectContentVersion(0);
     }
 
+    public void checkLatestVersion() {
+        if (updatingVersion == null)
+            loadLatestVersion();
+    }
+
     public void loadLatestVersion() {
-        Mimo.LOGGER.debug("Loading latest version for \"%s\"".formatted(content.slug()));
+        Mimo.LOGGER.debug("[%s] (%s) Loading latest version".formatted(serverInstance, this));
         updatingVersion = ModrinthHelper.get(
                 Request.latestVersion(content, contentVersion, serverInstance),
                 ResponseParser::parseVersion
         );
-        Mimo.LOGGER.debug("Latest version for \"%s\" is \"%s\"".formatted(content.slug(), updatingVersion.fileName()));
+        Mimo.LOGGER.debug("[%s] (%s) Latest version is \"%s\"".formatted(serverInstance, this, content.slug()));
     }
 
     public boolean is(Content content) {
@@ -90,7 +98,7 @@ public class ContentInstance {
     public boolean isUpToDate() {
         if (!isVersionSelected())
             return false;
-        loadLatestVersion();
+        checkLatestVersion();
         return contentVersion.versionId().equals(updatingVersion.versionId());
     }
 
@@ -121,12 +129,11 @@ public class ContentInstance {
         if (availableVersions == null)
             loadVersions();
         if (availableVersions.isEmpty()) {
-            Mimo.LOGGER.warning("No available version for \"%s\" (%s) [%s]".formatted(content.slug(), serverInstance.loader, serverInstance.version));
-            Mimo.LOGGER.warning("Cancel adding content \"%s\"".formatted(content.slug()));
+            Mimo.LOGGER.warning("[%s] (%s) No available version".formatted(serverInstance, this));
             throw new IllegalStateException("Aborted");
         }
         this.contentVersion = availableVersions.get(index);
-        Mimo.LOGGER.info("Selecting version \"%s\" for \"%s\"".formatted(contentVersion.fileName(), content.slug()));
+        Mimo.LOGGER.info("[%s] (%s) Selecting version \"%s\"".formatted(serverInstance, this, contentVersion.fileName()));
         resolveDependencies(contentVersion);
     }
 
@@ -155,7 +162,7 @@ public class ContentInstance {
         Path contentPath = getContentPath(version);
         Path directory = contentPath.getParent();
         if (!Files.exists(directory)) {
-            Mimo.LOGGER.debug("Creating directory \"%s\"".formatted(directory));
+            Mimo.LOGGER.debug("[%s] (%s) Creating directory \"%s\"".formatted(serverInstance, this, directory));
             Files.createDirectories(directory);
         }
         return contentPath;
@@ -166,7 +173,7 @@ public class ContentInstance {
         Content.Version version = getDownloadingVersion();
         Path contentPath = createContentPath(version);
         Files.createDirectories(contentPath.getParent());
-        Mimo.LOGGER.info("Downloading \"%s\"".formatted(contentPath));
+        Mimo.LOGGER.info("[%s] (%s) Downloading \"%s\"".formatted(serverInstance, this, contentPath));
         ModrinthHelper.download(version, contentPath);
         handlePostDownloadUpdatingVersion();
     }
@@ -175,7 +182,7 @@ public class ContentInstance {
         Content.Version version = getContentVersion();
         Path contentPath = getContentPath(version);
         if (Files.exists(contentPath)) {
-            Mimo.LOGGER.info("Deleting \"%s\"".formatted(contentPath));
+            Mimo.LOGGER.info("[%s] (%s) Deleting \"%s\"".formatted(serverInstance, this, contentPath));
             Files.delete(contentPath);
         }
     }
@@ -187,13 +194,14 @@ public class ContentInstance {
 
     @Override
     public String toString() {
-        if (contentVersion == null)
-            return content.slug();
-        return content.slug() + " (" + contentVersion.fileName() + ")";
+        return content.slug();
     }
 
     public MessageComponent getStyledText() {
-        ComplexMessageComponent component = MessageComponent.complex(MessageComponent.text(toString()));
+        String name = content.slug();
+        if (isVersionSelected())
+            name += " (" + contentVersion.fileName() + ")";
+        ComplexMessageComponent component = MessageComponent.complex(MessageComponent.withDefault(name));
         if (!isDownloaded())
             component.add(MessageComponent.text(" NOT DOWNLOADED").with(ConsoleColor.RED.foreground()));
         if (!isUpToDate())

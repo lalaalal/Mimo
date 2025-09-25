@@ -1,7 +1,8 @@
 package com.lalaalal.mimo.console.command;
 
-import com.lalaalal.mimo.MessageComponentException;
+import com.lalaalal.mimo.exception.MessageComponentException;
 import com.lalaalal.mimo.logging.ComplexMessageComponent;
+import com.lalaalal.mimo.logging.MessageComponent;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,7 +32,10 @@ public class SimpleCommand<T> implements Command {
                 Commands.help(this, false, component::addLine);
             return Result.fail(component);
         } catch (MessageComponentException exception) {
-            return Result.fail(exception.getMessageComponent());
+            return Result.fail(exception.getMessageComponent()
+                    .complex()
+                    .addLine(MessageComponent.withDefault("Aborted"))
+            );
         } catch (Throwable throwable) {
             return Result.fail(throwable.getMessage());
         }

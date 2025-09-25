@@ -15,6 +15,15 @@ public class ComplexMessageComponent extends MessageComponent {
         this.components.addAll(components);
     }
 
+    public ComplexMessageComponent insert(MessageComponent component) {
+        this.components.addFirst(component);
+        return this;
+    }
+
+    public ComplexMessageComponent insertLine(MessageComponent component) {
+        return insert(component).add(MessageComponent.NEW_LINE);
+    }
+
     public ComplexMessageComponent add(MessageComponent component) {
         this.components.add(component);
         return this;
@@ -55,20 +64,13 @@ public class ComplexMessageComponent extends MessageComponent {
     @Override
     public List<MessageComponent> lines() {
         List<MessageComponent> result = new ArrayList<>();
-        ComplexMessageComponent current = new ComplexMessageComponent();
-        current.with(this.styles).useStyle(this.useStyle);
-        result.add(current);
-        for (MessageComponent component : components) {
-            List<MessageComponent> childLines = component.lines();
-            for (int index = 0; index < childLines.size(); index++) {
-                if (index > 0) {
-                    current = new ComplexMessageComponent();
-                    current.with(this.styles).useStyle(this.useStyle);
-                    result.add(current);
-                }
-                current.add(childLines.get(index));
-            }
-        }
+        for (MessageComponent component : components)
+            result.addAll(component.lines());
         return result;
+    }
+
+    @Override
+    public ComplexMessageComponent complex() {
+        return this;
     }
 }

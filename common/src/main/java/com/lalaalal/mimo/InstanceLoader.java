@@ -4,6 +4,7 @@ import com.google.gson.JsonParseException;
 import com.lalaalal.mimo.data.Content;
 import com.lalaalal.mimo.data.MinecraftVersion;
 import com.lalaalal.mimo.data.ProjectType;
+import com.lalaalal.mimo.exception.MessageComponentException;
 import com.lalaalal.mimo.loader.Loader;
 import com.lalaalal.mimo.modrinth.ModrinthHelper;
 import com.lalaalal.mimo.modrinth.Request;
@@ -60,7 +61,7 @@ public class InstanceLoader {
         File[] files = directory.toFile().listFiles((dir, name) -> name.matches(JAR_NAME_PATTERN.pattern()));
 
         if (files == null || files.length != 1)
-            throw new IllegalStateException("Server " + serverName + " not found");
+            throw new MessageComponentException("Server " + serverName + " not found");
         File jarFile = files[0];
         return createServer(serverName, jarFile.getName(), directory);
     }

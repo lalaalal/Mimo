@@ -57,6 +57,11 @@ public class ListMessageComponent extends MessageComponent {
         return result;
     }
 
+    @Override
+    public ComplexMessageComponent complex() {
+        return MessageComponent.complex(this);
+    }
+
     protected String getHead(int index) {
         return ordered ? "%02d ".formatted(index) : "- ";
     }

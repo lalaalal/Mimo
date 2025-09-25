@@ -29,4 +29,9 @@ public class TextMessageComponent extends MessageComponent {
                         .with(this.styles))
                 .toList();
     }
+
+    @Override
+    public ComplexMessageComponent complex() {
+        return MessageComponent.complex(this);
+    }
 }

@@ -41,6 +41,8 @@ public abstract class MessageComponent {
 
     public abstract List<MessageComponent> lines();
 
+    public abstract ComplexMessageComponent complex();
+
     protected void applyStyle() {
         if (useStyle)
             styles.forEach(Style::apply);

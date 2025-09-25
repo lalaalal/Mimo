@@ -1,4 +1,4 @@
-package com.lalaalal.mimo;
+package com.lalaalal.mimo.exception;
 
 import com.lalaalal.mimo.logging.MessageComponent;
 
@@ -23,6 +23,13 @@ public class MessageComponentException extends RuntimeException {
     public MessageComponentException(String message, Throwable cause) {
         super(message, cause);
         this.component = MessageComponent.withDefault(message);
+    }
+
+    public MessageComponentException(String message, MessageComponentException cause) {
+        super(message, cause);
+        this.component = MessageComponent.complex(
+                MessageComponent.withDefault(message), MessageComponent.NEW_LINE, cause.getMessageComponent()
+        );
     }
 
     public MessageComponent getMessageComponent() {
