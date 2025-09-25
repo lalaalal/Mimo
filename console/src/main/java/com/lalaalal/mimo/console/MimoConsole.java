@@ -21,6 +21,8 @@ import java.util.Optional;
 import java.util.Scanner;
 
 public class MimoConsole {
+    public static final String VERSION = "1.0";
+
     public static void list() {
         for (ContentInstance content : Mimo.currentInstanceOrThrow().getContents())
             Mimo.LOGGER.info(content.getStyledText());
@@ -83,13 +85,6 @@ public class MimoConsole {
         return Level.ERROR;
     }
 
-    public static void initialize() throws IOException {
-        Mimo.initialize();
-        ArgumentParsers.initialize();
-        Commands.initialize();
-        Options.initialize();
-    }
-
     public static void handleOptions(String[] args) {
         OptionConsumer optionConsumer = new OptionConsumer(args);
         while (optionConsumer.hasOption()) {
@@ -102,8 +97,11 @@ public class MimoConsole {
     }
 
     public static void main(String[] args) throws IOException {
-        initialize();
+        ArgumentParsers.initialize();
+        Commands.initialize();
+        Options.initialize();
         handleOptions(args);
+        Mimo.initialize();
 
         try (Scanner scanner = new Scanner(System.in)) {
             while (true) {

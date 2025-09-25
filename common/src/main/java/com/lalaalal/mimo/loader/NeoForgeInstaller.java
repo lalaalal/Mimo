@@ -32,6 +32,7 @@ public class NeoForgeInstaller extends LoaderInstaller {
     }
 
     private void loadNeoForgeVersions() throws IOException {
+        Mimo.LOGGER.info("Loading NeoForge versions");
         String data = HttpHelper.sendSimpleHttpRequest(NEOFORGE_VERSIONS_URL);
         JsonObject object = Mimo.GSON.fromJson(data, JsonObject.class);
         JsonArray versions = object.get("versions").getAsJsonArray();

@@ -10,9 +10,15 @@ import com.lalaalal.mimo.logging.Level;
 import java.util.List;
 import java.util.Optional;
 
+@SuppressWarnings("unused")
 public class Options {
     public static Optional<Command> get(String name) {
         return Optional.ofNullable(Registries.OPTIONS.get(name));
+    }
+
+    public static Command register(String name, Command command) {
+        Registries.OPTIONS.register(name, command);
+        return command;
     }
 
     public static Command register(String name, String alias, Command command) {
@@ -27,7 +33,7 @@ public class Options {
                     .build()
     );
 
-    public static final Command VERBOSE = register("--verbose", "-v",
+    public static final Command VERBOSE = register("--verbose",
             Command.simple("verbose")
                     .action(() -> Mimo.LOGGER.setLevel(Level.VERBOSE))
                     .build()
@@ -39,10 +45,21 @@ public class Options {
                     .build()
     );
 
+    public static final Command VERSION = register("--version", "-v",
+            Command.simple("version")
+                    .action(Options::printVersion)
+                    .build()
+    );
+
     private static void executeCommand(List<String> tokens) {
         String commandString = tokens.getFirst();
         List<String> arguments = tokens.subList(1, tokens.size());
         MimoConsole.runCommand(commandString, arguments);
+        System.exit(0);
+    }
+
+    private static void printVersion() {
+        System.out.println("Mimo " + MimoConsole.VERSION);
         System.exit(0);
     }
 

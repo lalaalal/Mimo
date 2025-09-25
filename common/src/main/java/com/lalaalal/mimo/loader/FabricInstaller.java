@@ -29,6 +29,7 @@ public class FabricInstaller extends LoaderInstaller {
     }
 
     private List<String> parseVersions(String target) throws IOException {
+        Mimo.LOGGER.info("Loading Fabric " + target + " versions");
         String data = HttpHelper.sendSimpleHttpRequest(VERSIONS_URL + target);
         JsonArray versions = Mimo.GSON.fromJson(data, JsonArray.class);
         List<String> result = new ArrayList<>();

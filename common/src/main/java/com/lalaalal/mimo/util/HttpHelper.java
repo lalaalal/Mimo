@@ -10,11 +10,11 @@ import java.nio.file.Path;
 
 public class HttpHelper {
     public static String sendSimpleHttpRequest(String stringURL) throws IOException {
-        Mimo.LOGGER.debug("Connecting to \"%s\"".formatted(stringURL));
         URL url = URL.of(URI.create(stringURL), null);
         HttpsURLConnection connection = (HttpsURLConnection) url.openConnection();
         connection.setConnectTimeout(2000);
         connection.setUseCaches(false);
+        Mimo.LOGGER.debug("Connecting to \"%s\"".formatted(stringURL));
         connection.connect();
 
         Mimo.LOGGER.debug("Reading response");
@@ -30,11 +30,11 @@ public class HttpHelper {
     }
 
     public static void download(String stringURL, Path path) throws IOException {
-        Mimo.LOGGER.debug("Connecting to \"%s\"".formatted(stringURL));
         URL url = URL.of(URI.create(stringURL), null);
         HttpsURLConnection connection = (HttpsURLConnection) url.openConnection();
         connection.setConnectTimeout(2000);
         connection.setUseCaches(false);
+        Mimo.LOGGER.debug("Connecting to \"%s\"".formatted(stringURL));
         connection.connect();
 
         Mimo.LOGGER.debug("Downloading file to \"%s\"".formatted(path));
