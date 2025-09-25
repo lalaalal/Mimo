@@ -50,7 +50,7 @@ public class Logger {
                         .with(level.style),
                 MessageComponent.text(": ", useStyle)
                         .with(Style.DEFAULT),
-                line,
+                line.useStyle(useStyle),
                 MessageComponent.NEW_LINE
         );
         complex.print(printStream);

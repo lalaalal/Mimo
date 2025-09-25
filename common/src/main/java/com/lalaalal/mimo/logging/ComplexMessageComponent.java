@@ -16,7 +16,7 @@ public class ComplexMessageComponent extends MessageComponent {
     }
 
     public ComplexMessageComponent insert(MessageComponent component) {
-        this.components.addFirst(component);
+        this.components.addFirst(component.useStyle(useStyle));
         return this;
     }
 
@@ -25,12 +25,12 @@ public class ComplexMessageComponent extends MessageComponent {
     }
 
     public ComplexMessageComponent add(MessageComponent component) {
-        this.components.add(component);
+        this.components.add(component.useStyle(useStyle));
         return this;
     }
 
     public ComplexMessageComponent add(List<MessageComponent> components) {
-        this.components.addAll(components);
+        components.forEach(this::add);
         return this;
     }
 
@@ -67,6 +67,13 @@ public class ComplexMessageComponent extends MessageComponent {
         for (MessageComponent component : components)
             result.addAll(component.lines());
         return result;
+    }
+
+    @Override
+    public MessageComponent useStyle(boolean value) {
+        for (MessageComponent component : components)
+            component.useStyle(value);
+        return super.useStyle(value);
     }
 
     @Override
