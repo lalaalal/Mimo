@@ -117,6 +117,7 @@ public final class Mimo {
         } else {
             Mimo.LOGGER.warning("No such server at \"%s\"".formatted(instanceDirectory));
         }
+        currentServerInstance = null;
     }
 
     public static void update() throws IOException {

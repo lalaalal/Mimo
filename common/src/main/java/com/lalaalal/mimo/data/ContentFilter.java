@@ -47,7 +47,6 @@ public class ContentFilter {
                 ) + "]")
                 .toList()
         ) + "]";
-
     }
 
     public enum Operator {
