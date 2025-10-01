@@ -10,6 +10,11 @@ import java.util.Map;
 public class ContentFilter {
     private final Map<String, List<String>> filters = new HashMap<>();
 
+    public static ContentFilter base() {
+        return new ContentFilter()
+                .add("server_side", "optional", "required");
+    }
+
     public static ContentFilter of(ServerInstance instance) {
         return new ContentFilter()
                 .add("versions", instance.version)

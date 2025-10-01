@@ -10,10 +10,7 @@ import com.lalaalal.mimo.data.ProjectType;
 import com.lalaalal.mimo.json.JsonHelper;
 import com.lalaalal.mimo.loader.Loader;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
 
 /**
@@ -51,13 +48,13 @@ public class ResponseParser {
         return result(response, parseContent(loader, JsonHelper.toJsonObject(response.data())));
     }
 
-    public static List<String> parseSearchData(Response response) {
+    public static Map<String, Content.Detail> parseSearchData(Response response) {
         verifyRequestType(response, Request.Type.SEARCH);
         logStartParsing("search data", response);
         JsonObject data = JsonHelper.toJsonObject(response.data());
         JsonHelper.testKeys(data, "hits");
         JsonArray hits = JsonHelper.toJsonArray(data.get("hits"));
-        return result(response, parseProjectSlugListFromJsonArray(hits));
+        return result(response, parseDetailMap(hits));
     }
 
     public static List<Content.Version> parseProjectVersionList(Response response) {
@@ -130,12 +127,22 @@ public class ResponseParser {
         return parsed("content list", contents);
     }
 
-    private static List<String> parseProjectSlugListFromJsonArray(JsonArray list) {
-        List<String> contents = new ArrayList<>();
+    private static Map<String, Content.Detail> parseDetailMap(JsonArray list) {
+        Map<String, Content.Detail> contents = new LinkedHashMap<>();
         for (JsonElement element : list) {
-            contents.add(parseSlug(element));
+            String slug = parseSlug(element);
+            Content.Detail detail = parseDetail(element);
+            contents.put(slug, detail);
         }
         return parsed("slug list", contents);
+    }
+
+    private static Content.Detail parseDetail(JsonElement element) {
+        JsonObject detailData = JsonHelper.toJsonObject(element);
+        JsonHelper.testKeys(detailData, "title", "description");
+        String title = JsonHelper.toString(detailData.get("title"));
+        String description = JsonHelper.toString(detailData.get("description"));
+        return parsed("detail", new Content.Detail(title, description));
     }
 
     private static Content.Version parseVersion(JsonElement element) {

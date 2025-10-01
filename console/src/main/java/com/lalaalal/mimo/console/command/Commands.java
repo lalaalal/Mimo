@@ -64,6 +64,12 @@ public class Commands {
                     .build()
     );
 
+    public static final Command SEARCH = register(
+            Command.simple("search", ArgumentParsers.STRING)
+                    .action(MimoConsole::search)
+                    .build()
+    );
+
     public static final Command ADD = register(
             Command.complex("add")
                     .overload(1, Command.simple("add", ArgumentParsers.STRING)
@@ -194,7 +200,7 @@ public class Commands {
 
     public static void help(String commandKey, boolean onlyArgument) {
         if (!Registries.COMMANDS.contains(commandKey))
-            throw new IllegalArgumentException("Command \"%s\" not found".formatted(commandKey));
+            throw CommandException.notFound(commandKey);
         Command command = Registries.COMMANDS.get(commandKey);
         help(command, onlyArgument, Mimo.LOGGER::info);
     }
@@ -202,7 +208,7 @@ public class Commands {
     public static void help(List<String> commands) {
         String commandKey = commands.getFirst();
         if (!Registries.COMMANDS.contains(commandKey))
-            throw new IllegalArgumentException("Command \"%s\" not found".formatted(commandKey));
+            throw CommandException.notFound(commandKey);
         Command command = Registries.COMMANDS.get(commandKey);
         for (String subCommandKey : commands.subList(1, commands.size())) {
             Optional<Command> subCommand = command.resolve(subCommandKey);

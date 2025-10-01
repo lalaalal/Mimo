@@ -8,20 +8,32 @@ import com.lalaalal.mimo.console.command.Command;
 import com.lalaalal.mimo.console.command.Commands;
 import com.lalaalal.mimo.console.option.OptionConsumer;
 import com.lalaalal.mimo.console.option.Options;
+import com.lalaalal.mimo.data.Content;
+import com.lalaalal.mimo.data.ContentFilter;
 import com.lalaalal.mimo.data.MinecraftVersion;
 import com.lalaalal.mimo.data.ProjectType;
 import com.lalaalal.mimo.loader.Loader;
 import com.lalaalal.mimo.loader.LoaderInstaller;
 import com.lalaalal.mimo.logging.Level;
+import com.lalaalal.mimo.modrinth.ModrinthHelper;
+import com.lalaalal.mimo.modrinth.Request;
+import com.lalaalal.mimo.modrinth.ResponseParser;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
-import java.util.Scanner;
+import java.util.*;
 
 public class MimoConsole {
-    public static final String VERSION = "1.0";
+    public static final String VERSION = "1.1";
+
+    public static void search(String name) {
+        Map<String, Content.Detail> details = ModrinthHelper.get(
+                Request.search(name, ContentFilter.base()),
+                ResponseParser::parseSearchData
+        );
+        details.forEach((slug, detail) -> {
+            Mimo.LOGGER.info("%s(%s) %s".formatted(detail.title(), slug, detail.description()));
+        });
+    }
 
     public static void list() {
         for (ContentInstance content : Mimo.currentInstanceOrThrow().getContents())

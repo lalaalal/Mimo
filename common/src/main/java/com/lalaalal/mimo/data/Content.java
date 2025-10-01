@@ -55,9 +55,14 @@ public record Content(ProjectType type, List<Loader.Type> loaders, String id, St
     }
 
     public record Version(String versionId, String hash, String url, String fileName, List<Dependency> dependencies) {
+
     }
 
     public record Dependency(String id, boolean required) {
+
+    }
+
+    public record Detail(String title, String description) {
 
     }
 }
