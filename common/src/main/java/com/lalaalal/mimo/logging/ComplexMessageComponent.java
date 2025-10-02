@@ -76,6 +76,9 @@ public class ComplexMessageComponent extends MessageComponent {
             result.add(last);
             result.addAll(lines.subList(1, lines.size()));
         }
+        MessageComponent last = result.getLast();
+        if (last.plainText().isEmpty())
+            result.removeLast();
         return result;
     }
 
