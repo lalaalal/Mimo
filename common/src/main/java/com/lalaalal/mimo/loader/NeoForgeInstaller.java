@@ -70,7 +70,7 @@ public class NeoForgeInstaller extends LoaderInstaller {
             Mimo.LOGGER.warning("installer.jar already exists");
             Mimo.LOGGER.warning("Skip downloading installer.jar");
         } else {
-            Mimo.LOGGER.info("Downloading NeoForge installer.jar file at \"%s\"".formatted(installer));
+            Mimo.LOGGER.info("Downloading NeoForge installer.jar file at \"{}\"", installer);
             HttpHelper.download(url, installer);
         }
 

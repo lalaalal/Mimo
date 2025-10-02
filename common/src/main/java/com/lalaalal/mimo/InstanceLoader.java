@@ -35,7 +35,7 @@ public class InstanceLoader {
     private static ServerInstance createServer(String serverName, String serverFileName, Path directory) throws IOException {
         Matcher matcher = JAR_NAME_PATTERN.matcher(serverFileName);
         if (!matcher.matches()) {
-            Mimo.LOGGER.error("\"%s\" is not a valid server jar file name".formatted(serverFileName));
+            Mimo.LOGGER.error("\"{}\" is not a valid server jar file name", serverFileName);
             throw new IllegalStateException("Aborted");
         }
         String loaderType = matcher.group(1);
@@ -57,7 +57,7 @@ public class InstanceLoader {
         if (instances.containsKey(serverName))
             return instances.get(serverName);
 
-        Mimo.LOGGER.info("Loading instance from directory \"%s\"".formatted(directory));
+        Mimo.LOGGER.info("Loading instance from directory \"{}\"", directory);
         File[] files = directory.toFile().listFiles((dir, name) -> name.matches(JAR_NAME_PATTERN.pattern()));
 
         if (files == null || files.length != 1)
@@ -78,7 +78,7 @@ public class InstanceLoader {
         String serverName = directory.getFileName().toString();
         if (instances.containsKey(serverName))
             return instances.get(serverName);
-        Mimo.LOGGER.info("Loading instance from instance file \"%s\"".formatted(instanceDataFile));
+        Mimo.LOGGER.info("Loading instance from instance file \"{}\"", instanceDataFile);
         try (BufferedReader reader = new BufferedReader(new FileReader(instanceDataFile))) {
             ServerInstance instance = Mimo.GSON.fromJson(reader, ServerInstance.class);
             if (instance == null)
@@ -86,7 +86,7 @@ public class InstanceLoader {
             instances.put(instance.name, instance);
             return instance;
         } catch (JsonParseException exception) {
-            Mimo.LOGGER.error("Failed to parse \"%s\" file".formatted(instanceDataFile));
+            Mimo.LOGGER.error("Failed to parse \"{}\" file", instanceDataFile);
             throw new IllegalStateException("Aborted");
         }
     }

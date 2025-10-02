@@ -62,4 +62,9 @@ public abstract class MessageComponent {
         this.useStyle = value;
         return this;
     }
+
+    @Override
+    public String toString() {
+        return plainText();
+    }
 }

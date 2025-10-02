@@ -14,7 +14,10 @@ import com.lalaalal.mimo.data.MinecraftVersion;
 import com.lalaalal.mimo.data.ProjectType;
 import com.lalaalal.mimo.loader.Loader;
 import com.lalaalal.mimo.loader.LoaderInstaller;
+import com.lalaalal.mimo.logging.ComplexMessageComponent;
+import com.lalaalal.mimo.logging.ConsoleColor;
 import com.lalaalal.mimo.logging.Level;
+import com.lalaalal.mimo.logging.MessageComponent;
 import com.lalaalal.mimo.modrinth.ModrinthHelper;
 import com.lalaalal.mimo.modrinth.Request;
 import com.lalaalal.mimo.modrinth.ResponseParser;
@@ -31,7 +34,11 @@ public class MimoConsole {
                 ResponseParser::parseSearchData
         );
         details.forEach((slug, detail) -> {
-            Mimo.LOGGER.info("%s(%s) %s".formatted(detail.title(), slug, detail.description()));
+            MessageComponent message = new ComplexMessageComponent()
+                    .add(MessageComponent.withDefault(detail.title()))
+                    .add(MessageComponent.text(" (" + slug + ") ").with(ConsoleColor.BLUE.foreground()))
+                    .add(MessageComponent.text(detail.description()).with(ConsoleColor.WHITE.foreground()));
+            Mimo.LOGGER.info(message);
         });
     }
 
@@ -57,14 +64,14 @@ public class MimoConsole {
         int index = 0;
         for (; index < limit && index < loaderVersions.size(); index++)
             Mimo.LOGGER.info(loaderVersions.get(index));
-        Mimo.LOGGER.info("Total : %d".formatted(index));
+        Mimo.LOGGER.info("Total : {}", index);
     }
 
     public static void listServers() {
         String[] servers = Mimo.getServers();
         for (String serverName : servers)
             Mimo.LOGGER.info(serverName);
-        Mimo.LOGGER.info("Total : %d".formatted(servers.length));
+        Mimo.LOGGER.info("Total : {}", servers.length);
     }
 
     public static void launchServer() throws IOException, InterruptedException {
@@ -87,7 +94,7 @@ public class MimoConsole {
             Command.Result result = command.get().execute(arguments);
             Mimo.LOGGER.log(getLogLevel(result), result.message());
         } else {
-            Mimo.LOGGER.error("Command \"%s\" not found".formatted(commandString));
+            Mimo.LOGGER.error("Command \"{}\" not found", commandString);
         }
     }
 

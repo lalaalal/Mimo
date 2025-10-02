@@ -64,8 +64,18 @@ public class ComplexMessageComponent extends MessageComponent {
     @Override
     public List<MessageComponent> lines() {
         List<MessageComponent> result = new ArrayList<>();
-        for (MessageComponent component : components)
-            result.addAll(component.lines());
+        result.add(new ComplexMessageComponent());
+        for (MessageComponent component : components) {
+            List<MessageComponent> lines = component.lines();
+            if (lines.isEmpty()) {
+                result.add(new ComplexMessageComponent());
+                continue;
+            }
+            ComplexMessageComponent last = result.removeLast().complex();
+            last.add(lines.getFirst());
+            result.add(last);
+            result.addAll(lines.subList(1, lines.size()));
+        }
         return result;
     }
 

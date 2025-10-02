@@ -22,7 +22,7 @@ public class ResponseParser {
     }
 
     protected static void verifyRequestType(Response response, List<Request.Type> requiredTypes) {
-        Mimo.LOGGER.debug("[REQ %03d] Verifying request type for %s".formatted(response.id(), response));
+        Mimo.LOGGER.debug("[REQ %03d] Verifying request type for {}".formatted(response.id()), response);
         if (!requiredTypes.contains(response.requestType()))
             throw new IllegalArgumentException("[REQ %03d] Required request type is [%s] but %s".formatted(response.id(), requiredTypes, response.requestType()));
     }
@@ -112,7 +112,7 @@ public class ResponseParser {
         String slug = JsonHelper.toString(data.get("slug"));
         ProjectType projectType = parseProjectType(data);
         if (data.has("server_side") && JsonHelper.toString(data.get("server_side")).equals("unsupported"))
-            Mimo.LOGGER.warning("Content \"%s\" is client only!!".formatted(slug));
+            Mimo.LOGGER.warning("Content \"{}\" is client only!!", slug);
 
         return parsed("content", new Content(projectType, loader, id, slug));
     }
@@ -187,16 +187,16 @@ public class ResponseParser {
     }
 
     private static void logStartParsing(String target, Response response) {
-        Mimo.LOGGER.debug("[REQ %03d] Starting parsing %s for %s".formatted(response.id(), target, response.requestType()));
+        Mimo.LOGGER.debug("[REQ %03d] Starting parsing {} for {}".formatted(response.id()), target, response.requestType());
     }
 
     private static <T> T parsed(String name, T value) {
-        Mimo.LOGGER.verbose("Parsed %s is \"%s\"".formatted(name, value));
+        Mimo.LOGGER.verbose("Parsed {} is \"{}\"", name, value);
         return value;
     }
 
     private static <T> T result(Response response, T value) {
-        Mimo.LOGGER.debug("[REQ %03d] Parse result for %s is \"%s\"".formatted(response.id(), response.requestType(), value));
+        Mimo.LOGGER.debug("[REQ %03d] Parse result for {} is \"{}\"".formatted(response.id()), response.requestType(), value);
         return value;
     }
 }

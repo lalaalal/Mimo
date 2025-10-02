@@ -50,22 +50,22 @@ public abstract class LoaderInstaller {
     protected Path createInstanceDirectory(String name) throws IOException {
         Path instanceDirectory = INSTANCES_PATH.resolve(name);
         if (Files.exists(instanceDirectory))
-            Mimo.LOGGER.warning("Server \"%s\" already exists".formatted(name));
+            Mimo.LOGGER.warning("Server \"{}\" already exists", name);
 
-        Mimo.LOGGER.info("Creating server directory at \"%s\"".formatted(instanceDirectory));
+        Mimo.LOGGER.info("Creating server directory at \"{}\"", instanceDirectory);
         return Files.createDirectories(instanceDirectory);
     }
 
     protected void createEulaFile(Path instanceDirectory) throws IOException {
         Path eula = instanceDirectory.resolve("eula.txt");
-        Mimo.LOGGER.info("Creating eula.txt file at \"%s\"".formatted(eula));
+        Mimo.LOGGER.info("Creating eula.txt file at \"{}\"", eula);
         Files.writeString(eula, "eula=true\n");
     }
 
     public ServerInstance install(String name, MinecraftVersion minecraftVersion, String loaderVersion) throws IOException, InterruptedException {
-        Mimo.LOGGER.info("Installing %s server [%s] (%s)".formatted(loaderType, minecraftVersion, name));
+        Mimo.LOGGER.info("Installing {} server [{}] ({})", loaderType, minecraftVersion, name);
         if (minecraftVersion.type() != MinecraftVersion.Type.STABLE)
-            Mimo.LOGGER.warning("Selected minecraft version [%s] is not a stable version".formatted(minecraftVersion));
+            Mimo.LOGGER.warning("Selected minecraft version [{}] is not a stable version", minecraftVersion);
         if (!isValidVersion(minecraftVersion, loaderVersion))
             throw new IllegalArgumentException("Given version is not valid (%s, %s)".formatted(minecraftVersion, loaderVersion));
 
@@ -73,7 +73,7 @@ public abstract class LoaderInstaller {
         processInstall(instanceDirectory, minecraftVersion, loaderVersion);
 
         createEulaFile(instanceDirectory);
-        Mimo.LOGGER.info("Installed server \"%s\" (%s %s) [%s]".formatted(name, loaderType, loaderVersion, minecraftVersion));
+        Mimo.LOGGER.info("Installed server \"{}\" ({} {}) [{}]", name, loaderType, loaderVersion, minecraftVersion);
         return new ServerInstance(name, new Loader(loaderType, loaderVersion), minecraftVersion);
     }
 

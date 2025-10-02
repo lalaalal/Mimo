@@ -49,7 +49,7 @@ public class ContentInstance {
     }
 
     protected void resolveDependencies(Content.Version version) {
-        Mimo.LOGGER.info("[%s] (%s) Resolving dependencies for \"%s\"".formatted(serverInstance, this, version.fileName()));
+        Mimo.LOGGER.info("[{}] ({}) Resolving dependencies for \"{}\"", serverInstance, this, version.fileName());
         for (Content.Dependency dependency : version.dependencies()) {
             if (dependency.required()) {
                 Content content = ModrinthHelper.get(
@@ -58,13 +58,13 @@ public class ContentInstance {
                 );
                 serverInstance.addContent(content);
             } else {
-                Mimo.LOGGER.debug("[%s] (%s) Skipping optional dependency \"%s\"".formatted(serverInstance, this, dependency.id()));
+                Mimo.LOGGER.debug("[{}] ({}) Skipping optional dependency \"{}\"", serverInstance, this, dependency.id());
             }
         }
     }
 
     protected void loadVersions() {
-        Mimo.LOGGER.debug("[%s] (%s) Loading versions for \"%s\"".formatted(serverInstance, this, content.slug()));
+        Mimo.LOGGER.debug("[{}] ({}) Loading versions for \"{}\"", serverInstance, this, content.slug());
         this.availableVersions = ModrinthHelper.get(
                 Request.projectVersions(content, serverInstance),
                 ResponseParser::parseProjectVersionList
@@ -79,12 +79,12 @@ public class ContentInstance {
     }
 
     public void loadLatestVersion() {
-        Mimo.LOGGER.debug("[%s] (%s) Loading latest version".formatted(serverInstance, this));
+        Mimo.LOGGER.debug("[{}] ({}) Loading latest version", serverInstance, this);
         updatingVersion = ModrinthHelper.get(
                 Request.latestVersion(content, contentVersion, serverInstance),
                 ResponseParser::parseVersion
         );
-        Mimo.LOGGER.debug("[%s] (%s) Latest version is \"%s\"".formatted(serverInstance, this, content.slug()));
+        Mimo.LOGGER.debug("[{}] ({}) Latest version is \"{}\"", serverInstance, this, content.slug());
     }
 
     public boolean is(Content content) {
@@ -129,11 +129,11 @@ public class ContentInstance {
         if (availableVersions == null)
             loadVersions();
         if (availableVersions.isEmpty()) {
-            Mimo.LOGGER.warning("[%s] (%s) No available version".formatted(serverInstance, this));
+            Mimo.LOGGER.warning("[{}] ({}) No available version", serverInstance, this);
             throw new IllegalStateException("Aborted");
         }
         this.contentVersion = availableVersions.get(index);
-        Mimo.LOGGER.info("[%s] (%s) Selecting version \"%s\"".formatted(serverInstance, this, contentVersion.fileName()));
+        Mimo.LOGGER.info("[{}] ({}) Selecting version \"{}\"", serverInstance, this, contentVersion.fileName());
         resolveDependencies(contentVersion);
     }
 
@@ -162,7 +162,7 @@ public class ContentInstance {
         Path contentPath = getContentPath(version);
         Path directory = contentPath.getParent();
         if (!Files.exists(directory)) {
-            Mimo.LOGGER.debug("[%s] (%s) Creating directory \"%s\"".formatted(serverInstance, this, directory));
+            Mimo.LOGGER.debug("[{}] ({}) Creating directory \"{}\"", serverInstance, this, directory);
             Files.createDirectories(directory);
         }
         return contentPath;
@@ -173,7 +173,7 @@ public class ContentInstance {
         Content.Version version = getDownloadingVersion();
         Path contentPath = createContentPath(version);
         Files.createDirectories(contentPath.getParent());
-        Mimo.LOGGER.info("[%s] (%s) Downloading \"%s\"".formatted(serverInstance, this, contentPath));
+        Mimo.LOGGER.info("[{}] ({}) Downloading \"{}\"", serverInstance, this, contentPath);
         ModrinthHelper.download(version, contentPath);
         handlePostDownloadUpdatingVersion();
     }
@@ -182,7 +182,7 @@ public class ContentInstance {
         Content.Version version = getContentVersion();
         Path contentPath = getContentPath(version);
         if (Files.exists(contentPath)) {
-            Mimo.LOGGER.info("[%s] (%s) Deleting \"%s\"".formatted(serverInstance, this, contentPath));
+            Mimo.LOGGER.info("[{}] ({}) Deleting \"{}\"", serverInstance, this, contentPath);
             Files.delete(contentPath);
         }
     }

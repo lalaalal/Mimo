@@ -56,40 +56,36 @@ public class Logger {
         complex.print(printStream);
     }
 
-    public void log(Level level, String message) {
-        log(level, MessageComponent.withDefault(message));
+    public void log(Level level, String message, Object... args) {
+        if (this.level.shouldLog(level)) {
+            for (Object arg : args)
+                message = message.replaceFirst("\\{}", arg.toString());
+            log(level, MessageComponent.withDefault(message));
+        }
     }
 
     public void setLevel(Level level) {
         this.level = level;
     }
 
-    public void verbose(String message) {
-        log(Level.VERBOSE, message);
+    public void verbose(String message, Object... args) {
+        log(Level.VERBOSE, message, args);
     }
 
-    public void debug(String message) {
-        log(Level.DEBUG, message);
+    public void debug(String message, Object... args) {
+        log(Level.DEBUG, message, args);
     }
 
-    public void info(String message) {
-        log(Level.INFO, message);
+    public void info(String message, Object... args) {
+        log(Level.INFO, message, args);
     }
 
-    public void warning(String message) {
-        log(Level.WARNING, message);
+    public void warning(String message, Object... args) {
+        log(Level.WARNING, message, args);
     }
 
-    public void error(String message) {
-        log(Level.ERROR, message);
-    }
-
-    public void verbose(MessageComponent message) {
-        log(Level.VERBOSE, message);
-    }
-
-    public void debug(MessageComponent message) {
-        log(Level.DEBUG, message);
+    public void error(String message, Object... args) {
+        log(Level.ERROR, message, args);
     }
 
     public void info(MessageComponent message) {

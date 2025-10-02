@@ -57,7 +57,7 @@ public final class Mimo {
         LoaderInstaller installer = LoaderInstaller.get(type);
         List<String> versions = installer.getAvailableVersions(minecraftVersion);
         if (versions.isEmpty()) {
-            Mimo.LOGGER.error("There's no available %s version for minecraft [%s]".formatted(type, minecraftVersion));
+            Mimo.LOGGER.error("There's no available {} version for minecraft [{}]", type, minecraftVersion);
             throw new IllegalStateException("Aborted");
         }
         String loaderVersion = versions.getFirst();
@@ -112,10 +112,10 @@ public final class Mimo {
         InstanceLoader.forget(serverName);
         Path instanceDirectory = getInstanceContainerDirectory().resolve(serverName);
         if (Files.exists(instanceDirectory)) {
-            Mimo.LOGGER.info("Deleting server \"%s\"".formatted(instanceDirectory));
+            Mimo.LOGGER.info("Deleting server \"{}\"", instanceDirectory);
             Files.walkFileTree(instanceDirectory, new DirectoryRemover());
         } else {
-            Mimo.LOGGER.warning("No such server at \"%s\"".formatted(instanceDirectory));
+            Mimo.LOGGER.warning("No such server at \"{}\"", instanceDirectory);
         }
         currentServerInstance = null;
     }

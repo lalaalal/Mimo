@@ -61,7 +61,7 @@ public class FabricInstaller extends LoaderInstaller {
         String url = LAUNCHER_DOWNLOAD_URL.formatted(minecraftVersion, loaderVersion, fabricInstallerVersion);
         String fileName = getFileName(minecraftVersion, loaderVersion);
         Path file = instanceDirectory.resolve(fileName);
-        Mimo.LOGGER.info("Downloading server jar file at \"%s\"".formatted(file));
+        Mimo.LOGGER.info("Downloading server jar file at \"{}\"", file);
         HttpHelper.download(url, file);
     }
 }

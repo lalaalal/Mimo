@@ -34,7 +34,8 @@ public class SimpleCommand<T> implements Command {
         } catch (MessageComponentException exception) {
             return Result.fail(exception.getMessageComponent()
                     .complex()
-                    .addLine(MessageComponent.withDefault("Aborted"))
+                    .add(MessageComponent.NEW_LINE)
+                    .add(MessageComponent.withDefault("Aborted"))
             );
         } catch (Throwable throwable) {
             return Result.fail(throwable.getMessage());

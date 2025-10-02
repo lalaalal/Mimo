@@ -83,7 +83,7 @@ public interface Command {
         int missingCount = parsers.length - arguments.size();
         if (missingCount < 0) {
             List<String> unused = arguments.subList(arguments.size() + missingCount, arguments.size());
-            Mimo.LOGGER.warning("Ignored arguments %s".formatted(unused));
+            Mimo.LOGGER.warning("Ignored arguments {}", unused);
         }
         if (missingCount > 0) {
             ArgumentParser<?>[] missingParsers = Arrays.copyOfRange(parsers, parsers.length - missingCount, parsers.length);
