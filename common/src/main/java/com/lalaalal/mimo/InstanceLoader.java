@@ -93,25 +93,53 @@ public class InstanceLoader {
 
     private static Map<String, Content.Version> getContentVersions(Path modsPath) throws IOException {
         File modsDirectory = modsPath.toFile();
-        File[] modFiles = modsDirectory.listFiles((dir, name) -> name.endsWith(".jar") || name.endsWith(".zip"));
-        if (modFiles == null || modFiles.length == 0)
+        File[] files = modsDirectory.listFiles((dir, name) -> name.endsWith(".jar") || name.endsWith(".zip"));
+        if (files == null || files.length == 0)
             return Map.of();
-        String[] hashes = new String[modFiles.length];
-        for (int index = 0; index < modFiles.length; index++)
-            hashes[index] = HashUtils.hashFile(modFiles[index].toPath());
-        return ModrinthHelper.get(Request.versions(hashes), ResponseParser::parseVersionListWithProjectId);
+        Map<String, File> hashes = new HashMap<>();
+        for (File file : files)
+            hashes.put(HashUtils.hashFile(file.toPath()), file);
+        Map<String, Content.Version> versions = ModrinthHelper.get(Request.versions(hashes.keySet()), ResponseParser::parseVersionListWithProjectId);
+
+        List<String> resolved = versions.values().stream()
+                .map(Content.Version::hash)
+                .toList();
+        hashes.keySet().stream()
+                .filter(hash -> !resolved.contains(hash))
+                .forEach(hash -> {
+                    Content.Version version = Content.Version.custom(hash, hashes.get(hash));
+                    versions.put(version.versionId(), version);
+                });
+        return versions;
     }
 
     private static Map<Content, Content.Version> getContentVersions(ServerInstance serverInstance, Path directory) throws IOException {
+        Map<Content, Content.Version> result = new HashMap<>();
         Map<String, Content.Version> versions = new HashMap<>();
-        versions.putAll(InstanceLoader.getContentVersions(directory.resolve(ProjectType.MOD.path)));
-        versions.putAll(InstanceLoader.getContentVersions(directory.resolve(ProjectType.DATAPACK.path)));
+        Map<String, Content.Version> modVersions = InstanceLoader.getContentVersions(directory.resolve(ProjectType.MOD.path));
+        Map<String, Content.Version> datapackVersions = InstanceLoader.getContentVersions(directory.resolve(ProjectType.DATAPACK.path));
+        versions.putAll(modVersions);
+        versions.putAll(datapackVersions);
+
+        result.putAll(fillCustomContents(serverInstance, ProjectType.MOD, modVersions));
+        result.putAll(fillCustomContents(serverInstance, ProjectType.DATAPACK, datapackVersions));
+
         List<Content> contents = ModrinthHelper.get(
                 Request.projects(versions.keySet()),
                 ResponseParser.contentListParser(serverInstance)
         );
-        Map<Content, Content.Version> result = new HashMap<>();
         contents.forEach(content -> result.put(content, versions.get(content.id())));
         return result;
+    }
+
+    private static Map<Content, Content.Version> fillCustomContents(ServerInstance serverInstance, ProjectType projectType, Map<String, Content.Version> versions) {
+        Map<Content, Content.Version> contents = new HashMap<>();
+        versions.keySet().stream()
+                .filter(projectId -> projectId.endsWith("custom"))
+                .forEach(projectId -> {
+                    Content content = new Content(projectType, serverInstance.loader.type(), projectId, projectId);
+                    contents.put(content, versions.get(projectId));
+                });
+        return contents;
     }
 }

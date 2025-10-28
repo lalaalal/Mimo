@@ -79,6 +79,11 @@ public class ContentInstance {
     }
 
     public void loadLatestVersion() {
+        if (contentVersion.isCustom()) {
+            Mimo.LOGGER.debug("[{}] ({}) Skip loading latest version", serverInstance, this);
+            updatingVersion = contentVersion;
+            return;
+        }
         Mimo.LOGGER.debug("[{}] ({}) Loading latest version", serverInstance, this);
         updatingVersion = ModrinthHelper.get(
                 Request.latestVersion(content, contentVersion, serverInstance),
@@ -89,6 +94,10 @@ public class ContentInstance {
 
     public boolean is(Content content) {
         return this.content.equals(content);
+    }
+
+    public boolean isCustom() {
+        return contentVersion != null && contentVersion.isCustom();
     }
 
     public Content content() {
@@ -169,6 +178,10 @@ public class ContentInstance {
     }
 
     public void downloadContent() throws IOException {
+        if (contentVersion.isCustom()) {
+            Mimo.LOGGER.warning("[{}] ({}) Skip downloading custom content", serverInstance, this);
+            return;
+        }
         removeContent();
         Content.Version version = getDownloadingVersion();
         Path contentPath = createContentPath(version);
@@ -206,6 +219,8 @@ public class ContentInstance {
             component.add(MessageComponent.text(" NOT DOWNLOADED").with(ConsoleColor.RED.foreground()));
         if (!isUpToDate())
             component.add(MessageComponent.text(" OUT OF DATE").with(ConsoleColor.YELLOW.foreground()));
+        if (isCustom())
+            component.add(MessageComponent.text(" CUSTOM").with(ConsoleColor.WHITE.foreground()));
         return component;
     }
 }

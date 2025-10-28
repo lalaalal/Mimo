@@ -6,6 +6,7 @@ import com.lalaalal.mimo.modrinth.Request;
 import com.lalaalal.mimo.modrinth.Response;
 import com.lalaalal.mimo.modrinth.ResponseParser;
 
+import java.io.File;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
@@ -55,7 +56,13 @@ public record Content(ProjectType type, List<Loader.Type> loaders, String id, St
     }
 
     public record Version(String versionId, String hash, String url, String fileName, List<Dependency> dependencies) {
+        public static Version custom(String hash, File file) {
+            return new Version(hash.substring(0, 4) + "-custom", hash, "", file.getName(), List.of());
+        }
 
+        public boolean isCustom() {
+            return versionId.endsWith("custom");
+        }
     }
 
     public record Dependency(String id, boolean required) {

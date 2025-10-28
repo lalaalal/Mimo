@@ -3,10 +3,8 @@ package com.lalaalal.mimo.modrinth;
 import com.lalaalal.mimo.MimoTest;
 import com.lalaalal.mimo.data.ContentFilter;
 import com.lalaalal.mimo.loader.Loader;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
-@Disabled
 class ModrinthHelperTest {
     private static void printResponse(Response response) {
         System.out.println(response.code());
@@ -25,7 +23,7 @@ class ModrinthHelperTest {
 
     @Test
     void projects() {
-        sendAndPrintResult(Request.projects("betterend", "betternether"));
+        sendAndPrintResult(Request.projects("custom-af36a"));
     }
 
     @Test
@@ -40,7 +38,7 @@ class ModrinthHelperTest {
 
     @Test
     void versions() {
-        sendAndPrintResult(Request.versions(MimoTest.TEST_CONTENT_VERSION.hash(), "625f4340bd9ab67a08130a4167fc6a01777ab075"));
+        sendAndPrintResult(Request.versions(MimoTest.TEST_CONTENT_VERSION.hash(), "825f4340bd9ab67a08130a4167fc6a01777ab075"));
     }
 
     @Test
