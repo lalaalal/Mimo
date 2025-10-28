@@ -44,9 +44,12 @@ public final class Mimo {
         return currentServerInstance = ServerInstance.from(getInstanceContainerDirectory().resolve(name));
     }
 
-    public static ServerInstance reload(String name) throws IOException {
+    public static ServerInstance rescan(String name) throws IOException {
         InstanceLoader.forget(name);
-        return load(name);
+        Path directory = getInstanceContainerDirectory().resolve(name);
+        Path instanceFile = directory.resolve(InstanceLoader.INSTANCE_DATA_FILE_NAME);
+        Files.deleteIfExists(instanceFile);
+        return currentServerInstance = ServerInstance.from(directory);
     }
 
     public static void install(Loader.Type type, String name, MinecraftVersion minecraftVersion, String loaderVersion) throws IOException, InterruptedException {
