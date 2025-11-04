@@ -7,18 +7,18 @@ public enum Platform {
     MAC_OS(".local/share/mimo"),
     LINUX(".local/share/mimo");
 
-    private static Platform INSTANCE;
+    private static Platform instance;
 
     public static Platform get() {
-        if (INSTANCE != null)
-            return INSTANCE;
+        if (instance != null)
+            return instance;
         String osName = System.getProperty("os.name").toLowerCase();
         if (osName.contains("win"))
-            return INSTANCE = WINDOWS;
+            return instance = WINDOWS;
         if (osName.contains("mac"))
-            return INSTANCE = MAC_OS;
+            return instance = MAC_OS;
         if (osName.contains("linux"))
-            return INSTANCE = LINUX;
+            return instance = LINUX;
         throw new IllegalStateException("Unsupported operating system");
     }
 

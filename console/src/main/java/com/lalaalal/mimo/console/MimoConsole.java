@@ -8,8 +8,8 @@ import com.lalaalal.mimo.console.command.Command;
 import com.lalaalal.mimo.console.command.Commands;
 import com.lalaalal.mimo.console.option.OptionConsumer;
 import com.lalaalal.mimo.console.option.Options;
+import com.lalaalal.mimo.content_provider.ContentProvider;
 import com.lalaalal.mimo.data.Content;
-import com.lalaalal.mimo.data.ContentFilter;
 import com.lalaalal.mimo.data.MinecraftVersion;
 import com.lalaalal.mimo.data.ProjectType;
 import com.lalaalal.mimo.loader.Loader;
@@ -18,21 +18,15 @@ import com.lalaalal.mimo.logging.ComplexMessageComponent;
 import com.lalaalal.mimo.logging.ConsoleColor;
 import com.lalaalal.mimo.logging.Level;
 import com.lalaalal.mimo.logging.MessageComponent;
-import com.lalaalal.mimo.modrinth.ModrinthHelper;
-import com.lalaalal.mimo.modrinth.Request;
-import com.lalaalal.mimo.modrinth.ResponseParser;
 
 import java.io.IOException;
 import java.util.*;
 
 public class MimoConsole {
-    public static final String VERSION = "1.1";
+    public static final String VERSION = "2.0";
 
-    public static void search(String name) {
-        Map<String, Content.Detail> details = ModrinthHelper.get(
-                Request.search(name, ContentFilter.base()),
-                ResponseParser::parseSearchData
-        );
+    public static void search(String name, ContentProvider contentProvider) {
+        Map<String, Content.Detail> details = contentProvider.search(name);
         details.forEach((slug, detail) -> {
             MessageComponent message = new ComplexMessageComponent()
                     .add(MessageComponent.withDefault(detail.title()))

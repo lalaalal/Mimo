@@ -8,8 +8,8 @@ class ServerInstanceTest {
 
     @Test
     void addContent() throws IOException {
-        MimoTest.TEST_INSTANCE.addContent(MimoTest.TEST_CONTENT);
-        MimoTest.TEST_INSTANCE.get(MimoTest.TEST_CONTENT)
+        MimoTest.TEST_INSTANCE.addContent(MimoTest.MODRINTH_TEST_CONTENT);
+        MimoTest.TEST_INSTANCE.get(MimoTest.MODRINTH_TEST_CONTENT)
                 .setContentVersion(MimoTest.TEST_CONTENT_VERSION);
         MimoTest.TEST_INSTANCE.downloadContents();
     }

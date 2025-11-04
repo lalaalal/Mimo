@@ -5,6 +5,8 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.lalaalal.mimo.Mimo;
 import com.lalaalal.mimo.ServerInstance;
+import com.lalaalal.mimo.content_provider.Response;
+import com.lalaalal.mimo.content_provider.ResponseParser;
 import com.lalaalal.mimo.data.Content;
 import com.lalaalal.mimo.data.ProjectType;
 import com.lalaalal.mimo.json.JsonHelper;
@@ -16,49 +18,33 @@ import java.util.function.Function;
 /**
  * Provides methods for parsing {@link Response} from Modrinth API.
  */
-public class ResponseParser {
-    protected static void verifyRequestType(Response response, Request.Type... requiredTypes) {
-        verifyRequestType(response, List.of(requiredTypes));
+public class ModrinthResponseParser extends ResponseParser {
+    public static final ModrinthResponseParser INSTANCE = new ModrinthResponseParser();
+
+    private ModrinthResponseParser() {
+
     }
 
-    protected static void verifyRequestType(Response response, List<Request.Type> requiredTypes) {
-        Mimo.LOGGER.debug("[REQ %03d] Verifying request type for {}".formatted(response.id()), response);
-        if (!requiredTypes.contains(response.requestType()))
-            throw new IllegalArgumentException("[REQ %03d] Required request type is [%s] but %s".formatted(response.id(), requiredTypes, response.requestType()));
-    }
-
-    public static Function<Response, Content> contentParser(ServerInstance serverInstance) {
+    public Function<Response, Content> contentParser(ServerInstance serverInstance) {
         return response -> parseContent(serverInstance.loader.type(), response);
     }
 
-    public static Function<Response, List<Content>> contentListParser(ServerInstance serverInstance) {
+    public Function<Response, List<Content>> contentListParser(ServerInstance serverInstance) {
         return response -> parseContentList(serverInstance.loader.type(), response);
     }
 
-    public static List<Content> parseContentList(Loader.Type loader, Response response) {
-        verifyRequestType(response, Request.Type.GET_PROJECT_LIST);
+    public List<Content> parseContentList(Loader.Type loader, Response response) {
         logStartParsing("content list", response);
         JsonArray list = JsonHelper.toJsonArray(response.data());
         return result(response, parseContentListFromJsonArray(loader, list));
     }
 
-    public static Content parseContent(Loader.Type loader, Response response) {
-        verifyRequestType(response, Request.Type.GET_PROJECT);
+    public Content parseContent(Loader.Type loader, Response response) {
         logStartParsing("content", response);
         return result(response, parseContent(loader, JsonHelper.toJsonObject(response.data())));
     }
 
-    public static Map<String, Content.Detail> parseSearchData(Response response) {
-        verifyRequestType(response, Request.Type.SEARCH);
-        logStartParsing("search data", response);
-        JsonObject data = JsonHelper.toJsonObject(response.data());
-        JsonHelper.testKeys(data, "hits");
-        JsonArray hits = JsonHelper.toJsonArray(data.get("hits"));
-        return result(response, parseDetailMap(hits));
-    }
-
-    public static List<Content.Version> parseProjectVersionList(Response response) {
-        verifyRequestType(response, Request.Type.GET_PROJECT_VERSION_LIST);
+    public List<Content.Version> parseProjectVersionList(Response response) {
         logStartParsing("version list", response);
         List<Content.Version> versions = new ArrayList<>();
         for (JsonElement element : JsonHelper.toJsonArray(response.data()))
@@ -67,14 +53,12 @@ public class ResponseParser {
         return result(response, versions);
     }
 
-    public static Content.Version parseVersion(Response response) {
-        verifyRequestType(response, Request.Type.LATEST_VERSION, Request.Type.GET_VERSION_FILE);
+    public Content.Version parseVersion(Response response) {
         logStartParsing("version", response);
         return result(response, parseVersion(response.data()));
     }
 
-    public static Map<String, Content.Version> parseVersionListWithProjectId(Response response) {
-        verifyRequestType(response, Request.Type.GET_VERSION_FILE_LIST);
+    public Map<String, Content.Version> parseVersionsWithProjectId(Response response) {
         logStartParsing("version mapping", response);
         JsonObject data = JsonHelper.toJsonObject(response.data());
         Map<String, Content.Version> versions = new HashMap<>();
@@ -85,26 +69,33 @@ public class ResponseParser {
         return result(response, versions);
     }
 
-    public static String parseProjectId(Response response) {
-        verifyRequestType(response, Request.Type.LATEST_VERSION, Request.Type.GET_PROJECT, Request.Type.GET_VERSION_FILE);
+    public String parseProjectId(Response response) {
         logStartParsing("project id", response);
         return result(response, parseProjectId(response.data()));
     }
 
-    private static ProjectType parseProjectType(JsonObject data) {
+    public Map<String, Content.Detail> parseSearchData(Response response) {
+        logStartParsing("search data", response);
+        JsonObject data = JsonHelper.toJsonObject(response.data());
+        JsonHelper.testKeys(data, "hits");
+        JsonArray hits = JsonHelper.toJsonArray(data.get("hits"));
+        return result(response, parseDetailMap(hits));
+    }
+
+    protected ProjectType parseProjectType(JsonObject data) {
         if (!data.has("loaders"))
-            return parsed("project type", ProjectType.get(JsonHelper.toString(data.get("project_type"))));
+            return parsed("project format", ProjectType.get(JsonHelper.toString(data.get("project_type"))));
         List<String> loaders = JsonHelper.toJsonArray(data.get("loaders"))
                 .asList()
                 .stream()
                 .map(JsonHelper::toString)
                 .toList();
         if (loaders.contains("datapack") && loaders.size() == 1)
-            return parsed("project type", ProjectType.DATAPACK);
-        return parsed("project type", ProjectType.MOD);
+            return parsed("project format", ProjectType.DATAPACK);
+        return parsed("project format", ProjectType.MOD);
     }
 
-    private static Content parseContent(Loader.Type loader, JsonObject data) {
+    protected Content parseContent(Loader.Type loader, JsonObject data) {
         String projectIdKey = data.has("project_id") ? "project_id" : "id";
         JsonHelper.testKeys(data, projectIdKey, "slug", "project_type");
 
@@ -114,20 +105,10 @@ public class ResponseParser {
         if (data.has("server_side") && JsonHelper.toString(data.get("server_side")).equals("unsupported"))
             Mimo.LOGGER.warning("Content \"{}\" is client only!!", slug);
 
-        return parsed("content", new Content(projectType, loader, id, slug));
+        return parsed("content", new Content(projectType, loader, ModrinthContentProvider.INSTANCE, id, slug));
     }
 
-    private static List<Content> parseContentListFromJsonArray(Loader.Type loader, JsonArray list) {
-        List<Content> contents = new ArrayList<>();
-        for (JsonElement element : list) {
-            JsonObject currentContent = JsonHelper.toJsonObject(element);
-            Content content = parseContent(loader, currentContent);
-            contents.add(content);
-        }
-        return parsed("content list", contents);
-    }
-
-    private static Map<String, Content.Detail> parseDetailMap(JsonArray list) {
+    protected Map<String, Content.Detail> parseDetailMap(JsonArray list) {
         Map<String, Content.Detail> contents = new LinkedHashMap<>();
         for (JsonElement element : list) {
             String slug = parseSlug(element);
@@ -137,7 +118,7 @@ public class ResponseParser {
         return parsed("slug list", contents);
     }
 
-    private static Content.Detail parseDetail(JsonElement element) {
+    protected Content.Detail parseDetail(JsonElement element) {
         JsonObject detailData = JsonHelper.toJsonObject(element);
         JsonHelper.testKeys(detailData, "title", "description");
         String title = JsonHelper.toString(detailData.get("title"));
@@ -145,7 +126,7 @@ public class ResponseParser {
         return parsed("detail", new Content.Detail(title, description));
     }
 
-    private static Content.Version parseVersion(JsonElement element) {
+    protected Content.Version parseVersion(JsonElement element) {
         JsonObject versionData = JsonHelper.toJsonObject(element);
         JsonHelper.testKeys(versionData, "id", "files", "dependencies");
         String versionId = JsonHelper.toString(versionData.get("id"));
@@ -173,30 +154,26 @@ public class ResponseParser {
         return parsed("version", new Content.Version(versionId, hash, url, fileName, versionDependencies));
     }
 
-    private static String parseProjectId(JsonElement element) {
+    protected String parseProjectId(JsonElement element) {
         JsonObject data = JsonHelper.toJsonObject(element);
         String projectIdKey = data.has("project_id") ? "project_id" : "id";
         JsonHelper.testKeys(data, projectIdKey);
         return parsed("project id", JsonHelper.toString(data.get(projectIdKey)));
     }
 
-    private static String parseSlug(JsonElement element) {
+    protected String parseSlug(JsonElement element) {
         JsonObject data = JsonHelper.toJsonObject(element);
         JsonHelper.testKeys(data, "slug");
         return parsed("slug", JsonHelper.toString(data.get("slug")));
     }
 
-    private static void logStartParsing(String target, Response response) {
-        Mimo.LOGGER.debug("[REQ %03d] Starting parsing {} for {}".formatted(response.id()), target, response.requestType());
-    }
-
-    private static <T> T parsed(String name, T value) {
-        Mimo.LOGGER.verbose("Parsed {} is \"{}\"", name, value);
-        return value;
-    }
-
-    private static <T> T result(Response response, T value) {
-        Mimo.LOGGER.debug("[REQ %03d] Parse result for {} is \"{}\"".formatted(response.id()), response.requestType(), value);
-        return value;
+    protected List<Content> parseContentListFromJsonArray(Loader.Type loader, JsonArray list) {
+        List<Content> contents = new ArrayList<>();
+        for (JsonElement element : list) {
+            JsonObject currentContent = JsonHelper.toJsonObject(element);
+            Content content = parseContent(loader, currentContent);
+            contents.add(content);
+        }
+        return parsed("content list", contents);
     }
 }

@@ -2,16 +2,15 @@ package com.lalaalal.mimo;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.lalaalal.mimo.content_provider.ContentProvider;
 import com.lalaalal.mimo.data.Content;
 import com.lalaalal.mimo.data.MinecraftVersion;
+import com.lalaalal.mimo.json.ContentProviderAdaptor;
 import com.lalaalal.mimo.json.MimoExcludeStrategy;
 import com.lalaalal.mimo.json.ServerInstanceAdaptor;
 import com.lalaalal.mimo.loader.Loader;
 import com.lalaalal.mimo.loader.LoaderInstaller;
 import com.lalaalal.mimo.logging.Logger;
-import com.lalaalal.mimo.modrinth.ModrinthHelper;
-import com.lalaalal.mimo.modrinth.Request;
-import com.lalaalal.mimo.modrinth.ResponseParser;
 import com.lalaalal.mimo.util.DirectoryRemover;
 
 import java.io.File;
@@ -27,6 +26,7 @@ public final class Mimo {
             .addSerializationExclusionStrategy(new MimoExcludeStrategy())
             .addDeserializationExclusionStrategy(new MimoExcludeStrategy())
             .registerTypeAdapter(ServerInstanceAdaptor.class, new ServerInstanceAdaptor())
+            .registerTypeAdapter(ContentProvider.class, new ContentProviderAdaptor())
             .create();
 
     public static final Logger LOGGER = Logger.stdout();
@@ -34,6 +34,7 @@ public final class Mimo {
     public static void initialize() throws IOException {
         Files.createDirectories(getInstanceContainerDirectory());
         LoaderInstaller.initialize();
+        ContentProvider.initialize();
     }
 
     public static Path getInstanceContainerDirectory() {
@@ -81,34 +82,22 @@ public final class Mimo {
         return currentServerInstance;
     }
 
-    public static void add(String slug) throws IOException {
-        add(slug, false);
+    public static void add(String slug, ContentProvider provider) throws IOException {
+        add(slug, provider, false);
     }
 
-    public static void add(String slug, boolean immediateUpdate) throws IOException {
+    public static void add(String slug, ContentProvider provider, boolean immediateUpdate) throws IOException {
         ServerInstance serverInstance = currentInstanceOrThrow();
-        Content content = ModrinthHelper.get(Request.project(slug), ResponseParser.contentParser(serverInstance));
+        Content content = provider.getContentWithSlug(slug, serverInstance);
         serverInstance.addContent(content);
         if (immediateUpdate)
             serverInstance.downloadContents();
         serverInstance.checkUpdate();
     }
 
-    public static void add(List<String> slugs) throws IOException {
-        ServerInstance serverInstance = currentInstanceOrThrow();
-        List<Content> contents = ModrinthHelper.get(Request.projects(slugs), ResponseParser.contentListParser(serverInstance));
-        contents.forEach(serverInstance::addContent);
-        serverInstance.checkUpdate();
-    }
-
     public static void removeContent(String slug) throws IOException {
         ServerInstance serverInstance = currentInstanceOrThrow();
-        Content content = serverInstance.getContents().stream()
-                .map(ContentInstance::content)
-                .filter(_content -> _content.slug().equals(slug) || _content.id().equals(slug))
-                .findAny()
-                .orElseGet(() -> ModrinthHelper.get(Request.project(slug), ResponseParser.contentParser(serverInstance)));
-        serverInstance.removeContent(content);
+        serverInstance.removeContent(slug);
     }
 
     public static void removeServer(String serverName) throws IOException {

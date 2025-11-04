@@ -1,15 +1,14 @@
 package com.lalaalal.mimo.data;
 
+import com.lalaalal.mimo.content_provider.ContentProvider;
+import com.lalaalal.mimo.content_provider.CustomContentProvider;
+import com.lalaalal.mimo.content_provider.Response;
 import com.lalaalal.mimo.loader.Loader;
-import com.lalaalal.mimo.modrinth.ModrinthHelper;
-import com.lalaalal.mimo.modrinth.Request;
-import com.lalaalal.mimo.modrinth.Response;
-import com.lalaalal.mimo.modrinth.ResponseParser;
+import com.lalaalal.mimo.modrinth.ModrinthResponseParser;
 
 import java.io.File;
 import java.util.List;
 import java.util.Objects;
-import java.util.function.Function;
 
 /**
  * Represents a content that can be loaded by a loader.
@@ -22,19 +21,21 @@ import java.util.function.Function;
  * @param loaders List of {@link Loader.Type} that can load this content
  * @param id      Content identifier
  * @param slug    Content slug
- * @see ModrinthHelper#get(Request, Function)
- * @see Request#project(String)
- * @see ResponseParser#parseContent(Loader.Type, Response)
+ * @see ModrinthResponseParser#parseContent(Loader.Type, Response)
  */
-public record Content(ProjectType type, List<Loader.Type> loaders, String id, String slug) {
+public record Content(ProjectType type, List<Loader.Type> loaders, ContentProvider provider, String id, String slug) {
+    public static Content custom(ProjectType type, Loader.Type loader, String id) {
+        return new Content(type, loader, CustomContentProvider.INSTANCE, id, id);
+    }
+
     private static List<Loader.Type> determineLoader(ProjectType type, Loader.Type loader) {
         if (type == ProjectType.DATAPACK)
             return List.of(Loader.Type.DATAPACK);
         return List.of(loader);
     }
 
-    public Content(ProjectType type, Loader.Type loader, String id, String slug) {
-        this(type, determineLoader(type, loader), id, slug);
+    public Content(ProjectType type, Loader.Type loader, ContentProvider provider, String id, String slug) {
+        this(type, determineLoader(type, loader), provider, id, slug);
     }
 
     public Loader.Type loader() {
@@ -58,10 +59,6 @@ public record Content(ProjectType type, List<Loader.Type> loaders, String id, St
     public record Version(String versionId, String hash, String url, String fileName, List<Dependency> dependencies) {
         public static Version custom(String hash, File file) {
             return new Version(hash.substring(0, 4) + "-custom", hash, "", file.getName(), List.of());
-        }
-
-        public boolean isCustom() {
-            return versionId.endsWith("custom");
         }
     }
 

@@ -3,12 +3,13 @@ package com.lalaalal.mimo.logging;
 import java.io.PrintStream;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 public class TextMessageComponent extends MessageComponent {
     private final String text;
 
     public TextMessageComponent(String text) {
-        this.text = text;
+        this.text = Objects.requireNonNullElse(text, "");
     }
 
     @Override

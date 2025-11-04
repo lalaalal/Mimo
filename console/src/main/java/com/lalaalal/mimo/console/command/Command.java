@@ -1,7 +1,7 @@
 package com.lalaalal.mimo.console.command;
 
 import com.lalaalal.mimo.Mimo;
-import com.lalaalal.mimo.console.Registries;
+import com.lalaalal.mimo.console.ConsoleRegistries;
 import com.lalaalal.mimo.console.argument.ArgumentParser;
 import com.lalaalal.mimo.console.argument.Arguments;
 import com.lalaalal.mimo.logging.MessageComponent;
@@ -22,7 +22,7 @@ public interface Command {
 
     default String name() {
         Mimo.LOGGER.warning("Calling default Command#name()");
-        return Registries.COMMANDS.findKey(this);
+        return ConsoleRegistries.COMMANDS.findKey(this);
     }
 
     default Optional<Command> resolve(String child) {

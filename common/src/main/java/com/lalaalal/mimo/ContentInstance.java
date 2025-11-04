@@ -1,6 +1,8 @@
 package com.lalaalal.mimo;
 
 import com.google.gson.annotations.SerializedName;
+import com.lalaalal.mimo.content_provider.ContentProvider;
+import com.lalaalal.mimo.content_provider.CustomContentProvider;
 import com.lalaalal.mimo.data.Content;
 import com.lalaalal.mimo.data.MinecraftVersion;
 import com.lalaalal.mimo.json.FieldStrategy;
@@ -10,9 +12,7 @@ import com.lalaalal.mimo.json.TypeStrategy;
 import com.lalaalal.mimo.logging.ComplexMessageComponent;
 import com.lalaalal.mimo.logging.ConsoleColor;
 import com.lalaalal.mimo.logging.MessageComponent;
-import com.lalaalal.mimo.modrinth.ModrinthHelper;
-import com.lalaalal.mimo.modrinth.Request;
-import com.lalaalal.mimo.modrinth.ResponseParser;
+import com.lalaalal.mimo.logging.Style;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -31,13 +31,17 @@ public class ContentInstance {
     private final Content content;
     private List<Content.Version> availableVersions;
 
-    @SerializedName("version") @GsonField(FieldStrategy.INCLUDE)
+    private final ContentProvider contentProvider;
+
+    @GsonField(FieldStrategy.INCLUDE)
+    @SerializedName("version")
     private Content.Version contentVersion;
     private Content.Version updatingVersion;
 
     public ContentInstance(ServerInstance serverInstance, Content content) {
         this.serverInstance = serverInstance;
         this.content = content;
+        this.contentProvider = content.provider();
 
         loadVersions();
     }
@@ -46,16 +50,14 @@ public class ContentInstance {
         this.serverInstance = serverInstance;
         this.content = content;
         this.contentVersion = version;
+        this.contentProvider = content.provider();
     }
 
     protected void resolveDependencies(Content.Version version) {
         Mimo.LOGGER.info("[{}] ({}) Resolving dependencies for \"{}\"", serverInstance, this, version.fileName());
         for (Content.Dependency dependency : version.dependencies()) {
             if (dependency.required()) {
-                Content content = ModrinthHelper.get(
-                        Request.project(dependency.id()),
-                        ResponseParser.contentParser(serverInstance)
-                );
+                Content content = contentProvider.getContentWithId(dependency.id(), serverInstance);
                 serverInstance.addContent(content);
             } else {
                 Mimo.LOGGER.debug("[{}] ({}) Skipping optional dependency \"{}\"", serverInstance, this, dependency.id());
@@ -65,10 +67,7 @@ public class ContentInstance {
 
     protected void loadVersions() {
         Mimo.LOGGER.debug("[{}] ({}) Loading versions for \"{}\"", serverInstance, this, content.slug());
-        this.availableVersions = ModrinthHelper.get(
-                Request.projectVersions(content, serverInstance),
-                ResponseParser::parseProjectVersionList
-        );
+        this.availableVersions = contentProvider.getProjectVersions(content, serverInstance);
         if (contentVersion == null)
             selectContentVersion(0);
     }
@@ -79,16 +78,8 @@ public class ContentInstance {
     }
 
     public void loadLatestVersion() {
-        if (contentVersion.isCustom()) {
-            Mimo.LOGGER.debug("[{}] ({}) Skip loading latest version", serverInstance, this);
-            updatingVersion = contentVersion;
-            return;
-        }
         Mimo.LOGGER.debug("[{}] ({}) Loading latest version", serverInstance, this);
-        updatingVersion = ModrinthHelper.get(
-                Request.latestVersion(content, contentVersion, serverInstance),
-                ResponseParser::parseVersion
-        );
+        updatingVersion = contentProvider.getLatestVersion(content, contentVersion, serverInstance);
         Mimo.LOGGER.debug("[{}] ({}) Latest version is \"{}\"", serverInstance, this, content.slug());
     }
 
@@ -97,7 +88,7 @@ public class ContentInstance {
     }
 
     public boolean isCustom() {
-        return contentVersion != null && contentVersion.isCustom();
+        return contentProvider == CustomContentProvider.INSTANCE;
     }
 
     public Content content() {
@@ -178,7 +169,7 @@ public class ContentInstance {
     }
 
     public void downloadContent() throws IOException {
-        if (contentVersion.isCustom()) {
+        if (isCustom()) {
             Mimo.LOGGER.warning("[{}] ({}) Skip downloading custom content", serverInstance, this);
             return;
         }
@@ -187,7 +178,7 @@ public class ContentInstance {
         Path contentPath = createContentPath(version);
         Files.createDirectories(contentPath.getParent());
         Mimo.LOGGER.info("[{}] ({}) Downloading \"{}\"", serverInstance, this, contentPath);
-        ModrinthHelper.download(version, contentPath);
+        contentProvider.download(version, contentPath);
         handlePostDownloadUpdatingVersion();
     }
 
@@ -215,12 +206,17 @@ public class ContentInstance {
         if (isVersionSelected())
             name += " (" + contentVersion.fileName() + ")";
         ComplexMessageComponent component = MessageComponent.complex(MessageComponent.withDefault(name));
+        component.add(MessageComponent.text(" " + content.provider().getName()).with(providerStyle()));
         if (!isDownloaded())
             component.add(MessageComponent.text(" NOT DOWNLOADED").with(ConsoleColor.RED.foreground()));
         if (!isUpToDate())
             component.add(MessageComponent.text(" OUT OF DATE").with(ConsoleColor.YELLOW.foreground()));
-        if (isCustom())
-            component.add(MessageComponent.text(" CUSTOM").with(ConsoleColor.WHITE.foreground()));
         return component;
+    }
+
+    private Style providerStyle() {
+        if (content.provider() == CustomContentProvider.INSTANCE)
+            return ConsoleColor.YELLOW.foreground();
+        return ConsoleColor.GREEN.foreground();
     }
 }

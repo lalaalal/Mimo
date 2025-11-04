@@ -1,9 +1,14 @@
-package com.lalaalal.mimo.modrinth;
+package com.lalaalal.mimo.content_provider;
 
 import com.lalaalal.mimo.Mimo;
+import com.lalaalal.mimo.Registries;
+import com.lalaalal.mimo.ServerInstance;
+import com.lalaalal.mimo.curseforge.CurseForgeContentProvider;
 import com.lalaalal.mimo.data.Content;
 import com.lalaalal.mimo.exception.JsonParsingException;
 import com.lalaalal.mimo.exception.ResponseParsingException;
+import com.lalaalal.mimo.modrinth.ModrinthContentProvider;
+import com.lalaalal.mimo.modrinth.ModrinthResponseParser;
 import com.lalaalal.mimo.util.HttpHelper;
 
 import javax.net.ssl.HttpsURLConnection;
@@ -11,25 +16,43 @@ import java.io.*;
 import java.net.URI;
 import java.net.URL;
 import java.nio.file.Path;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 
-public class ModrinthHelper {
-    public static final String API_URL = "https://api.modrinth.com/v2/";
+public abstract class ContentProvider {
+    private final String name;
+    private final String apiURL;
 
-    private static void setupPostRequest(HttpsURLConnection connection, Request request) throws IOException {
+    private final Map<Request, Response> CACHE = new HashMap<>();
+
+    public static void initialize() {
+        Registries.CONTENT_PROVIDERS.register("modrinth", ModrinthContentProvider.INSTANCE);
+        Registries.CONTENT_PROVIDERS.register("curseforge", CurseForgeContentProvider.INSTANCE);
+        Registries.CONTENT_PROVIDERS.register("custom", CustomContentProvider.INSTANCE);
+    }
+
+    public ContentProvider(String name, String apiURL) {
+        this.name = name;
+        this.apiURL = apiURL;
+    }
+
+    protected void setupPostRequest(HttpsURLConnection connection, Request request) throws IOException {
         if (!request.isPost())
             return;
         Mimo.LOGGER.debug("[REQ %03d] Preparing POST request".formatted(request.id()));
         connection.setDoOutput(true);
         connection.setRequestProperty("Content-Type", "application/json");
+        connection.setRequestProperty("Accept", "application/json");
         try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(connection.getOutputStream()))) {
             writer.write(request.body());
         }
     }
 
-    protected static Response sendRequest(Request request) throws IOException {
-        Mimo.LOGGER.debug("[REQ %03d] Sending request \"%s\"".formatted(request.id(), request.type()));
-        URL url = URL.of(URI.create(API_URL + request.createQuery()), null);
+    private Response sendRequest(Request request) throws IOException {
+        Mimo.LOGGER.debug("[REQ %03d] Sending request \"%s\"".formatted(request.id(), request.format()));
+        URL url = URL.of(URI.create(apiURL + request.createQuery()), null);
         HttpsURLConnection connection = (HttpsURLConnection) url.openConnection();
         connection.setRequestMethod(request.method());
         connection.setConnectTimeout(2000);
@@ -63,8 +86,16 @@ public class ModrinthHelper {
      * @param path    Path to save the file to
      * @throws IOException If an I/O error occurs
      */
-    public static void download(Content.Version version, Path path) throws IOException {
+    public void download(Content.Version version, Path path) throws IOException {
         HttpHelper.download(version.url(), path);
+    }
+
+    private Response internalSend(Request request) {
+        try {
+            return sendRequest(request);
+        } catch (IOException exception) {
+            return new Response(request, -1, "\"%s\"".formatted(exception.getMessage()));
+        }
     }
 
     /**
@@ -75,12 +106,8 @@ public class ModrinthHelper {
      * @see Request
      * @see Response
      */
-    public static Response send(Request request) {
-        try {
-            return sendRequest(request);
-        } catch (IOException exception) {
-            return new Response(request, -1, "\"%s\"".formatted(exception.getMessage()));
-        }
+    public Response send(Request request) {
+        return CACHE.computeIfAbsent(request, this::internalSend);
     }
 
     /**
@@ -91,9 +118,9 @@ public class ModrinthHelper {
      * @param <T>     Type of the parsed response
      * @return Parsed response
      * @see Request
-     * @see ResponseParser
+     * @see ModrinthResponseParser
      */
-    public static <T> T get(Request request, Function<Response, T> parser) {
+    public <T> T get(Request request, Function<Response, T> parser) {
         try {
             Response response = send(request);
             if (response.code() == 404)
@@ -104,5 +131,26 @@ public class ModrinthHelper {
         } catch (JsonParsingException exception) {
             throw ResponseParsingException.jsonParsing("[REQ %03d] Failed to parse response".formatted(request.id()), exception);
         }
+    }
+
+    public abstract Content getContentWithId(String id, ServerInstance serverInstance);
+
+    public abstract Content getContentWithSlug(String slug, ServerInstance serverInstance);
+
+    public abstract List<Content.Version> getProjectVersions(Content content, ServerInstance serverInstance);
+
+    public abstract Content.Version getLatestVersion(Content content, Content.Version version, ServerInstance serverInstance);
+
+    public abstract Map<String, Content.Detail> search(String name);
+
+    public abstract Map<Content, Content.Version> getLatestVersions(Map<String, File> hashes, ServerInstance serverInstance);
+
+    public String getName() {
+        return name;
+    }
+
+    @Override
+    public String toString() {
+        return getName();
     }
 }

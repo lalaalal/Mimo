@@ -1,6 +1,8 @@
 package com.lalaalal.mimo.console.argument;
 
-import com.lalaalal.mimo.console.Registries;
+import com.lalaalal.mimo.Registries;
+import com.lalaalal.mimo.console.ConsoleRegistries;
+import com.lalaalal.mimo.content_provider.ContentProvider;
 import com.lalaalal.mimo.data.MinecraftVersion;
 import com.lalaalal.mimo.data.ProjectType;
 import com.lalaalal.mimo.loader.Loader;
@@ -50,8 +52,12 @@ public class ArgumentParsers {
             ArgumentParser.of("log_level", Level.class, Level::get)
     );
 
+    public static final ArgumentParser<ContentProvider> CONTENT_PROVIDER = register(
+            ArgumentParser.of("content_provider", ContentProvider.class, Registries.CONTENT_PROVIDERS::get)
+    );
+
     public static <T> ArgumentParser<T> register(ArgumentParser<T> parser) {
-        Registries.ARGUMENT_PARSERS.register(parser.name, parser);
+        ConsoleRegistries.ARGUMENT_PARSERS.register(parser.name, parser);
         return parser;
     }
 

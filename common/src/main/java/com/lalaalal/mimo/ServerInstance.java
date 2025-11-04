@@ -8,8 +8,6 @@ import com.lalaalal.mimo.data.MinecraftVersion;
 import com.lalaalal.mimo.json.ServerInstanceAdaptor;
 import com.lalaalal.mimo.loader.Loader;
 import com.lalaalal.mimo.loader.LoaderInstaller;
-import com.lalaalal.mimo.modrinth.ModrinthHelper;
-import com.lalaalal.mimo.modrinth.Request;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -19,7 +17,7 @@ import java.nio.file.Path;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.Function;
+import java.util.Optional;
 
 /**
  * Instance of the server.
@@ -99,14 +97,12 @@ public class ServerInstance {
             Mimo.LOGGER.info("Loading \"{}\" to \"{}\" instance", content.slug(), name);
             this.contents.put(content, new ContentInstance(this, content, contentVersions.get(content)));
         }
-        checkUpdate();
     }
 
     /**
      * Add content to the instance.
      *
      * @param content Content to add
-     * @see ModrinthHelper#get(Request, Function)
      */
     public void addContent(Content content) {
         if (this.contains(content))
@@ -133,8 +129,22 @@ public class ServerInstance {
             ContentInstance contentInstance = contents.get(content);
             contentInstance.removeContent();
             contents.remove(content);
+            save();
         }
-        save();
+    }
+
+    private Optional<Content> findContent(String slug) {
+        for (Content content : contents.keySet()) {
+            if (content.slug().equals(slug))
+                return Optional.of(content);
+        }
+        return Optional.empty();
+    }
+
+    public void removeContent(String slug) throws IOException {
+        Optional<Content> content = findContent(slug);
+        if (content.isPresent())
+            removeContent(content.get());
     }
 
     /**

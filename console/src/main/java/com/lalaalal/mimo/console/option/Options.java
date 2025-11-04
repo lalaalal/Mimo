@@ -1,8 +1,8 @@
 package com.lalaalal.mimo.console.option;
 
 import com.lalaalal.mimo.Mimo;
+import com.lalaalal.mimo.console.ConsoleRegistries;
 import com.lalaalal.mimo.console.MimoConsole;
-import com.lalaalal.mimo.console.Registries;
 import com.lalaalal.mimo.console.argument.ArgumentParsers;
 import com.lalaalal.mimo.console.command.Command;
 import com.lalaalal.mimo.logging.Level;
@@ -13,17 +13,17 @@ import java.util.Optional;
 @SuppressWarnings("unused")
 public class Options {
     public static Optional<Command> get(String name) {
-        return Optional.ofNullable(Registries.OPTIONS.get(name));
+        return Optional.ofNullable(ConsoleRegistries.OPTIONS.get(name));
     }
 
     public static Command register(String name, Command command) {
-        Registries.OPTIONS.register(name, command);
+        ConsoleRegistries.OPTIONS.register(name, command);
         return command;
     }
 
     public static Command register(String name, String alias, Command command) {
-        Registries.OPTIONS.register(name, command);
-        Registries.OPTIONS.register(alias, command);
+        ConsoleRegistries.OPTIONS.register(name, command);
+        ConsoleRegistries.OPTIONS.register(alias, command);
         return command;
     }
 

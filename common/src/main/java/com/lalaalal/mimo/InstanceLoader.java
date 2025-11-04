@@ -1,14 +1,12 @@
 package com.lalaalal.mimo;
 
 import com.google.gson.JsonParseException;
+import com.lalaalal.mimo.content_provider.ContentProvider;
 import com.lalaalal.mimo.data.Content;
 import com.lalaalal.mimo.data.MinecraftVersion;
 import com.lalaalal.mimo.data.ProjectType;
 import com.lalaalal.mimo.exception.MessageComponentException;
 import com.lalaalal.mimo.loader.Loader;
-import com.lalaalal.mimo.modrinth.ModrinthHelper;
-import com.lalaalal.mimo.modrinth.Request;
-import com.lalaalal.mimo.modrinth.ResponseParser;
 import com.lalaalal.mimo.util.HashUtils;
 
 import java.io.BufferedReader;
@@ -17,7 +15,6 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -91,55 +88,38 @@ public class InstanceLoader {
         }
     }
 
-    private static Map<String, Content.Version> getContentVersions(Path modsPath) throws IOException {
+    private static Map<Content, Content.Version> getContentVersions(ServerInstance serverInstance, ProjectType projectType, Path directory) throws IOException {
+        Path modsPath = directory.resolve(projectType.path);
         File modsDirectory = modsPath.toFile();
         File[] files = modsDirectory.listFiles((dir, name) -> name.endsWith(".jar") || name.endsWith(".zip"));
         if (files == null || files.length == 0)
             return Map.of();
         Map<String, File> hashes = new HashMap<>();
-        for (File file : files)
-            hashes.put(HashUtils.hashFile(file.toPath()), file);
-        Map<String, Content.Version> versions = ModrinthHelper.get(Request.versions(hashes.keySet()), ResponseParser::parseVersionListWithProjectId);
+        for (File file : files) {
+            String hash = HashUtils.hashFile(file.toPath());
+            hashes.put(hash, file);
+        }
+        Map<Content, Content.Version> versions = new HashMap<>();
+        for (ContentProvider contentProvider : Registries.CONTENT_PROVIDERS) {
+            Map<Content, Content.Version> current = contentProvider.getLatestVersions(hashes, serverInstance);
+            for (Content.Version version : current.values())
+                hashes.remove(version.hash());
+            versions.putAll(current);
+        }
+        hashes.forEach((hash, file) -> {
+            Content.Version version = Content.Version.custom(hash, file);
+            Content content = Content.custom(projectType, serverInstance.loader.type(), version.versionId());
+            versions.put(content, version);
+        });
 
-        List<String> resolved = versions.values().stream()
-                .map(Content.Version::hash)
-                .toList();
-        hashes.keySet().stream()
-                .filter(hash -> !resolved.contains(hash))
-                .forEach(hash -> {
-                    Content.Version version = Content.Version.custom(hash, hashes.get(hash));
-                    versions.put(version.versionId(), version);
-                });
         return versions;
     }
 
     private static Map<Content, Content.Version> getContentVersions(ServerInstance serverInstance, Path directory) throws IOException {
-        Map<Content, Content.Version> result = new HashMap<>();
-        Map<String, Content.Version> versions = new HashMap<>();
-        Map<String, Content.Version> modVersions = InstanceLoader.getContentVersions(directory.resolve(ProjectType.MOD.path));
-        Map<String, Content.Version> datapackVersions = InstanceLoader.getContentVersions(directory.resolve(ProjectType.DATAPACK.path));
-        versions.putAll(modVersions);
-        versions.putAll(datapackVersions);
+        Map<Content, Content.Version> versions = new HashMap<>();
+        versions.putAll(getContentVersions(serverInstance, ProjectType.MOD, directory));
+        versions.putAll(getContentVersions(serverInstance, ProjectType.DATAPACK, directory));
 
-        result.putAll(fillCustomContents(serverInstance, ProjectType.MOD, modVersions));
-        result.putAll(fillCustomContents(serverInstance, ProjectType.DATAPACK, datapackVersions));
-
-        List<Content> contents = ModrinthHelper.get(
-                Request.projects(versions.keySet()),
-                ResponseParser.contentListParser(serverInstance)
-        );
-        contents.forEach(content -> result.put(content, versions.get(content.id())));
-        return result;
-    }
-
-    private static Map<Content, Content.Version> fillCustomContents(ServerInstance serverInstance, ProjectType projectType, Map<String, Content.Version> versions) {
-        Map<Content, Content.Version> contents = new HashMap<>();
-        versions.keySet().stream()
-                .filter(projectId -> projectId.endsWith("custom"))
-                .forEach(projectId -> {
-                    Content content = new Content(projectType, serverInstance.loader.type(), projectId, projectId);
-                    contents.put(content, versions.get(projectId));
-                });
-        return contents;
+        return versions;
     }
 }

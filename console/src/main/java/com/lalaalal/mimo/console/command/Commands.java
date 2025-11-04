@@ -1,8 +1,8 @@
 package com.lalaalal.mimo.console.command;
 
 import com.lalaalal.mimo.Mimo;
+import com.lalaalal.mimo.console.ConsoleRegistries;
 import com.lalaalal.mimo.console.MimoConsole;
-import com.lalaalal.mimo.console.Registries;
 import com.lalaalal.mimo.console.argument.ArgumentParsers;
 
 import java.util.List;
@@ -12,11 +12,11 @@ import java.util.function.Consumer;
 @SuppressWarnings("unused")
 public class Commands {
     public static Command register(Command command) {
-        return Registries.COMMANDS.register(command.name(), command);
+        return ConsoleRegistries.COMMANDS.register(command.name(), command);
     }
 
     public static Optional<Command> get(String name) {
-        return Optional.ofNullable(Registries.COMMANDS.get(name));
+        return Optional.ofNullable(ConsoleRegistries.COMMANDS.get(name));
     }
 
     public static final Command INSTALL = register(
@@ -65,26 +65,23 @@ public class Commands {
     );
 
     public static final Command SEARCH = register(
-            Command.simple("search", ArgumentParsers.STRING)
+            Command.simple("search", ArgumentParsers.STRING, ArgumentParsers.CONTENT_PROVIDER)
                     .action(MimoConsole::search)
                     .build()
     );
 
     public static final Command ADD = register(
             Command.complex("add")
-                    .overload(1, Command.simple("add", ArgumentParsers.STRING)
-                            .argumentHelp("content_slug")
+                    .overload(2, Command.simple("add", ArgumentParsers.STRING, ArgumentParsers.CONTENT_PROVIDER)
+                            .argumentHelp("content_slug", ArgumentParsers.CONTENT_PROVIDER)
                             .action(Mimo::add)
                             .build())
-                    .overload(2, Command.simple("add",
-                                    ArgumentParsers.STRING, ArgumentParsers.BOOLEAN)
-                            .argumentHelp("content_slug", "update")
-                            .help("-    [content_slug] : " + ArgumentParsers.STRING)
-                            .help("-    [update]       : " + ArgumentParsers.BOOLEAN)
-                            .action(Mimo::add)
-                            .build())
-                    .subCommand("all", Command.list("add all", ArgumentParsers.STRING)
-                            .argumentHelp("content_slug...")
+                    .overload(3, Command.simple("add",
+                                    ArgumentParsers.STRING, ArgumentParsers.CONTENT_PROVIDER, ArgumentParsers.BOOLEAN)
+                            .argumentHelp("content_slug", ArgumentParsers.CONTENT_PROVIDER, "update")
+                            .help("-    [content_slug]     : " + ArgumentParsers.STRING)
+                            .help("-    [content_provider] : " + ArgumentParsers.CONTENT_PROVIDER)
+                            .help("-    [update]           : " + ArgumentParsers.BOOLEAN)
                             .action(Mimo::add)
                             .build())
                     .build()
@@ -190,7 +187,7 @@ public class Commands {
     }
 
     private static void help() {
-        for (String commandKey : Registries.COMMANDS.keySet())
+        for (String commandKey : ConsoleRegistries.COMMANDS.keySet())
             help(commandKey, true);
     }
 
@@ -199,17 +196,17 @@ public class Commands {
     }
 
     public static void help(String commandKey, boolean onlyArgument) {
-        if (!Registries.COMMANDS.contains(commandKey))
+        if (!ConsoleRegistries.COMMANDS.contains(commandKey))
             throw CommandException.notFound(commandKey);
-        Command command = Registries.COMMANDS.get(commandKey);
+        Command command = ConsoleRegistries.COMMANDS.get(commandKey);
         help(command, onlyArgument, Mimo.LOGGER::info);
     }
 
     public static void help(List<String> commands) {
         String commandKey = commands.getFirst();
-        if (!Registries.COMMANDS.contains(commandKey))
+        if (!ConsoleRegistries.COMMANDS.contains(commandKey))
             throw CommandException.notFound(commandKey);
-        Command command = Registries.COMMANDS.get(commandKey);
+        Command command = ConsoleRegistries.COMMANDS.get(commandKey);
         for (String subCommandKey : commands.subList(1, commands.size())) {
             Optional<Command> subCommand = command.resolve(subCommandKey);
             if (subCommand.isPresent())

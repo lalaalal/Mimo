@@ -1,14 +1,11 @@
-package com.lalaalal.mimo.console;
+package com.lalaalal.mimo;
 
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class Registry<T> implements Iterable<T> {
     private static final Registry<Registry<?>> ROOT = new Registry<>();
 
-    private final Map<String, T> registry = new HashMap<>();
+    private final Map<String, T> registry = new LinkedHashMap<>();
     private final Map<T, String> byElement = new HashMap<>();
 
     @SuppressWarnings("unchecked")
