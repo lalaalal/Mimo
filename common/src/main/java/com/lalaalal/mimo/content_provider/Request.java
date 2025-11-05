@@ -81,7 +81,26 @@ public record Request(int id, Format format, Map<String, String> params, String 
     }
 
     public enum Type {
-        EMPTY, SEARCH, GET_PROJECT, GET_PROJECT_LIST, GET_PROJECT_DEPENDENCY_LIST, GET_PROJECT_VERSION_LIST, GET_VERSION_FILE, GET_VERSION_FILE_LIST, LATEST_VERSION
+        EMPTY(true),
+        SEARCH(true),
+        GET_PROJECT(true),
+        GET_PROJECT_LIST(true),
+        @Deprecated
+        GET_PROJECT_DEPENDENCY_LIST(false),
+        GET_PROJECT_VERSION_LIST(false),
+        LATEST_VERSION(false),
+        GET_VERSION_FILE(true),
+        GET_VERSION_FILE_LIST(true);
+
+        private final boolean canBeReused;
+
+        Type(boolean canBeReused) {
+            this.canBeReused = canBeReused;
+        }
+
+        public boolean canBeReused() {
+            return canBeReused;
+        }
     }
 
     public record Format(Type type, QueryMaker queryMaker, String queryFormat) {

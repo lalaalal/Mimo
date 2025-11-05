@@ -107,7 +107,9 @@ public abstract class ContentProvider {
      * @see Response
      */
     public Response send(Request request) {
-        return CACHE.computeIfAbsent(request, this::internalSend);
+        if (request.format().type().canBeReused())
+            return CACHE.computeIfAbsent(request, this::internalSend);
+        return internalSend(request);
     }
 
     /**
