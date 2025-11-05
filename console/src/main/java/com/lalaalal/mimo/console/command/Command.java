@@ -34,7 +34,7 @@ public interface Command {
             verifyArgumentCount(arguments);
             action.accept();
         });
-        return new SimpleCommand.Builder<>(name, caster).argumentHelp();
+        return new SimpleCommand.Builder<>(name, caster).formatHelp();
     }
 
     static <A> SimpleCommand.Builder<AC1<A>> simple(String name, final ArgumentParser<A> parser) {
@@ -43,7 +43,7 @@ public interface Command {
             A argument = parser.parse(arguments.getFirst());
             consumer.accept(argument);
         };
-        return new SimpleCommand.Builder<>(name, caster).argumentHelp(parser);
+        return new SimpleCommand.Builder<>(name, caster).formatHelp(parser);
     }
 
     static <A1, A2> SimpleCommand.Builder<AC2<A1, A2>> simple(String name, final ArgumentParser<A1> parser1, final ArgumentParser<A2> parser2) {
@@ -53,7 +53,7 @@ public interface Command {
             A2 a2 = parser2.parse(arguments.get(1));
             consumer.accept(a1, a2);
         };
-        return new SimpleCommand.Builder<>(name, caster).argumentHelp(parser1, parser2);
+        return new SimpleCommand.Builder<>(name, caster).formatHelp(parser1, parser2);
     }
 
     static <A1, A2, A3> SimpleCommand.Builder<AC3<A1, A2, A3>> simple(String name, final ArgumentParser<A1> parser1, final ArgumentParser<A2> parser2, final ArgumentParser<A3> parser3) {
@@ -64,7 +64,7 @@ public interface Command {
             A3 a3 = parser3.parse(arguments.get(2));
             consumer.accept(a1, a2, a3);
         };
-        return new SimpleCommand.Builder<>(name, caster).argumentHelp(parser1, parser2, parser3);
+        return new SimpleCommand.Builder<>(name, caster).formatHelp(parser1, parser2, parser3);
     }
 
     static <A1, A2, A3, A4> SimpleCommand.Builder<AC4<A1, A2, A3, A4>> simple(String name, final ArgumentParser<A1> parser1, final ArgumentParser<A2> parser2, final ArgumentParser<A3> parser3, final ArgumentParser<A4> parser4) {
@@ -76,7 +76,7 @@ public interface Command {
             A4 a4 = parser4.parse(arguments.get(3));
             consumer.accept(a1, a2, a3, a4);
         };
-        return new SimpleCommand.Builder<>(name, caster).argumentHelp(parser1, parser2, parser3, parser4);
+        return new SimpleCommand.Builder<>(name, caster).formatHelp(parser1, parser2, parser3, parser4);
     }
 
     static void verifyArgumentCount(List<String> arguments, ArgumentParser<?>... parsers) {
@@ -100,7 +100,7 @@ public interface Command {
             consumer.accept(list);
         };
         return new SimpleCommand.Builder<>(name, caster)
-                .argumentHelp("[" + parser.name + "...]");
+                .formatHelp("[" + parser.name + "...]");
     }
 
     static SimpleCommand.Builder<AC1<Arguments>> multiple(String name, ArgumentParser<?>... parsers) {

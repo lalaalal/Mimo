@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Optional;
 
 public final class Mimo {
     private static ServerInstance currentServerInstance = null;
@@ -82,6 +83,10 @@ public final class Mimo {
         return currentServerInstance;
     }
 
+    public static Optional<ServerInstance> currentInstance() {
+        return Optional.ofNullable(currentServerInstance);
+    }
+
     public static void add(String slug, ContentProvider provider) throws IOException {
         add(slug, provider, false);
     }
@@ -115,5 +120,10 @@ public final class Mimo {
     public static void update() throws IOException {
         ServerInstance serverInstance = currentInstanceOrThrow();
         serverInstance.updateContents();
+    }
+
+    public static void save() throws IOException {
+        ServerInstance serverInstance = currentInstanceOrThrow();
+        serverInstance.save();
     }
 }

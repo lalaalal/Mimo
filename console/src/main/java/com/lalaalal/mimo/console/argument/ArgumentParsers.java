@@ -17,7 +17,9 @@ public class ArgumentParsers {
     );
 
     public static final ArgumentParser<Boolean> BOOLEAN = register(
-            ArgumentParser.of("boolean", Boolean.class, Boolean::parseBoolean)
+            ArgumentParser.builder("boolean", Boolean.class, Boolean::parseBoolean)
+                    .help("[true | false]")
+                    .build()
     );
 
     public static final ArgumentParser<Integer> INTEGER = register(
@@ -41,19 +43,27 @@ public class ArgumentParsers {
     );
 
     public static final ArgumentParser<Loader.Type> LOADER_TYPE = register(
-            ArgumentParser.of("loader_type", Loader.Type.class, Loader.Type::get)
+            ArgumentParser.builder("loader_type", Loader.Type.class, Loader.Type::get)
+                    .help("[fabric | neoforge]")
+                    .build()
     );
 
     public static final ArgumentParser<ProjectType> PROJECT_TYPE = register(
-            ArgumentParser.of("project_type", ProjectType.class, ProjectType::get)
+            ArgumentParser.builder("project_type", ProjectType.class, ProjectType::get)
+                    .help("[mod | datapack]")
+                    .build()
     );
 
     public static final ArgumentParser<Level> LOG_LEVEL = register(
-            ArgumentParser.of("log_level", Level.class, Level::get)
+            ArgumentParser.builder("log_level", Level.class, Level::get)
+                    .help("[verbose | debug | info | warning | error]")
+                    .build()
     );
 
     public static final ArgumentParser<ContentProvider> CONTENT_PROVIDER = register(
-            ArgumentParser.of("content_provider", ContentProvider.class, Registries.CONTENT_PROVIDERS::get)
+            ArgumentParser.builder("content_provider", ContentProvider.class, Registries.CONTENT_PROVIDERS::get)
+                    .help("[modrinth | curseforge]")
+                    .build()
     );
 
     public static <T> ArgumentParser<T> register(ArgumentParser<T> parser) {

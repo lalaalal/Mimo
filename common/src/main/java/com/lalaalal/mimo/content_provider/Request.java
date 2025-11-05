@@ -24,7 +24,7 @@ public record Request(int id, Format format, Map<String, String> params, String 
     /**
      * Create a request with auto-incremented id.
      *
-     * @param format   {@link Format} of the request
+     * @param format {@link Format} of the request
      * @param params Parameters for the request
      * @param body   Body of the http request
      */
@@ -35,7 +35,7 @@ public record Request(int id, Format format, Map<String, String> params, String 
     /**
      * Create a request with an empty body and auto-incremented id.
      *
-     * @param format   {@link Format} of the request
+     * @param format {@link Format} of the request
      * @param params Parameters for the request
      */
     public Request(Format format, Map<String, String> params) {
@@ -85,7 +85,6 @@ public record Request(int id, Format format, Map<String, String> params, String 
         SEARCH(true),
         GET_PROJECT(true),
         GET_PROJECT_LIST(true),
-        @Deprecated
         GET_PROJECT_DEPENDENCY_LIST(false),
         GET_PROJECT_VERSION_LIST(false),
         LATEST_VERSION(false),

@@ -1,5 +1,6 @@
 package com.lalaalal.mimo.console.command;
 
+import com.lalaalal.mimo.console.argument.ArgumentParser;
 import com.lalaalal.mimo.exception.MessageComponentException;
 import com.lalaalal.mimo.logging.ComplexMessageComponent;
 import com.lalaalal.mimo.logging.MessageComponent;
@@ -79,17 +80,20 @@ public class SimpleCommand<T> implements Command {
             return help(true, comment);
         }
 
-        public Builder<T> argumentHelp(boolean append, Object... argumentNames) {
-            if (!append)
-                this.helpComments.clear();
+        public Builder<T> formatHelp(Object... names) {
+            helpComments.clear();
             StringBuilder builder = new StringBuilder(name).append(" ");
-            for (Object argumentName : argumentNames)
-                builder.append("[").append(argumentName).append("] ");
-            return help(append, builder.toString());
+            for (Object name : names)
+                builder.append("[").append(name).append("] ");
+            return help(builder.toString());
         }
 
-        public Builder<T> argumentHelp(Object... argumentNames) {
-            return argumentHelp(false, argumentNames);
+        public Builder<T> argumentHelp(String prefix, String name, ArgumentParser<?> argument) {
+            return help(prefix + "[" + name + "] : " + argument.help());
+        }
+
+        public Builder<T> argumentHelp(String prefix, ArgumentParser<?> argument) {
+            return help(prefix + "[" + argument.name + "] : " + argument.help());
         }
 
         public Command build() {

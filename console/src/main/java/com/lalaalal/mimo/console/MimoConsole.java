@@ -118,6 +118,9 @@ public class MimoConsole {
 
         try (Scanner scanner = new Scanner(System.in)) {
             while (true) {
+                Mimo.currentInstance().ifPresent(
+                        serverInstance -> System.out.printf("(%s) [%s %s] ", serverInstance.name, serverInstance.loader.type(), serverInstance.version)
+                );
                 System.out.print("> ");
                 String line = scanner.nextLine();
                 String[] tokens = line.split(" ");
