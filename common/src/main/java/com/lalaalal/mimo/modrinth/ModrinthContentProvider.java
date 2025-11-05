@@ -39,7 +39,7 @@ public class ModrinthContentProvider extends ContentProvider {
 
     @Override
     public Content.Version getLatestVersion(Content content, Content.Version version, ServerInstance serverInstance) {
-        return get(factory.latestVersion(version, serverInstance), parser::parseVersion);
+        return forgetAndGet(factory.latestVersion(version, serverInstance), parser::parseVersion);
     }
 
     @Override

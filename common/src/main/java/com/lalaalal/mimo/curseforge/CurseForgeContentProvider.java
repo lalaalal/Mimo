@@ -56,7 +56,7 @@ public class CurseForgeContentProvider extends ContentProvider {
 
     @Override
     public Content.Version getLatestVersion(Content content, Content.Version version, ServerInstance serverInstance) {
-        List<Content.Version> versions = get(factory.files(content.id()), response -> parser.parseProjectVersionList(serverInstance.version, serverInstance.loader.type(), response));
+        List<Content.Version> versions = forgetAndGet(factory.files(content.id()), response -> parser.parseProjectVersionList(serverInstance.version, serverInstance.loader.type(), response));
         if (versions.isEmpty()) {
             Mimo.LOGGER.error("[{}] No versions found for {}", serverInstance, content.slug());
             throw new MessageComponentException("Aborted");

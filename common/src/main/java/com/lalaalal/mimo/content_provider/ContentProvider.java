@@ -135,6 +135,15 @@ public abstract class ContentProvider {
         }
     }
 
+    public <T> T forgetAndGet(Request request, Function<Response, T> parser) {
+        forget(request);
+        return get(request, parser);
+    }
+
+    protected void forget(Request request) {
+        CACHE.remove(request);
+    }
+
     public abstract Content getContentWithId(String id, ServerInstance serverInstance);
 
     public abstract Content getContentWithSlug(String slug, ServerInstance serverInstance);
