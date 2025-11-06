@@ -11,6 +11,7 @@ import java.lang.reflect.Type;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 public class ServerInstanceAdaptor implements JsonSerializer<ServerInstance>, JsonDeserializer<ServerInstance> {
     @Override
@@ -21,6 +22,7 @@ public class ServerInstanceAdaptor implements JsonSerializer<ServerInstance>, Js
         data.add("version", context.serialize(src.version));
         data.addProperty("path", src.path.toString());
         data.add("contents", context.serialize(src.getContents()));
+        data.add("update_excludes", context.serialize(src.getUpdateExcludes()));
         return data;
     }
 
@@ -39,9 +41,11 @@ public class ServerInstanceAdaptor implements JsonSerializer<ServerInstance>, Js
             Content.Version contentVersion = context.deserialize(contentObject.get("version"), Content.Version.class);
             contentVersions.put(content, contentVersion);
         }
+        Set<String> updateExcludes = context.deserialize(data.get("update_excludes"), Set.class);
         try {
             ServerInstance serverInstance = new ServerInstance(name, loader, minecraftVersion, path);
             serverInstance.setContents(contentVersions);
+            serverInstance.excludeUpdate(updateExcludes);
             return serverInstance;
         } catch (IOException exception) {
             throw new RuntimeException("Failed to create server instance", exception);

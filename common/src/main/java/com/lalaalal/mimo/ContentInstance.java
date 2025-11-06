@@ -107,7 +107,13 @@ public class ContentInstance {
         if (!isVersionSelected())
             return false;
         checkLatestVersion();
-        return contentVersion.versionId().equals(updatingVersion.versionId());
+        return contentVersion.versionId().equals(updatingVersion.versionId()) && isDownloaded();
+    }
+
+    public boolean versionMatches() {
+        if (contentVersion != null && updatingVersion != null)
+            return contentVersion.versionId().equals(updatingVersion.versionId());
+        return false;
     }
 
     public MinecraftVersion getMinecraftVersion() {
@@ -116,10 +122,6 @@ public class ContentInstance {
 
     public Content.Version getContentVersion() {
         return contentVersion;
-    }
-
-    public Content.Version getUpdatingVersion() {
-        return updatingVersion;
     }
 
     public List<Content.Version> getAvailableVersions() {
@@ -140,9 +142,12 @@ public class ContentInstance {
             Mimo.LOGGER.warning("[{}] ({}) No available version", serverInstance, this);
             throw new IllegalStateException("Aborted");
         }
-        this.contentVersion = availableVersions.get(index);
+        if (contentVersion == null)
+            contentVersion = availableVersions.get(index);
+        else
+            updatingVersion = availableVersions.get(index);
         Mimo.LOGGER.info("[{}] ({}) Selecting version \"{}\"", serverInstance, this, contentVersion.fileName());
-        resolveDependencies(contentVersion);
+        resolveDependencies(availableVersions.get(index));
     }
 
     public boolean isVersionSelected() {

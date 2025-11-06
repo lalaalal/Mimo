@@ -15,10 +15,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 /**
  * Instance of the server.
@@ -38,7 +35,9 @@ public class ServerInstance {
     public final Path path;
 
     private final Map<Content, ContentInstance> contents = new HashMap<>();
+    private final Map<String, ContentInstance> contentsBySlug = new HashMap<>();
     private final RequestCollector collector = new RequestCollector();
+    private final Set<String> updateExcludes = new HashSet<>();
 
     /**
      * Load {@linkplain ServerInstance} from directory.
@@ -70,6 +69,7 @@ public class ServerInstance {
     public void checkUpdate() {
         int outOfDateContents = 0;
         int notDownloadedContents = 0;
+        updateLatestVersions();
         for (ContentInstance contentInstance : contents.values()) {
             if (!contentInstance.isDownloaded())
                 notDownloadedContents += 1;
@@ -99,9 +99,14 @@ public class ServerInstance {
             Mimo.LOGGER.info("Loading \"{}\" to \"{}\" instance", content.slug(), name);
             ContentInstance contentInstance = new ContentInstance(this, content, contentVersions.get(content));
             contents.put(content, contentInstance);
+            contentsBySlug.put(content.slug(), contentInstance);
             collector.add(contentInstance);
         }
 
+        updateLatestVersions();
+    }
+
+    public void updateLatestVersions() {
         RequestCollector.Distributor<Content.Version> distributor = collector.submit(
                 RequestCollector.Type.MULTIPLE_LATEST_VERSION,
                 RequestCollector.multipleLatestVersion(this)
@@ -120,11 +125,16 @@ public class ServerInstance {
         Mimo.LOGGER.info("[{}] Adding content \"{}\"", this, content.slug());
         ContentInstance contentInstance = new ContentInstance(this, content);
         contents.put(content, contentInstance);
+        contentsBySlug.put(content.slug(), contentInstance);
         collector.add(contentInstance);
     }
 
     public boolean contains(Content content) {
         return contents.containsKey(content);
+    }
+
+    public boolean contains(String slug) {
+        return contentsBySlug.containsKey(slug);
     }
 
     /**
@@ -140,23 +150,42 @@ public class ServerInstance {
             ContentInstance contentInstance = contents.get(content);
             contentInstance.removeContent();
             contents.remove(content);
+            contentsBySlug.remove(content.slug());
             collector.remove(contentInstance);
             save();
         }
     }
 
-    private Optional<Content> findContent(String slug) {
-        for (Content content : contents.keySet()) {
-            if (content.slug().equals(slug))
-                return Optional.of(content);
+    public void removeContent(String slug) throws IOException {
+        if (contentsBySlug.containsKey(slug)) {
+            Mimo.LOGGER.info("[{}] Removing content \"{}\"", this, slug);
+            ContentInstance contentInstance = contentsBySlug.get(slug);
+            contentInstance.removeContent();
+            contents.remove(contentInstance.content());
+            contentsBySlug.remove(slug);
+            collector.remove(contentInstance);
+            save();
         }
-        return Optional.empty();
     }
 
-    public void removeContent(String slug) throws IOException {
-        Optional<Content> content = findContent(slug);
-        if (content.isPresent())
-            removeContent(content.get());
+    public void excludeUpdate(String slug) {
+        updateExcludes.add(slug);
+    }
+
+    public void excludeUpdate(Collection<String> slugs) {
+        updateExcludes.addAll(slugs);
+    }
+
+    public void includeUpdate(String slug) {
+        updateExcludes.remove(slug);
+    }
+
+    public void includeUpdate(Collection<String> slugs) {
+        updateExcludes.removeAll(slugs);
+    }
+
+    public Collection<String> getUpdateExcludes() {
+        return Collections.unmodifiableCollection(updateExcludes);
     }
 
     /**
@@ -166,15 +195,16 @@ public class ServerInstance {
      * @throws IOException If an I/O error occurs
      */
     public synchronized void updateContents() throws IOException {
-        downloadContents();
         Mimo.LOGGER.info("[{}] Updating contents", this);
+        if (!updateExcludes.isEmpty())
+            Mimo.LOGGER.warning("[{}] Update excluded contents {} will not be updated", this, updateExcludes);
         RequestCollector.Distributor<Content.Version> distributor = collector.submit(
                 RequestCollector.Type.MULTIPLE_LATEST_VERSION,
                 RequestCollector.multipleLatestVersion(this)
         );
         for (ContentInstance contentInstance : contents.values()) {
             contentInstance.setLatestVersion(distributor);
-            if (contentInstance.isUpToDate())
+            if (contentInstance.isUpToDate() || updateExcludes.contains(contentInstance.content().slug()))
                 continue;
 
             contentInstance.downloadContent();
@@ -184,8 +214,11 @@ public class ServerInstance {
 
     public synchronized void downloadContents() throws IOException {
         Mimo.LOGGER.info("[{}] Downloading contents", this);
+        if (!updateExcludes.isEmpty())
+            Mimo.LOGGER.warning("[{}] Update excluded contents {} will not be downloaded", this, updateExcludes);
         for (ContentInstance contentInstance : contents.values()) {
-            if (contentInstance.isDownloaded())
+            if ((contentInstance.isDownloaded() && contentInstance.versionMatches())
+                    || updateExcludes.contains(contentInstance.content().slug()))
                 continue;
             if (!contentInstance.isVersionSelected())
                 contentInstance.selectContentVersion(0);
@@ -200,6 +233,10 @@ public class ServerInstance {
 
     public ContentInstance get(Content content) {
         return contents.get(content);
+    }
+
+    public ContentInstance get(String slug) {
+        return contentsBySlug.get(slug);
     }
 
     public void save() throws IOException {

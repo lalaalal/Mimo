@@ -99,10 +99,32 @@ public class Commands {
     );
 
     public static final Command UPDATE = register(
-            Command.simple("update")
-                    .help("-    Download and update all contents")
+            Command.complex("update")
+                    .subCommand("exclude", Command.list("update exclude", ArgumentParsers.STRING)
+                            .formatHelp("content_slug...")
+                            .help("-    Exclude content(s) from update")
+                            .help("-    Server load required")
+                            .action(Mimo::excludeUpdate)
+                            .build())
+                    .subCommand("include", Command.list("update include", ArgumentParsers.STRING)
+                            .formatHelp("content_slug...")
+                            .help("-    Include content(s) to update")
+                            .help("-    Server load required")
+                            .action(Mimo::includeUpdate)
+                            .build())
+                    .overload(0, Command.simple("update")
+                            .help("-    Download and update all contents")
+                            .help("-    Server load required")
+                            .action(Mimo::update)
+                            .build())
+                    .build()
+    );
+
+    public static final Command DOWNLOAD = register(
+            Command.simple("download")
+                    .help("-    Download selected versions")
                     .help("-    Server load required")
-                    .action(Mimo::update)
+                    .action(Mimo::download)
                     .build()
     );
 
@@ -132,6 +154,23 @@ public class Commands {
                     .build()
     );
 
+    public static final Command CONTENT = register(
+            Command.complex("content")
+                    .subCommand("version", Command.complex("content version")
+                            .subCommand("list", Command.simple("content version list", ArgumentParsers.STRING)
+                                    .formatHelp("slug")
+                                    .help("-    List available content versions")
+                                    .action(MimoConsole::listContentVersions)
+                                    .build())
+                            .subCommand("select", Command.simple("content version select", ArgumentParsers.STRING, ArgumentParsers.INTEGER)
+                                    .formatHelp("slug", "index")
+                                    .help("-    Select content version")
+                                    .action(Mimo::changeContentVersion)
+                                    .build())
+                            .build())
+                    .build()
+    );
+
     public static final Command VERSION = register(
             Command.complex("version")
                     .overload(0, Command.simple("version")
@@ -154,6 +193,13 @@ public class Commands {
                             .argumentHelp("-    ", "limit", ArgumentParsers.INTEGER)
                             .action(MimoConsole::listLoaderVersions)
                             .build())
+                    .build()
+    );
+
+    public static final Command CHECK = register(
+            Command.simple("check")
+                    .help("-    Check content versions")
+                    .action(Mimo::checkUpdate)
                     .build()
     );
 
@@ -180,8 +226,11 @@ public class Commands {
 
     public static final Command HELP = register(
             Command.complex("help")
+                    .subCommand("all", Command.simple("help all")
+                            .action(() -> help(false))
+                            .build())
                     .overload(0, Command.simple("help")
-                            .action(Commands::help)
+                            .action(() -> help(true))
                             .build())
                     .overload(1, Command.list("help", ArgumentParsers.STRING)
                             .action(Commands::help)
@@ -194,13 +243,9 @@ public class Commands {
 
     }
 
-    private static void help() {
+    private static void help(boolean onlyArgument) {
         for (String commandKey : ConsoleRegistries.COMMANDS.keySet())
-            help(commandKey, true);
-    }
-
-    public static void help(String commandKey) {
-        help(commandKey, false);
+            help(commandKey, onlyArgument);
     }
 
     public static void help(String commandKey, boolean onlyArgument) {

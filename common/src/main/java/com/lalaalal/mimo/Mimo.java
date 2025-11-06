@@ -5,6 +5,7 @@ import com.google.gson.GsonBuilder;
 import com.lalaalal.mimo.content_provider.ContentProvider;
 import com.lalaalal.mimo.data.Content;
 import com.lalaalal.mimo.data.MinecraftVersion;
+import com.lalaalal.mimo.exception.MessageComponentException;
 import com.lalaalal.mimo.json.ContentProviderAdaptor;
 import com.lalaalal.mimo.json.MimoExcludeStrategy;
 import com.lalaalal.mimo.json.ServerInstanceAdaptor;
@@ -98,6 +99,7 @@ public final class Mimo {
         if (immediateUpdate)
             serverInstance.downloadContents();
         serverInstance.checkUpdate();
+        save();
     }
 
     public static void removeContent(String slug) throws IOException {
@@ -117,6 +119,11 @@ public final class Mimo {
         currentServerInstance = null;
     }
 
+    public static void excludeUpdate(List<String> slugs) {
+        ServerInstance serverInstance = currentInstanceOrThrow();
+        serverInstance.excludeUpdate(slugs);
+    }
+
     public static void update() throws IOException {
         ServerInstance serverInstance = currentInstanceOrThrow();
         serverInstance.updateContents();
@@ -125,5 +132,32 @@ public final class Mimo {
     public static void save() throws IOException {
         ServerInstance serverInstance = currentInstanceOrThrow();
         serverInstance.save();
+    }
+
+    public static void changeContentVersion(String slug, int index) {
+        ServerInstance serverInstance = currentInstanceOrThrow();
+        if (!serverInstance.contains(slug))
+            throw new MessageComponentException("[%s] No content found for %s".formatted(serverInstance, slug));
+        ContentInstance contentInstance = serverInstance.get(slug);
+        contentInstance.selectContentVersion(index);
+        LOGGER.info("Execute \"download\" to download selected version");
+        LOGGER.info("Execute \"update exclude {}\" to prevent auto update", slug);
+    }
+
+    public static void download() throws IOException {
+        ServerInstance serverInstance = currentInstanceOrThrow();
+        serverInstance.downloadContents();
+    }
+
+    public static void checkUpdate() throws IOException {
+        ServerInstance serverInstance = currentInstanceOrThrow();
+        serverInstance.checkUpdate();
+        save();
+    }
+
+    public static void includeUpdate(List<String> slugs) throws IOException {
+        ServerInstance serverInstance = currentInstanceOrThrow();
+        serverInstance.includeUpdate(slugs);
+        save();
     }
 }

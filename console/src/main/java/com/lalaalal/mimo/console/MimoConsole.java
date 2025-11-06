@@ -23,7 +23,7 @@ import java.io.IOException;
 import java.util.*;
 
 public class MimoConsole {
-    public static final String VERSION = "1.1";
+    public static final String VERSION = "1.2";
 
     public static void search(String name, ContentProvider contentProvider) {
         Map<String, Content.Detail> details = contentProvider.search(name);
@@ -66,6 +66,16 @@ public class MimoConsole {
         for (String serverName : servers)
             Mimo.LOGGER.info(serverName);
         Mimo.LOGGER.info("Total : {}", servers.length);
+    }
+
+    public static void listContentVersions(String slug) {
+        ServerInstance serverInstance = Mimo.currentInstanceOrThrow();
+        ContentInstance contentInstance = serverInstance.get(slug);
+        int index = 0;
+        for (Content.Version version : contentInstance.getAvailableVersions()) {
+            Mimo.LOGGER.info("[{}] {}", index, version.fileName());
+            index += 1;
+        }
     }
 
     public static void launchServer() throws IOException, InterruptedException {
