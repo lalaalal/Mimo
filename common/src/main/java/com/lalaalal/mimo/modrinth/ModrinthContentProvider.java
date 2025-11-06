@@ -1,5 +1,6 @@
 package com.lalaalal.mimo.modrinth;
 
+import com.lalaalal.mimo.ContentInstance;
 import com.lalaalal.mimo.ServerInstance;
 import com.lalaalal.mimo.content_provider.ContentProvider;
 import com.lalaalal.mimo.data.Content;
@@ -24,7 +25,7 @@ public class ModrinthContentProvider extends ContentProvider {
 
     @Override
     public Content getContentWithSlug(String slug, ServerInstance serverInstance) {
-        return get(factory.project(slug), parser.contentParser(serverInstance));
+        return get(factory.singleProject(slug), parser.contentParser(serverInstance));
     }
 
     @Override
@@ -33,19 +34,27 @@ public class ModrinthContentProvider extends ContentProvider {
     }
 
     @Override
-    public List<Content.Version> getProjectVersions(Content content, ServerInstance serverInstance) {
-        return get(factory.projectVersions(content, serverInstance), parser::parseProjectVersionList);
+    public List<Content.Version> getSingleVersions(Content content, ServerInstance serverInstance) {
+        return get(factory.singleVersionList(content, serverInstance), parser::parseProjectVersionList);
     }
 
     @Override
-    public Content.Version getLatestVersion(Content content, Content.Version version, ServerInstance serverInstance) {
-        return forgetAndGet(factory.latestVersion(version, serverInstance), parser::parseVersion);
+    public Content.Version getLatestVersion(ContentInstance contentInstance, ServerInstance serverInstance) {
+        return forgetAndGet(factory.singleLatestVersion(contentInstance.getContentVersion(), serverInstance), parser::parseVersion);
     }
 
     @Override
-    public Map<Content, Content.Version> getLatestVersions(Map<String, File> hashes, ServerInstance serverInstance) {
-        Map<String, Content.Version> versions = get(factory.versionFiles(hashes.keySet()), parser::parseVersionsWithProjectId);
-        List<Content> contents = get(factory.projects(versions.keySet()), parser.contentListParser(serverInstance));
+    public Map<String, Content.Version> getMultipleLatestVersion(List<ContentInstance> contents, ServerInstance serverInstance) {
+        List<String> hashes = contents.stream()
+                .map(contentInstance -> contentInstance.getContentVersion().hash())
+                .toList();
+        return get(factory.multipleLatestVersionHash(hashes, serverInstance), parser::parseVersionMapFromHash);
+    }
+
+    @Override
+    public Map<Content, Content.Version> getVersionFromFiles(Map<String, File> hashes, ServerInstance serverInstance) {
+        Map<String, Content.Version> versions = get(factory.multipleVersionListFromHash(hashes.keySet()), parser::parseVersionMapFromHash);
+        List<Content> contents = get(factory.multipleProject(versions.keySet()), parser.contentListParser(serverInstance));
         Map<Content, Content.Version> result = new HashMap<>();
         for (Content content : contents) {
             Content.Version version = versions.get(content.id());

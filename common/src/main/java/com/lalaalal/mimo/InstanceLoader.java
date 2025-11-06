@@ -101,7 +101,7 @@ public class InstanceLoader {
         }
         Map<Content, Content.Version> versions = new HashMap<>();
         for (ContentProvider contentProvider : Registries.CONTENT_PROVIDERS) {
-            Map<Content, Content.Version> current = contentProvider.getLatestVersions(hashes, serverInstance);
+            Map<Content, Content.Version> current = contentProvider.getVersionFromFiles(hashes, serverInstance);
             for (Content.Version version : current.values())
                 hashes.remove(version.hash());
             versions.putAll(current);

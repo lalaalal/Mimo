@@ -58,7 +58,7 @@ public class ModrinthResponseParser extends ResponseParser {
         return result(response, parseVersion(response.data()));
     }
 
-    public Map<String, Content.Version> parseVersionsWithProjectId(Response response) {
+    public Map<String, Content.Version> parseVersionMapFromHash(Response response) {
         logStartParsing("version mapping", response);
         JsonObject data = JsonHelper.toJsonObject(response.data());
         Map<String, Content.Version> versions = new HashMap<>();
@@ -67,11 +67,6 @@ public class ModrinthResponseParser extends ResponseParser {
             versions.put(parseProjectId(element), parseVersion(element));
         }
         return result(response, versions);
-    }
-
-    public String parseProjectId(Response response) {
-        logStartParsing("project id", response);
-        return result(response, parseProjectId(response.data()));
     }
 
     public Map<String, Content.Detail> parseSearchData(Response response) {

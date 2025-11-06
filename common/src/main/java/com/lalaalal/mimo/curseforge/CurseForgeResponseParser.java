@@ -37,19 +37,19 @@ public class CurseForgeResponseParser extends ResponseParser {
     }
 
     public List<Content> parseContents(MinecraftVersion version, Loader.Type type, Response response) {
-        verifyRequestType(response, Request.Type.SEARCH, Request.Type.GET_PROJECT);
+        verifyRequestType(response, Request.Type.SEARCH, Request.Type.GET_SINGLE_PROJECT);
         logStartParsing("content", response);
         return result(response, parseContents(version, type, dataArray(response)));
     }
 
     public Content parseContent(MinecraftVersion version, Loader.Type type, Response response) {
-        verifyRequestType(response, Request.Type.SEARCH, Request.Type.GET_PROJECT);
+        verifyRequestType(response, Request.Type.SEARCH, Request.Type.GET_SINGLE_PROJECT);
         logStartParsing("content", response);
         return result(response, parseContentOrThrow(version, type, dataObject(response)));
     }
 
     public List<Content.Version> parseProjectVersionList(MinecraftVersion version, Loader.Type type, Response response) {
-        verifyRequestType(response, Request.Type.GET_VERSION_FILE_LIST);
+        verifyRequestType(response, Request.Type.GET_SINGLE_VERSION_LIST);
         logStartParsing("content version list", response);
         return result(response, parseVersions(version, type, dataArray(response)));
     }

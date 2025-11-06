@@ -3,6 +3,7 @@ package com.lalaalal.mimo;
 import com.google.gson.annotations.SerializedName;
 import com.lalaalal.mimo.content_provider.ContentProvider;
 import com.lalaalal.mimo.content_provider.CustomContentProvider;
+import com.lalaalal.mimo.content_provider.RequestCollector;
 import com.lalaalal.mimo.data.Content;
 import com.lalaalal.mimo.data.MinecraftVersion;
 import com.lalaalal.mimo.json.FieldStrategy;
@@ -67,9 +68,16 @@ public class ContentInstance {
 
     protected void loadVersions() {
         Mimo.LOGGER.debug("[{}] ({}) Loading versions for \"{}\"", serverInstance, this, content.slug());
-        this.availableVersions = contentProvider.getProjectVersions(content, serverInstance);
+        this.availableVersions = contentProvider.getSingleVersions(content, serverInstance);
         if (contentVersion == null)
             selectContentVersion(0);
+    }
+
+    public void setLatestVersion(RequestCollector.Distributor<Content.Version> distributor) {
+        if (distributor.is(RequestCollector.Type.MULTIPLE_LATEST_VERSION)) {
+            distributor.getResult(content.id())
+                    .ifPresent(version -> this.updatingVersion = version);
+        }
     }
 
     public void checkLatestVersion() {
@@ -79,7 +87,7 @@ public class ContentInstance {
 
     public void loadLatestVersion() {
         Mimo.LOGGER.debug("[{}] ({}) Loading latest version", serverInstance, this);
-        updatingVersion = contentProvider.getLatestVersion(content, contentVersion, serverInstance);
+        updatingVersion = contentProvider.getLatestVersion(this, serverInstance);
         Mimo.LOGGER.debug("[{}] ({}) Latest version is \"{}\"", serverInstance, this, content.slug());
     }
 

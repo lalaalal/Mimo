@@ -1,5 +1,6 @@
 package com.lalaalal.mimo.content_provider;
 
+import com.lalaalal.mimo.ContentInstance;
 import com.lalaalal.mimo.Mimo;
 import com.lalaalal.mimo.Registries;
 import com.lalaalal.mimo.ServerInstance;
@@ -148,13 +149,15 @@ public abstract class ContentProvider {
 
     public abstract Content getContentWithSlug(String slug, ServerInstance serverInstance);
 
-    public abstract List<Content.Version> getProjectVersions(Content content, ServerInstance serverInstance);
+    public abstract List<Content.Version> getSingleVersions(Content content, ServerInstance serverInstance);
 
-    public abstract Content.Version getLatestVersion(Content content, Content.Version version, ServerInstance serverInstance);
+    public abstract Map<String, Content.Version> getMultipleLatestVersion(List<ContentInstance> contents, ServerInstance serverInstance);
+
+    public abstract Content.Version getLatestVersion(ContentInstance contentInstance, ServerInstance serverInstance);
 
     public abstract Map<String, Content.Detail> search(String name);
 
-    public abstract Map<Content, Content.Version> getLatestVersions(Map<String, File> hashes, ServerInstance serverInstance);
+    public abstract Map<Content, Content.Version> getVersionFromFiles(Map<String, File> hashes, ServerInstance serverInstance);
 
     public String getName() {
         return name;

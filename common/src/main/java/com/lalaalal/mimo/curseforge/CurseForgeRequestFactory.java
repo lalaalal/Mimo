@@ -9,8 +9,8 @@ public class CurseForgeRequestFactory {
 
     private static final Request.Format GET_GAMES = new Request.Format(Request.Type.EMPTY, Request.QueryMaker.EXACT, "/games");
     private static final Request.Format SEARCH = new Request.Format(Request.Type.SEARCH, Request.QueryMaker.QUERY_PARAM, "/mods/search");
-    private static final Request.Format GET_MOD = new Request.Format(Request.Type.GET_PROJECT, Request.QueryMaker.PATH_PARAM, "/mods/${id}");
-    private static final Request.Format GET_FILES = new Request.Format(Request.Type.GET_VERSION_FILE_LIST, Request.QueryMaker.PATH_PARAM, "/mods/${id}/files");
+    private static final Request.Format GET_MOD = new Request.Format(Request.Type.GET_SINGLE_PROJECT, Request.QueryMaker.PATH_PARAM, "/mods/${id}");
+    private static final Request.Format GET_FILES = new Request.Format(Request.Type.GET_SINGLE_VERSION_LIST, Request.QueryMaker.PATH_PARAM, "/mods/${id}/files");
     private static final Request.Format GET_GAME_VERSION_TYPES = new Request.Format(Request.Type.EMPTY, Request.QueryMaker.EXACT, "/games/432/version-types");
 
     public Request games() {

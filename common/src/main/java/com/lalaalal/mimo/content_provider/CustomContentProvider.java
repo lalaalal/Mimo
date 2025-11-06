@@ -1,5 +1,6 @@
 package com.lalaalal.mimo.content_provider;
 
+import com.lalaalal.mimo.ContentInstance;
 import com.lalaalal.mimo.ServerInstance;
 import com.lalaalal.mimo.data.Content;
 import com.lalaalal.mimo.exception.MessageComponentException;
@@ -26,13 +27,18 @@ public class CustomContentProvider extends ContentProvider {
     }
 
     @Override
-    public List<Content.Version> getProjectVersions(Content content, ServerInstance serverInstance) {
+    public List<Content.Version> getSingleVersions(Content content, ServerInstance serverInstance) {
         return List.of();
     }
 
     @Override
-    public Content.Version getLatestVersion(Content content, Content.Version version, ServerInstance serverInstance) {
-        return version;
+    public Map<String, Content.Version> getMultipleLatestVersion(List<ContentInstance> contents, ServerInstance serverInstance) {
+        return Map.of();
+    }
+
+    @Override
+    public Content.Version getLatestVersion(ContentInstance contentInstance, ServerInstance serverInstance) {
+        return contentInstance.getContentVersion();
     }
 
     @Override
@@ -41,7 +47,7 @@ public class CustomContentProvider extends ContentProvider {
     }
 
     @Override
-    public Map<Content, Content.Version> getLatestVersions(Map<String, File> hashes, ServerInstance serverInstance) {
+    public Map<Content, Content.Version> getVersionFromFiles(Map<String, File> hashes, ServerInstance serverInstance) {
         return Map.of();
     }
 }

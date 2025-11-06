@@ -1,5 +1,6 @@
 package com.lalaalal.mimo.curseforge;
 
+import com.lalaalal.mimo.ContentInstance;
 import com.lalaalal.mimo.Mimo;
 import com.lalaalal.mimo.ServerInstance;
 import com.lalaalal.mimo.content_provider.ContentProvider;
@@ -50,18 +51,28 @@ public class CurseForgeContentProvider extends ContentProvider {
     }
 
     @Override
-    public List<Content.Version> getProjectVersions(Content content, ServerInstance serverInstance) {
+    public List<Content.Version> getSingleVersions(Content content, ServerInstance serverInstance) {
         return get(factory.files(content.id()), response -> parser.parseProjectVersionList(serverInstance.version, serverInstance.loader.type(), response));
     }
 
     @Override
-    public Content.Version getLatestVersion(Content content, Content.Version version, ServerInstance serverInstance) {
-        List<Content.Version> versions = forgetAndGet(factory.files(content.id()), response -> parser.parseProjectVersionList(serverInstance.version, serverInstance.loader.type(), response));
+    public Content.Version getLatestVersion(ContentInstance contentInstance, ServerInstance serverInstance) {
+        List<Content.Version> versions = forgetAndGet(factory.files(contentInstance.content().id()), response -> parser.parseProjectVersionList(serverInstance.version, serverInstance.loader.type(), response));
         if (versions.isEmpty()) {
-            Mimo.LOGGER.error("[{}] No versions found for {}", serverInstance, content.slug());
+            Mimo.LOGGER.error("[{}] No versions found for {}", serverInstance, contentInstance.content().slug());
             throw new MessageComponentException("Aborted");
         }
         return versions.getFirst();
+    }
+
+    @Override
+    public Map<String, Content.Version> getMultipleLatestVersion(List<ContentInstance> contents, ServerInstance serverInstance) {
+        Map<String, Content.Version> result = new HashMap<>();
+        for (ContentInstance contentInstance : contents) {
+            Content.Version newVersion = getLatestVersion(contentInstance, serverInstance);
+            result.put(contentInstance.content().id(), newVersion);
+        }
+        return result;
     }
 
     @Override
@@ -70,7 +81,7 @@ public class CurseForgeContentProvider extends ContentProvider {
     }
 
     @Override
-    public Map<Content, Content.Version> getLatestVersions(Map<String, File> hashes, ServerInstance serverInstance) {
+    public Map<Content, Content.Version> getVersionFromFiles(Map<String, File> hashes, ServerInstance serverInstance) {
         Map<Content, Content.Version> result = new HashMap<>();
         for (File file : hashes.values()) {
             String fileName = file.getName();
@@ -96,7 +107,7 @@ public class CurseForgeContentProvider extends ContentProvider {
                 }
                 if (optionalContent.isPresent()) {
                     Content content = optionalContent.get();
-                    List<Content.Version> versions = getProjectVersions(content, serverInstance);
+                    List<Content.Version> versions = getSingleVersions(content, serverInstance);
                     versions.stream()
                             .filter(version -> version.fileName().equals(fileName))
                             .findAny()

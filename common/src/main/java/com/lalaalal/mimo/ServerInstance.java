@@ -3,6 +3,7 @@ package com.lalaalal.mimo;
 import com.google.gson.FormattingStyle;
 import com.google.gson.annotations.JsonAdapter;
 import com.google.gson.stream.JsonWriter;
+import com.lalaalal.mimo.content_provider.RequestCollector;
 import com.lalaalal.mimo.data.Content;
 import com.lalaalal.mimo.data.MinecraftVersion;
 import com.lalaalal.mimo.json.ServerInstanceAdaptor;
@@ -37,6 +38,7 @@ public class ServerInstance {
     public final Path path;
 
     private final Map<Content, ContentInstance> contents = new HashMap<>();
+    private final RequestCollector collector = new RequestCollector();
 
     /**
      * Load {@linkplain ServerInstance} from directory.
@@ -95,8 +97,16 @@ public class ServerInstance {
     public void setContents(Map<Content, Content.Version> contentVersions) {
         for (Content content : contentVersions.keySet()) {
             Mimo.LOGGER.info("Loading \"{}\" to \"{}\" instance", content.slug(), name);
-            this.contents.put(content, new ContentInstance(this, content, contentVersions.get(content)));
+            ContentInstance contentInstance = new ContentInstance(this, content, contentVersions.get(content));
+            contents.put(content, contentInstance);
+            collector.add(contentInstance);
         }
+
+        RequestCollector.Distributor<Content.Version> distributor = collector.submit(
+                RequestCollector.Type.MULTIPLE_LATEST_VERSION,
+                RequestCollector.multipleLatestVersion(this)
+        );
+        contents.values().forEach(contentInstance -> contentInstance.setLatestVersion(distributor));
     }
 
     /**
@@ -110,6 +120,7 @@ public class ServerInstance {
         Mimo.LOGGER.info("[{}] Adding content \"{}\"", this, content.slug());
         ContentInstance contentInstance = new ContentInstance(this, content);
         contents.put(content, contentInstance);
+        collector.add(contentInstance);
     }
 
     public boolean contains(Content content) {
@@ -129,6 +140,7 @@ public class ServerInstance {
             ContentInstance contentInstance = contents.get(content);
             contentInstance.removeContent();
             contents.remove(content);
+            collector.remove(contentInstance);
             save();
         }
     }
@@ -156,8 +168,12 @@ public class ServerInstance {
     public synchronized void updateContents() throws IOException {
         downloadContents();
         Mimo.LOGGER.info("[{}] Updating contents", this);
+        RequestCollector.Distributor<Content.Version> distributor = collector.submit(
+                RequestCollector.Type.MULTIPLE_LATEST_VERSION,
+                RequestCollector.multipleLatestVersion(this)
+        );
         for (ContentInstance contentInstance : contents.values()) {
-            contentInstance.loadLatestVersion();
+            contentInstance.setLatestVersion(distributor);
             if (contentInstance.isUpToDate())
                 continue;
 

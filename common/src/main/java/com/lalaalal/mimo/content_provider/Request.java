@@ -83,13 +83,12 @@ public record Request(int id, Format format, Map<String, String> params, String 
     public enum Type {
         EMPTY(true),
         SEARCH(true),
-        GET_PROJECT(true),
-        GET_PROJECT_LIST(true),
-        GET_PROJECT_DEPENDENCY_LIST(false),
-        GET_PROJECT_VERSION_LIST(false),
-        LATEST_VERSION(false),
-        GET_VERSION_FILE(true),
-        GET_VERSION_FILE_LIST(true);
+        GET_SINGLE_PROJECT(true),
+        GET_MULTIPLE_PROJECT(true),
+        GET_SINGLE_VERSION(true),
+        GET_SINGLE_VERSION_LIST(true),
+        GET_MULTIPLE_VERSION(false),
+        GET_MULTIPLE_VERSION_LIST(false);
 
         private final boolean canBeReused;
 
