@@ -22,48 +22,45 @@ public class Commands {
     public static final Command INSTALL = register(
             Command.complex("install")
                     .overload(4, Command.simple("install",
-                                    ArgumentParsers.LOADER_TYPE,
-                                    ArgumentParsers.STRING,
-                                    ArgumentParsers.MINECRAFT_VERSION,
-                                    ArgumentParsers.STRING)
-                            .formatHelp(ArgumentParsers.LOADER_TYPE, "server_name", ArgumentParsers.MINECRAFT_VERSION, "loader_version")
+                            ArgumentParsers.LOADER_TYPE,
+                            ArgumentParsers.STRING,
+                            ArgumentParsers.MINECRAFT_VERSION,
+                            ArgumentParsers.STRING)
+                            .formatHelp(ArgumentParsers.LOADER_TYPE, "server_name", ArgumentParsers.MINECRAFT_VERSION,
+                                    "loader_version")
                             .argumentHelp("-    ", ArgumentParsers.LOADER_TYPE)
                             .help("-    Install server")
                             .action(Mimo::install)
                             .build())
                     .overload(3, Command.simple("install",
-                                    ArgumentParsers.LOADER_TYPE,
-                                    ArgumentParsers.STRING,
-                                    ArgumentParsers.MINECRAFT_VERSION)
+                            ArgumentParsers.LOADER_TYPE,
+                            ArgumentParsers.STRING,
+                            ArgumentParsers.MINECRAFT_VERSION)
                             .formatHelp(ArgumentParsers.LOADER_TYPE, "server_name", ArgumentParsers.MINECRAFT_VERSION)
                             .argumentHelp("-    ", ArgumentParsers.LOADER_TYPE)
                             .help("-    Install server with latest loader version")
                             .help("+    version [loader_type] [minecraft_version]")
                             .action(Mimo::install)
                             .build())
-                    .build()
-    );
+                    .build());
 
     public static final Command LOAD = register(
             Command.simple("load", ArgumentParsers.STRING)
                     .formatHelp("server_name")
                     .action(Mimo::load)
-                    .build()
-    );
+                    .build());
 
     public static final Command RESCAN = register(
             Command.simple("rescan", ArgumentParsers.STRING)
                     .formatHelp("server_name")
                     .action(Mimo::rescan)
-                    .build()
-    );
+                    .build());
 
     public static final Command SEARCH = register(
             Command.simple("search", ArgumentParsers.STRING, ArgumentParsers.CONTENT_PROVIDER)
                     .argumentHelp("-    ", ArgumentParsers.CONTENT_PROVIDER)
                     .action(MimoConsole::search)
-                    .build()
-    );
+                    .build());
 
     public static final Command ADD = register(
             Command.complex("add")
@@ -72,14 +69,13 @@ public class Commands {
                             .action(Mimo::add)
                             .build())
                     .overload(3, Command.simple("add",
-                                    ArgumentParsers.STRING, ArgumentParsers.CONTENT_PROVIDER, ArgumentParsers.BOOLEAN)
+                            ArgumentParsers.STRING, ArgumentParsers.CONTENT_PROVIDER, ArgumentParsers.BOOLEAN)
                             .formatHelp("content_slug", ArgumentParsers.CONTENT_PROVIDER, "update")
                             .argumentHelp("-    ", ArgumentParsers.CONTENT_PROVIDER)
                             .argumentHelp("-    ", "update", ArgumentParsers.BOOLEAN)
                             .action(Mimo::add)
                             .build())
-                    .build()
-    );
+                    .build());
 
     public static final Command REMOVE = register(
             Command.complex("remove")
@@ -95,8 +91,13 @@ public class Commands {
                             .help("-    Remove server")
                             .action(Mimo::removeServer)
                             .build())
-                    .build()
-    );
+                    .build());
+
+    public static final Command BACKUP = register(
+            Command.simple("backup", ArgumentParsers.STRING)
+                    .formatHelp("content_slug")
+                    .action(Mimo::backup)
+                    .build());
 
     public static final Command UPDATE = register(
             Command.complex("update")
@@ -117,24 +118,21 @@ public class Commands {
                             .help("-    Server load required")
                             .action(Mimo::update)
                             .build())
-                    .build()
-    );
+                    .build());
 
     public static final Command DOWNLOAD = register(
             Command.simple("download")
                     .help("-    Download selected versions")
                     .help("-    Server load required")
                     .action(Mimo::download)
-                    .build()
-    );
+                    .build());
 
     public static final Command SAVE = register(
             Command.simple("save")
                     .help("-    Save server")
                     .help("-    Server load required")
                     .action(Mimo::save)
-                    .build()
-    );
+                    .build());
 
     public static final Command LIST = register(
             Command.complex("list")
@@ -151,8 +149,7 @@ public class Commands {
                             .argumentHelp("-    ", ArgumentParsers.PROJECT_TYPE)
                             .action(MimoConsole::list)
                             .build())
-                    .build()
-    );
+                    .build());
 
     public static final Command CONTENT = register(
             Command.complex("content")
@@ -162,14 +159,14 @@ public class Commands {
                                     .help("-    List available content versions")
                                     .action(MimoConsole::listContentVersions)
                                     .build())
-                            .subCommand("select", Command.simple("content version select", ArgumentParsers.STRING, ArgumentParsers.INTEGER)
+                            .subCommand("select", Command
+                                    .simple("content version select", ArgumentParsers.STRING, ArgumentParsers.INTEGER)
                                     .formatHelp("slug", "index")
                                     .help("-    Select content version")
                                     .action(Mimo::changeContentVersion)
                                     .build())
                             .build())
-                    .build()
-    );
+                    .build());
 
     public static final Command VERSION = register(
             Command.complex("version")
@@ -178,30 +175,28 @@ public class Commands {
                             .action(() -> Mimo.LOGGER.info("Mimo " + MimoConsole.VERSION))
                             .build())
                     .overload(2, Command.simple("version",
-                                    ArgumentParsers.LOADER_TYPE,
-                                    ArgumentParsers.MINECRAFT_VERSION)
+                            ArgumentParsers.LOADER_TYPE,
+                            ArgumentParsers.MINECRAFT_VERSION)
                             .argumentHelp("-    ", ArgumentParsers.LOADER_TYPE)
                             .help("-    Get latest loader version")
                             .action(MimoConsole::listLoaderVersion)
                             .build())
                     .overload(3, Command.simple("version",
-                                    ArgumentParsers.LOADER_TYPE,
-                                    ArgumentParsers.MINECRAFT_VERSION,
-                                    ArgumentParsers.INTEGER)
+                            ArgumentParsers.LOADER_TYPE,
+                            ArgumentParsers.MINECRAFT_VERSION,
+                            ArgumentParsers.INTEGER)
                             .formatHelp(ArgumentParsers.LOADER_TYPE, ArgumentParsers.MINECRAFT_VERSION, "limit")
                             .argumentHelp("-    ", ArgumentParsers.LOADER_TYPE)
                             .argumentHelp("-    ", "limit", ArgumentParsers.INTEGER)
                             .action(MimoConsole::listLoaderVersions)
                             .build())
-                    .build()
-    );
+                    .build());
 
     public static final Command CHECK = register(
             Command.simple("check")
                     .help("-    Check content versions")
                     .action(Mimo::checkUpdate)
-                    .build()
-    );
+                    .build());
 
     public static final Command LAUNCH = register(
             Command.complex("launch")
@@ -215,14 +210,12 @@ public class Commands {
                             .formatHelp("server_name")
                             .action(MimoConsole::launchServer)
                             .build())
-                    .build()
-    );
+                    .build());
 
     public static final Command LOG = register(
             Command.simple("log", ArgumentParsers.LOG_LEVEL)
                     .action(Mimo.LOGGER::setLevel)
-                    .build()
-    );
+                    .build());
 
     public static final Command HELP = register(
             Command.complex("help")
@@ -236,8 +229,7 @@ public class Commands {
                             .action(Commands::help)
                             .formatHelp("command...")
                             .build())
-                    .build()
-    );
+                    .build());
 
     public static void initialize() {
 

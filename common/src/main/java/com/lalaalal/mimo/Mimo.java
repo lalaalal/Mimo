@@ -12,12 +12,14 @@ import com.lalaalal.mimo.json.ServerInstanceAdaptor;
 import com.lalaalal.mimo.loader.Loader;
 import com.lalaalal.mimo.loader.LoaderInstaller;
 import com.lalaalal.mimo.logging.Logger;
+import com.lalaalal.mimo.util.DirectoryCompressor;
 import com.lalaalal.mimo.util.DirectoryRemover;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -35,12 +37,17 @@ public final class Mimo {
 
     public static void initialize() throws IOException {
         Files.createDirectories(getInstanceContainerDirectory());
+        Files.createDirectories(getBackupDirectory());
         LoaderInstaller.initialize();
         ContentProvider.initialize();
     }
 
     public static Path getInstanceContainerDirectory() {
         return Platform.get().defaultMimoDirectory.resolve("servers");
+    }
+
+    public static Path getBackupDirectory() {
+        return Platform.get().defaultMimoDirectory.resolve("backups");
     }
 
     public static ServerInstance load(String name) throws IOException {
@@ -55,11 +62,13 @@ public final class Mimo {
         return currentServerInstance = ServerInstance.from(directory);
     }
 
-    public static void install(Loader.Type type, String name, MinecraftVersion minecraftVersion, String loaderVersion) throws IOException, InterruptedException {
+    public static void install(Loader.Type type, String name, MinecraftVersion minecraftVersion, String loaderVersion)
+            throws IOException, InterruptedException {
         currentServerInstance = LoaderInstaller.get(type).install(name, minecraftVersion, loaderVersion);
     }
 
-    public static void install(Loader.Type type, String name, MinecraftVersion minecraftVersion) throws IOException, InterruptedException {
+    public static void install(Loader.Type type, String name, MinecraftVersion minecraftVersion)
+            throws IOException, InterruptedException {
         LoaderInstaller installer = LoaderInstaller.get(type);
         List<String> versions = installer.getAvailableVersions(minecraftVersion);
         if (versions.isEmpty()) {
@@ -117,6 +126,22 @@ public final class Mimo {
             Mimo.LOGGER.warning("No such server at \"{}\"", instanceDirectory);
         }
         currentServerInstance = null;
+    }
+
+    public static void backup(String serverName) throws IOException {
+        Path instanceDirectory = getInstanceContainerDirectory().resolve(serverName);
+        LocalDateTime now = LocalDateTime.now();
+        String datetime = "%02d%02d%02d".formatted(now.getYear() - 2000, now.getMonthValue(), now.getDayOfMonth());
+        Path zipFile = getBackupDirectory().resolve(serverName + "-" + datetime + ".zip");
+        if (Files.exists(instanceDirectory)) {
+            Mimo.LOGGER.info("Server \"{}\" found at \"{}\"", serverName, instanceDirectory);
+            try (DirectoryCompressor directoryCompressor = new DirectoryCompressor(instanceDirectory, zipFile)) {
+                Mimo.LOGGER.info("Creating backup for \"{}\" at \"{}\"", serverName, zipFile);
+                Files.walkFileTree(instanceDirectory, directoryCompressor);
+            }
+        } else {
+            Mimo.LOGGER.warning("No such server at \"{}\"", instanceDirectory);
+        }
     }
 
     public static void excludeUpdate(List<String> slugs) {
