@@ -2,7 +2,7 @@ package com.lalaalal.mimo.json;
 
 import com.google.gson.*;
 import com.lalaalal.mimo.Registries;
-import com.lalaalal.mimo.content_provider.ContentProvider;
+import com.lalaalal.mimo.contentprovider.ContentProvider;
 
 import java.lang.reflect.Type;
 

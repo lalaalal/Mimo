@@ -2,7 +2,7 @@ package com.lalaalal.mimo.modrinth;
 
 import com.lalaalal.mimo.ContentInstance;
 import com.lalaalal.mimo.ServerInstance;
-import com.lalaalal.mimo.content_provider.ContentProvider;
+import com.lalaalal.mimo.contentprovider.ContentProvider;
 import com.lalaalal.mimo.data.Content;
 import com.lalaalal.mimo.data.ContentFilter;
 

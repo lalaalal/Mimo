@@ -1,8 +1,8 @@
 package com.lalaalal.mimo.data;
 
-import com.lalaalal.mimo.content_provider.ContentProvider;
-import com.lalaalal.mimo.content_provider.CustomContentProvider;
-import com.lalaalal.mimo.content_provider.Response;
+import com.lalaalal.mimo.contentprovider.ContentProvider;
+import com.lalaalal.mimo.contentprovider.CustomContentProvider;
+import com.lalaalal.mimo.contentprovider.Response;
 import com.lalaalal.mimo.loader.Loader;
 import com.lalaalal.mimo.modrinth.ModrinthResponseParser;
 

@@ -2,7 +2,7 @@ package com.lalaalal.mimo.modrinth;
 
 import com.lalaalal.mimo.Mimo;
 import com.lalaalal.mimo.ServerInstance;
-import com.lalaalal.mimo.content_provider.Request;
+import com.lalaalal.mimo.contentprovider.Request;
 import com.lalaalal.mimo.data.Content;
 import com.lalaalal.mimo.data.ContentFilter;
 import com.lalaalal.mimo.data.MinecraftVersion;

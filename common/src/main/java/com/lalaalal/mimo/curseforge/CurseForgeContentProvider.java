@@ -3,8 +3,8 @@ package com.lalaalal.mimo.curseforge;
 import com.lalaalal.mimo.ContentInstance;
 import com.lalaalal.mimo.Mimo;
 import com.lalaalal.mimo.ServerInstance;
-import com.lalaalal.mimo.content_provider.ContentProvider;
-import com.lalaalal.mimo.content_provider.Request;
+import com.lalaalal.mimo.contentprovider.ContentProvider;
+import com.lalaalal.mimo.contentprovider.Request;
 import com.lalaalal.mimo.data.Content;
 import com.lalaalal.mimo.exception.MessageComponentException;
 

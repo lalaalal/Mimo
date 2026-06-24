@@ -1,4 +1,4 @@
-package com.lalaalal.mimo.content_provider;
+package com.lalaalal.mimo.contentprovider;
 
 import com.lalaalal.mimo.ContentInstance;
 import com.lalaalal.mimo.Mimo;

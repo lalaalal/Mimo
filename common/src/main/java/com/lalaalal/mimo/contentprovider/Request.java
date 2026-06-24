@@ -1,4 +1,4 @@
-package com.lalaalal.mimo.content_provider;
+package com.lalaalal.mimo.contentprovider;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;

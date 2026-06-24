@@ -1,6 +1,6 @@
 package com.lalaalal.mimo.curseforge;
 
-import com.lalaalal.mimo.content_provider.Request;
+import com.lalaalal.mimo.contentprovider.Request;
 
 import java.util.Map;
 

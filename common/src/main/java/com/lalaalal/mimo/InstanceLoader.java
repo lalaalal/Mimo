@@ -1,7 +1,7 @@
 package com.lalaalal.mimo;
 
 import com.google.gson.JsonParseException;
-import com.lalaalal.mimo.content_provider.ContentProvider;
+import com.lalaalal.mimo.contentprovider.ContentProvider;
 import com.lalaalal.mimo.data.Content;
 import com.lalaalal.mimo.data.MinecraftVersion;
 import com.lalaalal.mimo.data.ProjectType;

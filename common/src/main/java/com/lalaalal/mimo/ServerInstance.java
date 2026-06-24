@@ -3,7 +3,7 @@ package com.lalaalal.mimo;
 import com.google.gson.FormattingStyle;
 import com.google.gson.annotations.JsonAdapter;
 import com.google.gson.stream.JsonWriter;
-import com.lalaalal.mimo.content_provider.RequestCollector;
+import com.lalaalal.mimo.contentprovider.RequestCollector;
 import com.lalaalal.mimo.data.Content;
 import com.lalaalal.mimo.data.MinecraftVersion;
 import com.lalaalal.mimo.json.ServerInstanceAdaptor;

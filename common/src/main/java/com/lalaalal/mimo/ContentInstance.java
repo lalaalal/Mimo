@@ -1,9 +1,9 @@
 package com.lalaalal.mimo;
 
 import com.google.gson.annotations.SerializedName;
-import com.lalaalal.mimo.content_provider.ContentProvider;
-import com.lalaalal.mimo.content_provider.CustomContentProvider;
-import com.lalaalal.mimo.content_provider.RequestCollector;
+import com.lalaalal.mimo.contentprovider.ContentProvider;
+import com.lalaalal.mimo.contentprovider.CustomContentProvider;
+import com.lalaalal.mimo.contentprovider.RequestCollector;
 import com.lalaalal.mimo.data.Content;
 import com.lalaalal.mimo.data.MinecraftVersion;
 import com.lalaalal.mimo.json.FieldStrategy;

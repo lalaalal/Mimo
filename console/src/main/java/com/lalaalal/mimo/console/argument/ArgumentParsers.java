@@ -2,7 +2,7 @@ package com.lalaalal.mimo.console.argument;
 
 import com.lalaalal.mimo.Registries;
 import com.lalaalal.mimo.console.ConsoleRegistries;
-import com.lalaalal.mimo.content_provider.ContentProvider;
+import com.lalaalal.mimo.contentprovider.ContentProvider;
 import com.lalaalal.mimo.data.MinecraftVersion;
 import com.lalaalal.mimo.data.ProjectType;
 import com.lalaalal.mimo.loader.Loader;

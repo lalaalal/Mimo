@@ -8,7 +8,7 @@ import com.lalaalal.mimo.console.command.Command;
 import com.lalaalal.mimo.console.command.Commands;
 import com.lalaalal.mimo.console.option.OptionConsumer;
 import com.lalaalal.mimo.console.option.Options;
-import com.lalaalal.mimo.content_provider.ContentProvider;
+import com.lalaalal.mimo.contentprovider.ContentProvider;
 import com.lalaalal.mimo.data.Content;
 import com.lalaalal.mimo.data.MinecraftVersion;
 import com.lalaalal.mimo.data.ProjectType;

@@ -1,4 +1,4 @@
-package com.lalaalal.mimo.content_provider;
+package com.lalaalal.mimo.contentprovider;
 
 import com.google.gson.JsonElement;
 import com.lalaalal.mimo.Mimo;
