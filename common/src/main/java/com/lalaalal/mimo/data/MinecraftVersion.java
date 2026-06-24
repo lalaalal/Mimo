@@ -22,7 +22,7 @@ public record MinecraftVersion(Type type, String name) {
         STABLE, SNAPSHOT;
 
         public static Type byVersionName(String name) {
-            if (name.matches("^1(\\.[0-9]+)+"))
+            if (name.matches("^[0-9]+(\\.[0-9]+)+$"))
                 return STABLE;
             return SNAPSHOT;
         }
