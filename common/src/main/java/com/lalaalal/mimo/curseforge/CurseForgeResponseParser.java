@@ -21,6 +21,7 @@ public class CurseForgeResponseParser extends ResponseParser {
     private static final Map<Loader.Type, String> MOD_LOADER_TYPE_MAP = Map.of(
             Loader.Type.FABRIC, "Fabric",
             Loader.Type.NEOFORGE, "NeoForge",
+            Loader.Type.FORGE, "Forge",
             Loader.Type.DATAPACK, "Datapack"
     );
 

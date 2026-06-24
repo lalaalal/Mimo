@@ -28,6 +28,7 @@ public abstract class LoaderInstaller {
     public static void initialize() throws IOException {
         INSTALLERS.put(Loader.Type.FABRIC, new FabricInstaller());
         INSTALLERS.put(Loader.Type.NEOFORGE, new NeoForgeInstaller());
+        INSTALLERS.put(Loader.Type.FORGE, new ForgeInstaller());
     }
 
     public static LoaderInstaller get(Loader.Type loader) {

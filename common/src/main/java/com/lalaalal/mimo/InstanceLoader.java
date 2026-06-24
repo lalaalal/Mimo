@@ -57,10 +57,12 @@ public class InstanceLoader {
         Mimo.LOGGER.info("Loading instance from directory \"{}\"", directory);
         File[] files = directory.toFile().listFiles((dir, name) -> name.matches(JAR_NAME_PATTERN.pattern()));
 
-        if (files == null || files.length != 1)
+        if (files == null || files.length < 1)
             throw new MessageComponentException("Server " + serverName + " not found");
-        File jarFile = files[0];
-        return createServer(serverName, jarFile.getName(), directory);
+        if (files.length > 1)
+            Mimo.LOGGER.warning("Multiple server jar files found in directory \"{}\"", directory);
+        Mimo.LOGGER.info("Using {}", files[0].getName());
+        return createServer(serverName, files[0].getName(), directory);
     }
 
     /**
@@ -101,6 +103,7 @@ public class InstanceLoader {
         }
         Map<Content, Content.Version> versions = new HashMap<>();
         for (ContentProvider contentProvider : Registries.CONTENT_PROVIDERS) {
+            Mimo.LOGGER.debug("Searching version files from {}", contentProvider.getName());
             Map<Content, Content.Version> current = contentProvider.getVersionFromFiles(hashes, serverInstance);
             for (Content.Version version : current.values())
                 hashes.remove(version.hash());

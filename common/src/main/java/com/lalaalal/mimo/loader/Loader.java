@@ -2,7 +2,7 @@ package com.lalaalal.mimo.loader;
 
 public record Loader(Type type, String version) {
     public Loader(String type, String version) {
-        this(Type.valueOf(type.toUpperCase()), version);
+        this(Type.get(type), version);
     }
 
     @Override
@@ -11,7 +11,7 @@ public record Loader(Type type, String version) {
     }
 
     public enum Type {
-        DATAPACK, FABRIC, NEOFORGE;
+        DATAPACK, FABRIC, NEOFORGE, FORGE;
 
         public static Type get(String name) {
             for (Type value : values()) {
