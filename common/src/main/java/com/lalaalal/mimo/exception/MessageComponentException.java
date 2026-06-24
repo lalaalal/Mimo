@@ -15,6 +15,13 @@ public class MessageComponentException extends RuntimeException {
         this.component = component;
     }
 
+    public MessageComponentException(MessageComponent component, MessageComponentException cause) {
+        super(component.plainText(), cause);
+        this.component = MessageComponent.complex(
+                component, MessageComponent.NEW_LINE, cause.getMessageComponent()
+        );
+    }
+
     public MessageComponentException(String message) {
         super(message);
         this.component = MessageComponent.withDefault(message);

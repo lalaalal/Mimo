@@ -188,6 +188,10 @@ public class ServerInstance {
         return Collections.unmodifiableCollection(updateExcludes);
     }
 
+    public boolean isExcluded(Content content) {
+        return updateExcludes.contains(content.slug());
+    }
+
     /**
      * {@link #downloadContents()} and update contents.
      * Save the instance after this update.
@@ -204,7 +208,7 @@ public class ServerInstance {
         );
         for (ContentInstance contentInstance : contents.values()) {
             contentInstance.setLatestVersion(distributor);
-            if (contentInstance.isUpToDate() || updateExcludes.contains(contentInstance.content().slug()))
+            if (isExcluded(contentInstance.content()) || contentInstance.isUpToDate())
                 continue;
 
             contentInstance.downloadContent();
@@ -224,6 +228,7 @@ public class ServerInstance {
                 contentInstance.selectContentVersion(0);
             contentInstance.downloadContent();
         }
+        checkUpdate();
         save();
     }
 

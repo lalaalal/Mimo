@@ -6,6 +6,8 @@ import com.lalaalal.mimo.contentprovider.CustomContentProvider;
 import com.lalaalal.mimo.contentprovider.RequestCollector;
 import com.lalaalal.mimo.data.Content;
 import com.lalaalal.mimo.data.MinecraftVersion;
+import com.lalaalal.mimo.exception.MessageComponentException;
+import com.lalaalal.mimo.exception.ResponseParsingException;
 import com.lalaalal.mimo.json.FieldStrategy;
 import com.lalaalal.mimo.json.GsonExcludeStrategy;
 import com.lalaalal.mimo.json.GsonField;
@@ -87,7 +89,17 @@ public class ContentInstance {
 
     public void loadLatestVersion() {
         Mimo.LOGGER.debug("[{}] ({}) Loading latest version", serverInstance, this);
-        updatingVersion = contentProvider.getLatestVersion(this, serverInstance);
+        try {
+            updatingVersion = contentProvider.getLatestVersion(this, serverInstance);
+        } catch (ResponseParsingException exception) {
+            throw new MessageComponentException(
+                    MessageComponent.complex(
+                            MessageComponent.text("Failed to find latest version for \"" + this + "\""),
+                            MessageComponent.NEW_LINE,
+                            MessageComponent.text("Please remove or manually update")
+                    ), exception
+            );
+        }
         Mimo.LOGGER.debug("[{}] ({}) Latest version is \"{}\"", serverInstance, this, content.slug());
     }
 

@@ -22,10 +22,10 @@ public class Commands {
     public static final Command INSTALL = register(
             Command.complex("install")
                     .overload(4, Command.simple("install",
-                            ArgumentParsers.LOADER_TYPE,
-                            ArgumentParsers.STRING,
-                            ArgumentParsers.MINECRAFT_VERSION,
-                            ArgumentParsers.STRING)
+                                    ArgumentParsers.LOADER_TYPE,
+                                    ArgumentParsers.STRING,
+                                    ArgumentParsers.MINECRAFT_VERSION,
+                                    ArgumentParsers.STRING)
                             .formatHelp(ArgumentParsers.LOADER_TYPE, "server_name", ArgumentParsers.MINECRAFT_VERSION,
                                     "loader_version")
                             .argumentHelp("-    ", ArgumentParsers.LOADER_TYPE)
@@ -33,9 +33,9 @@ public class Commands {
                             .action(Mimo::install)
                             .build())
                     .overload(3, Command.simple("install",
-                            ArgumentParsers.LOADER_TYPE,
-                            ArgumentParsers.STRING,
-                            ArgumentParsers.MINECRAFT_VERSION)
+                                    ArgumentParsers.LOADER_TYPE,
+                                    ArgumentParsers.STRING,
+                                    ArgumentParsers.MINECRAFT_VERSION)
                             .formatHelp(ArgumentParsers.LOADER_TYPE, "server_name", ArgumentParsers.MINECRAFT_VERSION)
                             .argumentHelp("-    ", ArgumentParsers.LOADER_TYPE)
                             .help("-    Install server with latest loader version")
@@ -69,7 +69,7 @@ public class Commands {
                             .action(Mimo::add)
                             .build())
                     .overload(3, Command.simple("add",
-                            ArgumentParsers.STRING, ArgumentParsers.CONTENT_PROVIDER, ArgumentParsers.BOOLEAN)
+                                    ArgumentParsers.STRING, ArgumentParsers.CONTENT_PROVIDER, ArgumentParsers.BOOLEAN)
                             .formatHelp("content_slug", ArgumentParsers.CONTENT_PROVIDER, "update")
                             .argumentHelp("-    ", ArgumentParsers.CONTENT_PROVIDER)
                             .argumentHelp("-    ", "update", ArgumentParsers.BOOLEAN)
@@ -175,16 +175,16 @@ public class Commands {
                             .action(() -> Mimo.LOGGER.info("Mimo " + MimoConsole.VERSION))
                             .build())
                     .overload(2, Command.simple("version",
-                            ArgumentParsers.LOADER_TYPE,
-                            ArgumentParsers.MINECRAFT_VERSION)
+                                    ArgumentParsers.LOADER_TYPE,
+                                    ArgumentParsers.MINECRAFT_VERSION)
                             .argumentHelp("-    ", ArgumentParsers.LOADER_TYPE)
                             .help("-    Get latest loader version")
                             .action(MimoConsole::listLoaderVersion)
                             .build())
                     .overload(3, Command.simple("version",
-                            ArgumentParsers.LOADER_TYPE,
-                            ArgumentParsers.MINECRAFT_VERSION,
-                            ArgumentParsers.INTEGER)
+                                    ArgumentParsers.LOADER_TYPE,
+                                    ArgumentParsers.MINECRAFT_VERSION,
+                                    ArgumentParsers.INTEGER)
                             .formatHelp(ArgumentParsers.LOADER_TYPE, ArgumentParsers.MINECRAFT_VERSION, "limit")
                             .argumentHelp("-    ", ArgumentParsers.LOADER_TYPE)
                             .argumentHelp("-    ", "limit", ArgumentParsers.INTEGER)

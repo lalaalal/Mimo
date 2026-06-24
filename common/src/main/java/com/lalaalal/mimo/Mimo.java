@@ -108,7 +108,7 @@ public final class Mimo {
         if (immediateUpdate)
             serverInstance.downloadContents();
         serverInstance.checkUpdate();
-        save();
+        serverInstance.save();
     }
 
     public static void removeContent(String slug) throws IOException {
@@ -144,9 +144,10 @@ public final class Mimo {
         }
     }
 
-    public static void excludeUpdate(List<String> slugs) {
+    public static void excludeUpdate(List<String> slugs) throws IOException {
         ServerInstance serverInstance = currentInstanceOrThrow();
         serverInstance.excludeUpdate(slugs);
+        serverInstance.save();
     }
 
     public static void update() throws IOException {
@@ -177,12 +178,12 @@ public final class Mimo {
     public static void checkUpdate() throws IOException {
         ServerInstance serverInstance = currentInstanceOrThrow();
         serverInstance.checkUpdate();
-        save();
+        serverInstance.save();
     }
 
     public static void includeUpdate(List<String> slugs) throws IOException {
         ServerInstance serverInstance = currentInstanceOrThrow();
         serverInstance.includeUpdate(slugs);
-        save();
+        serverInstance.save();
     }
 }
