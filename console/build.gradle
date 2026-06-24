@@ -4,7 +4,7 @@ plugins {
 }
 
 application {
-    mainClassName = 'com.lalaalal.mimo.console.MimoConsole'
+    mainClass = 'com.lalaalal.mimo.console.MimoConsole'
 }
 
 group = 'com.lalaalal.mimo.console'
