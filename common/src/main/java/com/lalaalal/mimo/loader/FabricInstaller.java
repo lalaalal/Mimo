@@ -4,6 +4,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.lalaalal.mimo.Mimo;
 import com.lalaalal.mimo.data.MinecraftVersion;
+import com.lalaalal.mimo.registry.RegistryItem;
 import com.lalaalal.mimo.util.HttpHelper;
 
 import java.io.IOException;
@@ -59,9 +60,14 @@ public class FabricInstaller extends LoaderInstaller {
     protected void processInstall(Path instanceDirectory, MinecraftVersion minecraftVersion, String loaderVersion) throws IOException {
         String fabricInstallerVersion = this.installerVersions.getFirst();
         String url = LAUNCHER_DOWNLOAD_URL.formatted(minecraftVersion, loaderVersion, fabricInstallerVersion);
-        String fileName = getFileName(minecraftVersion, loaderVersion);
+        String fileName = getLauncherFileName(minecraftVersion, loaderVersion);
         Path file = instanceDirectory.resolve(fileName);
         Mimo.LOGGER.info("Downloading server jar file at \"{}\"", file);
         HttpHelper.download(url, file);
+    }
+
+    @Override
+    protected RegistryItem<ServerLauncher> getServerLauncher() {
+        return  ServerLauncher.FABRIC;
     }
 }

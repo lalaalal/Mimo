@@ -1,6 +1,7 @@
 package com.lalaalal.mimo.loader;
 
 import com.lalaalal.mimo.Mimo;
+import com.lalaalal.mimo.registry.RegistryItem;
 import com.lalaalal.mimo.ServerInstance;
 import com.lalaalal.mimo.data.MinecraftVersion;
 
@@ -40,7 +41,7 @@ public abstract class LoaderInstaller {
         this.loaderType = loaderType;
     }
 
-    public String getFileName(MinecraftVersion minecraftVersion, String loaderVersion) {
+    public String getLauncherFileName(MinecraftVersion minecraftVersion, String loaderVersion) {
         return FILE_NAME_FORMAT.formatted(loaderType, loaderVersion, minecraftVersion);
     }
 
@@ -75,8 +76,10 @@ public abstract class LoaderInstaller {
 
         createEulaFile(instanceDirectory);
         Mimo.LOGGER.info("Installed server \"{}\" ({} {}) [{}]", name, loaderType, loaderVersion, minecraftVersion);
-        return new ServerInstance(name, new Loader(loaderType, loaderVersion), minecraftVersion);
+        return new ServerInstance(name, new Loader(loaderType, loaderVersion, getServerLauncher()), minecraftVersion);
     }
 
     protected abstract void processInstall(Path instanceDirectory, MinecraftVersion minecraftVersion, String loaderVersion) throws IOException, InterruptedException;
+
+    protected abstract RegistryItem<ServerLauncher> getServerLauncher();
 }

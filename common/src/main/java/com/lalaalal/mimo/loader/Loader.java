@@ -1,8 +1,21 @@
 package com.lalaalal.mimo.loader;
 
-public record Loader(Type type, String version) {
+import com.lalaalal.mimo.registry.RegistryItem;
+
+import java.io.IOException;
+import java.nio.file.Path;
+
+public record Loader(Type type, String version, RegistryItem<ServerLauncher> launcher) {
     public Loader(String type, String version) {
-        this(Type.get(type), version);
+        this(Type.get(type), version, ServerLauncher.FABRIC);
+    }
+
+    public Loader(String type, String version, RegistryItem<ServerLauncher> launcher) {
+        this(Type.get(type), version, launcher);
+    }
+
+    public Process launch(String launcherFile, Path workingDirectory) throws IOException {
+        return launcher.value().launch(launcherFile, workingDirectory);
     }
 
     @Override
