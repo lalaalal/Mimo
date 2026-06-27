@@ -3,15 +3,21 @@ package com.lalaalal.mimo;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.lalaalal.mimo.contentprovider.ContentProvider;
+import com.lalaalal.mimo.contentprovider.ContentProviders;
 import com.lalaalal.mimo.data.Content;
 import com.lalaalal.mimo.data.MinecraftVersion;
 import com.lalaalal.mimo.exception.MessageComponentException;
-import com.lalaalal.mimo.json.ContentProviderAdaptor;
 import com.lalaalal.mimo.json.MimoExcludeStrategy;
+import com.lalaalal.mimo.json.RegistryItemAdaptor;
+import com.lalaalal.mimo.json.RegistryKeyAdaptor;
 import com.lalaalal.mimo.json.ServerInstanceAdaptor;
 import com.lalaalal.mimo.loader.Loader;
 import com.lalaalal.mimo.loader.LoaderInstaller;
+import com.lalaalal.mimo.loader.ServerLauncher;
 import com.lalaalal.mimo.logging.Logger;
+import com.lalaalal.mimo.registry.Registries;
+import com.lalaalal.mimo.registry.RegistryItem;
+import com.lalaalal.mimo.registry.RegistryKey;
 import com.lalaalal.mimo.util.DirectoryCompressor;
 import com.lalaalal.mimo.util.DirectoryRemover;
 
@@ -30,7 +36,8 @@ public final class Mimo {
             .addSerializationExclusionStrategy(new MimoExcludeStrategy())
             .addDeserializationExclusionStrategy(new MimoExcludeStrategy())
             .registerTypeAdapter(ServerInstanceAdaptor.class, new ServerInstanceAdaptor())
-            .registerTypeAdapter(ContentProvider.class, new ContentProviderAdaptor())
+            .registerTypeAdapter(RegistryKey.class, new RegistryKeyAdaptor())
+            .registerTypeAdapter(RegistryItem.class, new RegistryItemAdaptor())
             .create();
 
     public static final Logger LOGGER = Logger.stdout();
@@ -38,8 +45,11 @@ public final class Mimo {
     public static void initialize() throws IOException {
         Files.createDirectories(getInstanceContainerDirectory());
         Files.createDirectories(getBackupDirectory());
+
+        Registries.initialize();
+        ServerLauncher.initialize();
         LoaderInstaller.initialize();
-        ContentProvider.initialize();
+        ContentProviders.initialize();
     }
 
     public static Path getInstanceContainerDirectory() {

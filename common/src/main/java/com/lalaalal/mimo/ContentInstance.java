@@ -2,6 +2,7 @@ package com.lalaalal.mimo;
 
 import com.google.gson.annotations.SerializedName;
 import com.lalaalal.mimo.contentprovider.ContentProvider;
+import com.lalaalal.mimo.contentprovider.ContentProviders;
 import com.lalaalal.mimo.contentprovider.CustomContentProvider;
 import com.lalaalal.mimo.contentprovider.RequestCollector;
 import com.lalaalal.mimo.data.Content;
@@ -44,7 +45,7 @@ public class ContentInstance {
     public ContentInstance(ServerInstance serverInstance, Content content) {
         this.serverInstance = serverInstance;
         this.content = content;
-        this.contentProvider = content.provider();
+        this.contentProvider = content.provider().value();
 
         loadVersions();
     }
@@ -53,7 +54,7 @@ public class ContentInstance {
         this.serverInstance = serverInstance;
         this.content = content;
         this.contentVersion = version;
-        this.contentProvider = content.provider();
+        this.contentProvider = content.provider().value();
     }
 
     protected void resolveDependencies(Content.Version version) {
@@ -231,7 +232,7 @@ public class ContentInstance {
         if (isVersionSelected())
             name += " (" + contentVersion.fileName() + ")";
         ComplexMessageComponent component = MessageComponent.complex(MessageComponent.withDefault(name));
-        component.add(MessageComponent.text(" " + content.provider().getName()).with(providerStyle()));
+        component.add(MessageComponent.text(" " + content.provider().value().getName()).with(providerStyle()));
         if (!isDownloaded())
             component.add(MessageComponent.text(" NOT DOWNLOADED").with(ConsoleColor.RED.foreground()));
         else if (!isUpToDate())
@@ -240,7 +241,7 @@ public class ContentInstance {
     }
 
     private Style providerStyle() {
-        if (content.provider() == CustomContentProvider.INSTANCE)
+        if (content.provider() == ContentProviders.CUSTOM)
             return ConsoleColor.YELLOW.foreground();
         return ConsoleColor.GREEN.foreground();
     }

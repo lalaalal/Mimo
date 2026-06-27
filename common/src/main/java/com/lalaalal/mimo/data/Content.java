@@ -1,10 +1,11 @@
 package com.lalaalal.mimo.data;
 
 import com.lalaalal.mimo.contentprovider.ContentProvider;
-import com.lalaalal.mimo.contentprovider.CustomContentProvider;
+import com.lalaalal.mimo.contentprovider.ContentProviders;
 import com.lalaalal.mimo.contentprovider.Response;
 import com.lalaalal.mimo.loader.Loader;
 import com.lalaalal.mimo.modrinth.ModrinthResponseParser;
+import com.lalaalal.mimo.registry.RegistryItem;
 
 import java.io.File;
 import java.util.List;
@@ -23,9 +24,10 @@ import java.util.Objects;
  * @param slug    Content slug
  * @see ModrinthResponseParser#parseContent(Loader.Type, Response)
  */
-public record Content(ProjectType type, List<Loader.Type> loaders, ContentProvider provider, String id, String slug) {
+public record Content(ProjectType type, List<Loader.Type> loaders, RegistryItem<ContentProvider> provider, String id,
+                      String slug) {
     public static Content custom(ProjectType type, Loader.Type loader, String id) {
-        return new Content(type, loader, CustomContentProvider.INSTANCE, id, id);
+        return new Content(type, loader, ContentProviders.CUSTOM, id, id);
     }
 
     private static List<Loader.Type> determineLoader(ProjectType type, Loader.Type loader) {
@@ -34,7 +36,7 @@ public record Content(ProjectType type, List<Loader.Type> loaders, ContentProvid
         return List.of(loader);
     }
 
-    public Content(ProjectType type, Loader.Type loader, ContentProvider provider, String id, String slug) {
+    public Content(ProjectType type, Loader.Type loader, RegistryItem<ContentProvider> provider, String id, String slug) {
         this(type, determineLoader(type, loader), provider, id, slug);
     }
 

@@ -2,13 +2,10 @@ package com.lalaalal.mimo.contentprovider;
 
 import com.lalaalal.mimo.ContentInstance;
 import com.lalaalal.mimo.Mimo;
-import com.lalaalal.mimo.Registries;
 import com.lalaalal.mimo.ServerInstance;
-import com.lalaalal.mimo.curseforge.CurseForgeContentProvider;
 import com.lalaalal.mimo.data.Content;
 import com.lalaalal.mimo.exception.JsonParsingException;
 import com.lalaalal.mimo.exception.ResponseParsingException;
-import com.lalaalal.mimo.modrinth.ModrinthContentProvider;
 import com.lalaalal.mimo.modrinth.ModrinthResponseParser;
 import com.lalaalal.mimo.util.HttpHelper;
 
@@ -27,12 +24,6 @@ public abstract class ContentProvider {
     private final String apiURL;
 
     private final Map<Request, Response> CACHE = new HashMap<>();
-
-    public static void initialize() {
-        Registries.CONTENT_PROVIDERS.register("modrinth", ModrinthContentProvider.INSTANCE);
-        Registries.CONTENT_PROVIDERS.register("curseforge", CurseForgeContentProvider.INSTANCE);
-        Registries.CONTENT_PROVIDERS.register("custom", CustomContentProvider.INSTANCE);
-    }
 
     public ContentProvider(String name, String apiURL) {
         this.name = name;

@@ -4,13 +4,14 @@ import com.lalaalal.mimo.data.Content;
 import com.lalaalal.mimo.data.MinecraftVersion;
 import com.lalaalal.mimo.data.ProjectType;
 import com.lalaalal.mimo.loader.Loader;
+import com.lalaalal.mimo.loader.ServerLauncher;
 import com.lalaalal.mimo.modrinth.ModrinthContentProvider;
 
 import java.io.IOException;
 import java.util.List;
 
 public class MimoTest {
-    public static final MinecraftVersion TEST_MINECRAFT_VERSION = MinecraftVersion.of(21, 1);
+    public static final MinecraftVersion TEST_MINECRAFT_VERSION = MinecraftVersion.legacy(21, 1);
     public static final String TEST_NEOFORGE_VERSION = "21.1.209";
     public static final ServerInstance TEST_INSTANCE = createServerInstance();
 
@@ -21,7 +22,7 @@ public class MimoTest {
 
     private static ServerInstance createServerInstance() {
         try {
-            return new ServerInstance("test", new Loader(Loader.Type.FABRIC, "0.16.10"), TEST_MINECRAFT_VERSION);
+            return new ServerInstance("test", new Loader(Loader.Type.FABRIC, "0.16.10", ServerLauncher.FABRIC), TEST_MINECRAFT_VERSION);
         } catch (IOException exception) {
             throw new RuntimeException();
         }

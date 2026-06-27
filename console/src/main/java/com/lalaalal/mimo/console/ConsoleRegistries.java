@@ -1,6 +1,6 @@
 package com.lalaalal.mimo.console;
 
-import com.lalaalal.mimo.Registry;
+import com.lalaalal.mimo.registry.Registry;
 import com.lalaalal.mimo.console.argument.ArgumentParser;
 import com.lalaalal.mimo.console.command.Command;
 

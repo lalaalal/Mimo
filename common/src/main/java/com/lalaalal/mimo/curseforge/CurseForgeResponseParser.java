@@ -3,6 +3,7 @@ package com.lalaalal.mimo.curseforge;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.lalaalal.mimo.contentprovider.ContentProviders;
 import com.lalaalal.mimo.contentprovider.Request;
 import com.lalaalal.mimo.contentprovider.Response;
 import com.lalaalal.mimo.contentprovider.ResponseParser;
@@ -64,7 +65,7 @@ public class CurseForgeResponseParser extends ResponseParser {
         String id = JsonHelper.toString(dataObject.get("id"));
         String slug = JsonHelper.toString(dataObject.get("slug"));
         if (verifyLoader(version, type, dataObject))
-            return Optional.of(parsed("content", new Content(ProjectType.MOD, type, CurseForgeContentProvider.INSTANCE, id, slug)));
+            return Optional.of(parsed("content", new Content(ProjectType.MOD, type, ContentProviders.CURSEFORGE, id, slug)));
         return Optional.empty();
     }
 

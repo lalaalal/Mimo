@@ -1,6 +1,6 @@
 package com.lalaalal.mimo.console.argument;
 
-import com.lalaalal.mimo.Registries;
+import com.lalaalal.mimo.registry.Registries;
 import com.lalaalal.mimo.console.ConsoleRegistries;
 import com.lalaalal.mimo.contentprovider.ContentProvider;
 import com.lalaalal.mimo.data.MinecraftVersion;
@@ -61,7 +61,7 @@ public class ArgumentParsers {
     );
 
     public static final ArgumentParser<ContentProvider> CONTENT_PROVIDER = register(
-            ArgumentParser.builder("content_provider", ContentProvider.class, Registries.CONTENT_PROVIDERS::get)
+            ArgumentParser.builder("content_provider", ContentProvider.class, Registries.CONTENT_PROVIDERS::getOrThrow)
                     .help("[modrinth | curseforge]")
                     .build()
     );

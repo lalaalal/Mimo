@@ -7,6 +7,8 @@ import com.lalaalal.mimo.data.MinecraftVersion;
 import com.lalaalal.mimo.data.ProjectType;
 import com.lalaalal.mimo.exception.MessageComponentException;
 import com.lalaalal.mimo.loader.Loader;
+import com.lalaalal.mimo.registry.Registries;
+import com.lalaalal.mimo.registry.RegistryItem;
 import com.lalaalal.mimo.util.HashUtils;
 
 import java.io.BufferedReader;
@@ -102,9 +104,9 @@ public class InstanceLoader {
             hashes.put(hash, file);
         }
         Map<Content, Content.Version> versions = new HashMap<>();
-        for (ContentProvider contentProvider : Registries.CONTENT_PROVIDERS) {
-            Mimo.LOGGER.debug("Searching version files from {}", contentProvider.getName());
-            Map<Content, Content.Version> current = contentProvider.getVersionFromFiles(hashes, serverInstance);
+        for (RegistryItem<ContentProvider> contentProvider : Registries.CONTENT_PROVIDERS) {
+            Mimo.LOGGER.debug("Searching version files from {}", contentProvider.key());
+            Map<Content, Content.Version> current = contentProvider.value().getVersionFromFiles(hashes, serverInstance);
             for (Content.Version version : current.values())
                 hashes.remove(version.hash());
             versions.putAll(current);

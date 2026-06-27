@@ -3,6 +3,8 @@ package com.lalaalal.mimo.contentprovider;
 import com.lalaalal.mimo.ContentInstance;
 import com.lalaalal.mimo.ServerInstance;
 import com.lalaalal.mimo.data.Content;
+import com.lalaalal.mimo.registry.Registries;
+import com.lalaalal.mimo.registry.RegistryKey;
 
 import java.util.*;
 
@@ -13,21 +15,21 @@ public class RequestCollector {
         );
     }
 
-    private final Map<ContentProvider, List<ContentInstance>> contentsByContentProvider = new HashMap<>();
+    private final Map<RegistryKey, List<ContentInstance>> contentsByContentProvider = new HashMap<>();
 
     public void add(ContentInstance contentInstance) {
-        contentsByContentProvider.computeIfAbsent(contentInstance.content().provider(), key -> new ArrayList<>())
+        contentsByContentProvider.computeIfAbsent(contentInstance.content().provider().key(), key -> new ArrayList<>())
                 .add(contentInstance);
     }
 
     public void remove(ContentInstance contentInstance) {
-        contentsByContentProvider.get(contentInstance.content().provider()).remove(contentInstance);
+        contentsByContentProvider.get(contentInstance.content().provider().key()).remove(contentInstance);
     }
 
     public <T> Distributor<T> submit(Type type, ContentProviderAction<T> action) {
         Map<String, T> result = new HashMap<>();
         contentsByContentProvider.forEach((contentProvider, contents) -> {
-            result.putAll(action.apply(contentProvider, contents));
+            result.putAll(action.apply(Registries.CONTENT_PROVIDERS.get(contentProvider).value(), contents));
         });
         return new Distributor<>(type, result);
     }

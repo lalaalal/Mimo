@@ -85,12 +85,8 @@ public class ServerInstance {
     public void launch() throws IOException, InterruptedException {
         Mimo.LOGGER.info("Launching server \"{}\"", name);
         String fileName = LoaderInstaller.get(loader.type())
-                .getFileName(version, loader.version());
-        ProcessBuilder processBuilder = new ProcessBuilder("java", "-jar", fileName, "nogui");
-        processBuilder.directory(path.toFile());
-        processBuilder.redirectInput(ProcessBuilder.Redirect.INHERIT);
-        processBuilder.redirectOutput(ProcessBuilder.Redirect.INHERIT);
-        Process process = processBuilder.start();
+                .getLauncherFileName(version, loader.version());
+        Process process = loader.launch(fileName, path);
         process.waitFor();
     }
 

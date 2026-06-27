@@ -16,7 +16,7 @@ public class Commands {
     }
 
     public static Optional<Command> get(String name) {
-        return Optional.ofNullable(ConsoleRegistries.COMMANDS.get(name));
+        return ConsoleRegistries.COMMANDS.getValue(name);
     }
 
     public static final Command INSTALL = register(
@@ -243,7 +243,7 @@ public class Commands {
     public static void help(String commandKey, boolean onlyArgument) {
         if (!ConsoleRegistries.COMMANDS.contains(commandKey))
             throw CommandException.notFound(commandKey);
-        Command command = ConsoleRegistries.COMMANDS.get(commandKey);
+        Command command = ConsoleRegistries.COMMANDS.getOrThrow(commandKey);
         help(command, onlyArgument, Mimo.LOGGER::info);
     }
 
@@ -251,7 +251,7 @@ public class Commands {
         String commandKey = commands.getFirst();
         if (!ConsoleRegistries.COMMANDS.contains(commandKey))
             throw CommandException.notFound(commandKey);
-        Command command = ConsoleRegistries.COMMANDS.get(commandKey);
+        Command command = ConsoleRegistries.COMMANDS.getOrThrow(commandKey);
         for (String subCommandKey : commands.subList(1, commands.size())) {
             Optional<Command> subCommand = command.resolve(subCommandKey);
             if (subCommand.isPresent())

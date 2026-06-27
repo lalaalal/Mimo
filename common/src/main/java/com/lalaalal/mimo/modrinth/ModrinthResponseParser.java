@@ -5,6 +5,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.lalaalal.mimo.Mimo;
 import com.lalaalal.mimo.ServerInstance;
+import com.lalaalal.mimo.contentprovider.ContentProviders;
 import com.lalaalal.mimo.contentprovider.Response;
 import com.lalaalal.mimo.contentprovider.ResponseParser;
 import com.lalaalal.mimo.data.Content;
@@ -100,7 +101,7 @@ public class ModrinthResponseParser extends ResponseParser {
         if (data.has("server_side") && JsonHelper.toString(data.get("server_side")).equals("unsupported"))
             Mimo.LOGGER.warning("Content \"{}\" is client only!!", slug);
 
-        return parsed("content", new Content(projectType, loader, ModrinthContentProvider.INSTANCE, id, slug));
+        return parsed("content", new Content(projectType, loader, ContentProviders.MODRINTH, id, slug));
     }
 
     protected Map<String, Content.Detail> parseDetailMap(JsonArray list) {

@@ -13,7 +13,7 @@ import java.util.Optional;
 @SuppressWarnings("unused")
 public class Options {
     public static Optional<Command> get(String name) {
-        return Optional.ofNullable(ConsoleRegistries.OPTIONS.get(name));
+        return ConsoleRegistries.OPTIONS.getValue(name);
     }
 
     public static Command register(String name, Command command) {
