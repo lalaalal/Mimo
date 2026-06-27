@@ -44,7 +44,7 @@ public class ArgumentParsers {
 
     public static final ArgumentParser<Loader.Type> LOADER_TYPE = register(
             ArgumentParser.builder("loader_type", Loader.Type.class, Loader.Type::get)
-                    .help("[fabric | neoforge]")
+                    .help("[fabric | neoforge | forge]")
                     .build()
     );
 

@@ -23,10 +23,10 @@ public class Commands {
             Command.complex("install")
                     .overload(4, Command.simple("install",
                                     ArgumentParsers.LOADER_TYPE,
-                                    ArgumentParsers.STRING,
                                     ArgumentParsers.MINECRAFT_VERSION,
+                                    ArgumentParsers.STRING,
                                     ArgumentParsers.STRING)
-                            .formatHelp(ArgumentParsers.LOADER_TYPE, "server_name", ArgumentParsers.MINECRAFT_VERSION,
+                            .formatHelp(ArgumentParsers.LOADER_TYPE, ArgumentParsers.MINECRAFT_VERSION, "server_name",
                                     "loader_version")
                             .argumentHelp("-    ", ArgumentParsers.LOADER_TYPE)
                             .help("-    Install server")
@@ -34,9 +34,9 @@ public class Commands {
                             .build())
                     .overload(3, Command.simple("install",
                                     ArgumentParsers.LOADER_TYPE,
-                                    ArgumentParsers.STRING,
-                                    ArgumentParsers.MINECRAFT_VERSION)
-                            .formatHelp(ArgumentParsers.LOADER_TYPE, "server_name", ArgumentParsers.MINECRAFT_VERSION)
+                                    ArgumentParsers.MINECRAFT_VERSION,
+                                    ArgumentParsers.STRING)
+                            .formatHelp(ArgumentParsers.LOADER_TYPE, ArgumentParsers.MINECRAFT_VERSION, "server_name")
                             .argumentHelp("-    ", ArgumentParsers.LOADER_TYPE)
                             .help("-    Install server with latest loader version")
                             .help("+    version [loader_type] [minecraft_version]")
