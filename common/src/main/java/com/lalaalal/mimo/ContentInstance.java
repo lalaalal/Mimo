@@ -234,7 +234,7 @@ public class ContentInstance {
         component.add(MessageComponent.text(" " + content.provider().getName()).with(providerStyle()));
         if (!isDownloaded())
             component.add(MessageComponent.text(" NOT DOWNLOADED").with(ConsoleColor.RED.foreground()));
-        if (!isUpToDate())
+        else if (!isUpToDate())
             component.add(MessageComponent.text(" OUT OF DATE").with(ConsoleColor.YELLOW.foreground()));
         return component;
     }

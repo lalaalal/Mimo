@@ -85,8 +85,8 @@ public record Request(int id, Format format, Map<String, String> params, String 
         SEARCH(true),
         GET_SINGLE_PROJECT(true),
         GET_MULTIPLE_PROJECT(true),
-        GET_SINGLE_VERSION(true),
-        GET_SINGLE_VERSION_LIST(true),
+        GET_SINGLE_VERSION(false),
+        GET_SINGLE_VERSION_LIST(false),
         GET_MULTIPLE_VERSION(false),
         GET_MULTIPLE_VERSION_LIST(false);
 
