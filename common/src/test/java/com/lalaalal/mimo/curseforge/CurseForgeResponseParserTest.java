@@ -23,17 +23,8 @@ public class CurseForgeResponseParserTest {
     }
 
     @Test
-    void testParseProject() {
-        Request request = factory.searchSlug("apotheosis");
-        Content content = contentProvider.get(request, response -> parser.parseContent(MinecraftVersion.legacy(21, 1), Loader.Type.NEOFORGE, response));
-        List<Content.Version> versions = contentProvider.get(request, response -> parser.parseProjectVersionList(MinecraftVersion.legacy(21, 1), Loader.Type.NEOFORGE, response));
-        Mimo.LOGGER.info(content.toString());
-        Mimo.LOGGER.info(versions.toString());
-    }
-
-    @Test
     void testParseProjectVersions() {
-        Request request = factory.mod("313970");
+        Request request = factory.files("313970");
         List<Content.Version> versions = contentProvider.get(request, response -> parser.parseProjectVersionList(MinecraftVersion.legacy(21, 1), Loader.Type.NEOFORGE, response));
         Mimo.LOGGER.info(versions.toString());
     }

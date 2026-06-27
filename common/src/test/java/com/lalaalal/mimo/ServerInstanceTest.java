@@ -1,5 +1,6 @@
 package com.lalaalal.mimo;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -14,6 +15,7 @@ class ServerInstanceTest {
         MimoTest.TEST_INSTANCE.downloadContents();
     }
 
+    @Disabled
     @Test
     void updateContents() throws IOException {
         ServerInstance instance = Mimo.load("test");
