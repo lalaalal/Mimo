@@ -1,6 +1,7 @@
 package com.lalaalal.mimo.loader;
 
 import com.lalaalal.mimo.Mimo;
+import com.lalaalal.mimo.Platform;
 import com.lalaalal.mimo.data.MinecraftVersion;
 import com.lalaalal.mimo.registry.RegistryItem;
 import com.lalaalal.mimo.util.HttpHelper;
@@ -16,6 +17,7 @@ public abstract class ForgeLikeInstaller extends LoaderInstaller {
     public static final Pattern VERSION_PATTERN = Pattern.compile("^([0-9]+(\\.[0-9]+)+)-.*$");
     public static final String INSTALLER_FILE_NAME = "installer.jar";
     public static final String LAUNCHER_FILE_NAME = "run.sh";
+    private static final String FILE_NAME_FORMAT = "%s-server-%s+%s";
 
     protected final Map<MinecraftVersion, List<String>> versionMapping = new HashMap<>();
     private final String installerDownloadUrl;
@@ -43,7 +45,11 @@ public abstract class ForgeLikeInstaller extends LoaderInstaller {
 
     @Override
     public String getLauncherFileName(MinecraftVersion minecraftVersion, String loaderVersion) {
-        return LAUNCHER_FILE_NAME;
+        return getLauncherFileName(minecraftVersion, loaderVersion, Platform.current().scriptExtension);
+    }
+
+    public String getLauncherFileName(MinecraftVersion minecraftVersion, String loaderVersion, String extension) {
+        return FILE_NAME_FORMAT.formatted(loaderType, loaderVersion, minecraftVersion) + extension;
     }
 
     @Override
@@ -82,6 +88,18 @@ public abstract class ForgeLikeInstaller extends LoaderInstaller {
         Mimo.LOGGER.info("Start installing {} server...", loaderVersion);
         Process process = processBuilder.start();
         process.waitFor();
+
+        renameLaunchFile(instanceDirectory, minecraftVersion, loaderVersion, "run.sh");
+        renameLaunchFile(instanceDirectory, minecraftVersion, loaderVersion, "run.bat");
+    }
+
+    private void renameLaunchFile(Path instanceDirectory, MinecraftVersion minecraftVersion, String loaderVersion, String fileName) {
+        String extension = fileName.substring(fileName.lastIndexOf('.'));
+        Path originalFile = instanceDirectory.resolve(fileName);
+        String launcherFileName = getLauncherFileName(minecraftVersion, loaderVersion, extension);
+        Path file = instanceDirectory.resolve(launcherFileName);
+        if (!originalFile.toFile().renameTo(file.toFile()))
+            throw new IllegalStateException("Failed to rename \"%s\" to \"%s\"".formatted(originalFile, file));
     }
 
     @Override

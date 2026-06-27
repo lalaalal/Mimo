@@ -14,7 +14,7 @@ public interface ServerLauncher {
 
     RegistryItem<ServerLauncher> FORGE_LIKE = Registries.SERVER_LAUNCHERS.registerAndGetItem(
             "forge_like",
-            launcherFile -> new ProcessBuilder("./run.sh", "nogui")
+            launcherFile -> new ProcessBuilder("./" + launcherFile, "nogui")
     );
 
     static void initialize() {

@@ -23,7 +23,7 @@ import java.util.regex.Pattern;
 
 public class InstanceLoader {
     public static final String INSTANCE_DATA_FILE_NAME = "instance.json";
-    private static final Pattern JAR_NAME_PATTERN = Pattern.compile("^([a-z]+)-server-([^+]+)\\+(.+)\\.jar$");
+    private static final Pattern JAR_NAME_PATTERN = Pattern.compile("^([a-z]+)-server-([^+]+)\\+(.+)\\..*$");
 
     private static final Map<String, ServerInstance> instances = new HashMap<>();
 
@@ -34,7 +34,7 @@ public class InstanceLoader {
     private static ServerInstance createServer(String serverName, String serverFileName, Path directory) throws IOException {
         Matcher matcher = JAR_NAME_PATTERN.matcher(serverFileName);
         if (!matcher.matches()) {
-            Mimo.LOGGER.error("\"{}\" is not a valid server jar file name", serverFileName);
+            Mimo.LOGGER.error("\"{}\" is not a valid server file name", serverFileName);
             throw new IllegalStateException("Aborted");
         }
         String loaderType = matcher.group(1);
@@ -57,7 +57,7 @@ public class InstanceLoader {
             return instances.get(serverName);
 
         Mimo.LOGGER.info("Loading instance from directory \"{}\"", directory);
-        File[] files = directory.toFile().listFiles((dir, name) -> name.matches(JAR_NAME_PATTERN.pattern()));
+        File[] files = directory.toFile().listFiles(InstanceLoader::isAllowedLaunchFileName);
 
         if (files == null || files.length < 1)
             throw new MessageComponentException("Server " + serverName + " not found");
@@ -65,6 +65,10 @@ public class InstanceLoader {
             Mimo.LOGGER.warning("Multiple server jar files found in directory \"{}\"", directory);
         Mimo.LOGGER.info("Using {}", files[0].getName());
         return createServer(serverName, files[0].getName(), directory);
+    }
+
+    private static boolean isAllowedLaunchFileName(File directory, String name) {
+        return name.matches(JAR_NAME_PATTERN.pattern()) && (name.endsWith(".jar") || name.endsWith(Platform.current().scriptExtension));
     }
 
     /**

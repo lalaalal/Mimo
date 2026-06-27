@@ -53,11 +53,11 @@ public final class Mimo {
     }
 
     public static Path getInstanceContainerDirectory() {
-        return Platform.get().defaultMimoDirectory.resolve("servers");
+        return Platform.current().defaultMimoDirectory.resolve("servers");
     }
 
     public static Path getBackupDirectory() {
-        return Platform.get().defaultMimoDirectory.resolve("backups");
+        return Platform.current().defaultMimoDirectory.resolve("backups");
     }
 
     public static ServerInstance load(String name) throws IOException {
@@ -72,12 +72,12 @@ public final class Mimo {
         return currentServerInstance = ServerInstance.from(directory);
     }
 
-    public static void install(Loader.Type type, String name, MinecraftVersion minecraftVersion, String loaderVersion)
+    public static void install(Loader.Type type, MinecraftVersion minecraftVersion, String name, String loaderVersion)
             throws IOException, InterruptedException {
         currentServerInstance = LoaderInstaller.get(type).install(name, minecraftVersion, loaderVersion);
     }
 
-    public static void install(Loader.Type type, String name, MinecraftVersion minecraftVersion)
+    public static void install(Loader.Type type, MinecraftVersion minecraftVersion, String name)
             throws IOException, InterruptedException {
         LoaderInstaller installer = LoaderInstaller.get(type);
         List<String> versions = installer.getAvailableVersions(minecraftVersion);

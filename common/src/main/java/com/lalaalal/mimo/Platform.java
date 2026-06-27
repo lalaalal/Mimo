@@ -3,13 +3,13 @@ package com.lalaalal.mimo;
 import java.nio.file.Path;
 
 public enum Platform {
-    WINDOWS("AppData/Roaming/mimo"),
-    MAC_OS(".local/share/mimo"),
-    LINUX(".local/share/mimo");
+    WINDOWS("AppData/Roaming/mimo", ".bat"),
+    MAC_OS(".local/share/mimo", ".sh"),
+    LINUX(".local/share/mimo", ".sh");
 
     private static Platform instance;
 
-    public static Platform get() {
+    public static Platform current() {
         if (instance != null)
             return instance;
         String osName = System.getProperty("os.name").toLowerCase();
@@ -23,8 +23,10 @@ public enum Platform {
     }
 
     public final Path defaultMimoDirectory;
+    public final String scriptExtension;
 
-    Platform(String... more) {
-        this.defaultMimoDirectory = Path.of(System.getProperty("user.home"), more);
+    Platform(String mimoPath, String scriptExtension) {
+        this.defaultMimoDirectory = Path.of(System.getProperty("user.home"), mimoPath);
+        this.scriptExtension = scriptExtension;
     }
 }
