@@ -15,7 +15,7 @@ public class Registry<T> implements Iterable<RegistryItem<T>> {
     public static <T> Registry<T> create(String key) {
         RegistryItem<Registry<?>> registry = ROOT.get(key);
         if (registry == null)
-            registry = ROOT.registerAndGetItem("key", new Registry<>(key));
+            registry = ROOT.registerAndGetItem(key, new Registry<>(key));
         return (Registry<T>) registry.value();
     }
 
