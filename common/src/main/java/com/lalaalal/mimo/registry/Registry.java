@@ -3,6 +3,7 @@ package com.lalaalal.mimo.registry;
 import com.lalaalal.mimo.exception.MessageComponentException;
 
 import java.util.*;
+import java.util.stream.Stream;
 
 public class Registry<T> implements Iterable<RegistryItem<T>> {
     public static final Registry<Registry<?>> ROOT = new Registry<>("root");
@@ -87,6 +88,20 @@ public class Registry<T> implements Iterable<RegistryItem<T>> {
 
     public Set<String> keySet() {
         return registry.keySet();
+    }
+
+    public Collection<RegistryItem<T>> items() {
+        return registry.values();
+    }
+
+    public Collection<T> values() {
+        return stream()
+                .map(RegistryItem::value)
+                .toList();
+    }
+
+    public Stream<RegistryItem<T>> stream() {
+        return registry.values().stream();
     }
 
     @Override

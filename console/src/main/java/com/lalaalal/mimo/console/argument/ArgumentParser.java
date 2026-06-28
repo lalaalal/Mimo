@@ -1,5 +1,8 @@
 package com.lalaalal.mimo.console.argument;
 
+import java.util.Collection;
+import java.util.List;
+import java.util.StringJoiner;
 import java.util.function.Function;
 
 public abstract class ArgumentParser<T> {
@@ -56,6 +59,20 @@ public abstract class ArgumentParser<T> {
 
         public Builder<T> help(String helpMessage) {
             this.helpMessage = helpMessage;
+            return this;
+        }
+
+        @SafeVarargs
+        public final Builder<T> help(T... values) {
+            return help(List.of(values));
+        }
+
+        public Builder<T> help(Collection<T> values) {
+            StringJoiner joiner = new StringJoiner(" | ");
+            for (T value : values) {
+                joiner.add(value.toString());
+            }
+            this.helpMessage = "[" + joiner + "]";
             return this;
         }
 

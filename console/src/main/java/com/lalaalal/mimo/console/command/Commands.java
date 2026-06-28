@@ -39,7 +39,6 @@ public class Commands {
                             .formatHelp(ArgumentParsers.LOADER_TYPE, ArgumentParsers.MINECRAFT_VERSION, "server_name")
                             .argumentHelp("-    ", ArgumentParsers.LOADER_TYPE)
                             .help("-    Install server with latest loader version")
-                            .help("+    version [loader_type] [minecraft_version]")
                             .action(Mimo::install)
                             .build())
                     .build());

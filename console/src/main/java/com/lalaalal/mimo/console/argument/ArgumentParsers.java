@@ -44,25 +44,25 @@ public class ArgumentParsers {
 
     public static final ArgumentParser<Loader.Type> LOADER_TYPE = register(
             ArgumentParser.builder("loader_type", Loader.Type.class, Loader.Type::get)
-                    .help("[fabric | neoforge | forge]")
+                    .help(Loader.Type.values())
                     .build()
     );
 
     public static final ArgumentParser<ProjectType> PROJECT_TYPE = register(
             ArgumentParser.builder("project_type", ProjectType.class, ProjectType::get)
-                    .help("[mod | datapack]")
+                    .help(ProjectType.values())
                     .build()
     );
 
     public static final ArgumentParser<Level> LOG_LEVEL = register(
             ArgumentParser.builder("log_level", Level.class, Level::get)
-                    .help("[verbose | debug | info | warning | error]")
+                    .help(Level.values())
                     .build()
     );
 
     public static final ArgumentParser<ContentProvider> CONTENT_PROVIDER = register(
             ArgumentParser.builder("content_provider", ContentProvider.class, Registries.CONTENT_PROVIDERS::getOrThrow)
-                    .help("[modrinth | curseforge]")
+                    .help(Registries.CONTENT_PROVIDERS.values())
                     .build()
     );
 
